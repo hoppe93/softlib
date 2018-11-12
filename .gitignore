@@ -1,0 +1,3 @@
+*.swp
+*~
+include/softlib/config.h

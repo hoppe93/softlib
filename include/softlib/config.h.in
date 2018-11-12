@@ -1,0 +1,42 @@
+#ifndef _SOFTLIB_CONFIG_H
+#define _SOFTLIB_CONFIG_H
+
+#include <cfloat>
+
+#define REAL_BITS (${REALBITS})
+#define REAL_EPSILON (${REALEPSILON})
+#define SQRT_REAL_EPSILON (sqrt(${REALEPSILON}))
+typedef ${REALTYPE} slibreal_t;
+
+#define RK_DEFAULT_TOLERANCE ${RK_TOLERANCE}
+
+#cmakedefine DEBUG
+#cmakedefine INTERP_SPLINTER
+#cmakedefine OFFICIAL_MATLAB
+#cmakedefine PRECISION_DOUBLE
+#cmakedefine PRECISION_SINGLE
+
+#ifdef OFFICIAL_MATLAB
+#   undef SOFT_HDF5
+#else
+#   define SOFT_HDF5
+#endif
+
+#cmakedefine APPLE
+#cmakedefine UNIX
+#cmakedefine WIN32
+
+#if defined(__GNUC__)
+#   define __UNUSED__(x) UNUSED_ ## x __attribute__((unused))
+#   define __RESTRICT__(x) __restrict__ x
+#elif define(__LCLINT__)
+#   define __UNUSED__(x) /*@unused@*/ x
+#   define __RESTRICT__(x) __restrict__ x
+#elif defined(__cplusplus)
+#   define __UNUSED__(x)
+#   define __RESTRICT__(x) __restrict x
+#else
+#   error "Unsupported compiler version."
+#endif
+
+#endif/*_SOFTLIB_CONFIG_H*/
