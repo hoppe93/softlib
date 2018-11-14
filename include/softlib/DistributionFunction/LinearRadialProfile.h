@@ -12,8 +12,8 @@ class LinearRadialProfile : public RadialProfile {
         slibreal_t rmin, rmax, delr;
     public:
         LinearRadialProfile(const slibreal_t, const slibreal_t);
-        slibreal_t Eval(const slibreal_t, const slibreal_t drift_shift=0.0);
-        LinearRadialProfile *MinClone();
+        virtual slibreal_t Eval(const slibreal_t, const slibreal_t drift_shift=0.0) override;
+        virtual LinearRadialProfile *MinClone() override;
 };
 
 #endif/*_LINEAR_RADIAL_PROFILE_H*/

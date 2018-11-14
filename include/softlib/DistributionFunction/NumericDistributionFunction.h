@@ -51,7 +51,7 @@ class NumericDistributionFunction : public DistributionFunction {
         bool logarithmic = false;
         int interptype = INTERPOLATION_CUBIC;       // Type of interpolation done
     public:
-        virtual slibreal_t Eval(const slibreal_t, const slibreal_t, const slibreal_t, const slibreal_t drift_shift=0.0);
+        virtual slibreal_t Eval(const slibreal_t, const slibreal_t, const slibreal_t, const slibreal_t drift_shift=0.0) override;
         int __FindNearestR(const slibreal_t);
         void Initialize(
             const unsigned int, const unsigned int, const unsigned int,

@@ -32,11 +32,11 @@ class CODEDistributionFunction : public MomentumSpaceDistributionFunction {
 
         void ComputeLegendrePolynomials(slibreal_t*, slibreal_t, int);
         void Destroy();
-        slibreal_t Eval(const slibreal_t, const slibreal_t);
+        virtual slibreal_t Eval(const slibreal_t, const slibreal_t) override;
         void Load(const std::string&, int time=-1, int interptype=INTERPOLATION_LINEAR);
         void Initialize(const unsigned int, const unsigned int, slibreal_t*, slibreal_t*, int interptype=INTERPOLATION_LINEAR);
         void InitInterpolation(int interptype=INTERPOLATION_LINEAR);
-        CODEDistributionFunction *MinClone();
+        virtual CODEDistributionFunction *MinClone() override;
         NumericMomentumSpaceDistributionFunction *ToMomentumSpace(
             bool logarithmic=true, bool uniformTheta=false, unsigned int nxi=200,
             int interptype=NumericMomentumSpaceDistributionFunction::INTERPOLATION_CUBIC

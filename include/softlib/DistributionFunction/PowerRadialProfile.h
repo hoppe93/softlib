@@ -13,8 +13,8 @@ class PowerRadialProfile : public RadialProfile {
         slibreal_t b;               // Exponent parameter
     public:
         PowerRadialProfile(const slibreal_t, const slibreal_t, const slibreal_t);
-        slibreal_t Eval(const slibreal_t, const slibreal_t drift_shift=0.0);
-        PowerRadialProfile *MinClone();
+        virtual slibreal_t Eval(const slibreal_t, const slibreal_t drift_shift=0.0) override;
+        virtual PowerRadialProfile *MinClone() override;
 };
 
 #endif/*_POWER_RADIAL_PROFILE_H*/
