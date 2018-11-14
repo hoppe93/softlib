@@ -35,6 +35,7 @@ class NumericMomentumSpaceDistributionFunction : public MomentumSpaceDistributio
         bool logarithmic = false;
         int interptype = INTERPOLATION_CUBIC;
     public:
+        using MomentumSpaceDistributionFunction::Eval;
         virtual slibreal_t Eval(const slibreal_t, const slibreal_t) override;
         void Initialize(
             const unsigned int, const unsigned int,

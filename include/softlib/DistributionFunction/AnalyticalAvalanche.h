@@ -10,6 +10,7 @@ class AnalyticalAvalanche : public MomentumSpaceDistributionFunction {
     public:
         AnalyticalAvalanche();
         AnalyticalAvalanche(const slibreal_t, const slibreal_t, const slibreal_t);
+        using MomentumSpaceDistributionFunction::Eval;
         virtual slibreal_t Eval(const slibreal_t, const slibreal_t) override;
         void Initialize(const slibreal_t, const slibreal_t, const slibreal_t);
         virtual AnalyticalAvalanche *MinClone() override;

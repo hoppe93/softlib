@@ -32,6 +32,7 @@ class CODEDistributionFunction : public MomentumSpaceDistributionFunction {
 
         void ComputeLegendrePolynomials(slibreal_t*, slibreal_t, int);
         void Destroy();
+        using MomentumSpaceDistributionFunction::Eval;
         virtual slibreal_t Eval(const slibreal_t, const slibreal_t) override;
         void Load(const std::string&, int time=-1, int interptype=INTERPOLATION_LINEAR);
         void Initialize(const unsigned int, const unsigned int, slibreal_t*, slibreal_t*, int interptype=INTERPOLATION_LINEAR);
