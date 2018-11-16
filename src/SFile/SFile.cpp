@@ -56,7 +56,7 @@ SFile *SFile::Create(const string& filename, enum sfile_mode mode, enum sfile_ty
 		default: 
 			//cerr << "softlib ERROR: Trying to open file of unrecognized format: " << type << "." << endl;
 			//exit(-1);
-			throw SFileException("Trying to open file of unrecognized format.");
+			throw SFileException("Trying to open file of unrecognized format: '%s'.", filename.c_str());
 	}
 
 	sf->filetype = type;
@@ -115,7 +115,7 @@ double *SFile::GetList(const string& name, sfilesize_t *length) {
 		p = arr[0];
 		delete [] arr;
 	} else {
-		throw new SFileException(filename+": The requested variable is not a list: '"+name+"'.");
+		throw SFileException(filename+": The requested variable is not a list: '"+name+"'.");
 	}
 
 	return p;
@@ -132,7 +132,7 @@ double SFile::GetScalar(const string& name) {
 	double **arr = GetDoubles(name, length);
 
 	if (length[0] != 1 || length[1] != 1)
-		throw new SFileException(filename+": The requested variable is not a real scalar: '"+name+"'.");
+		throw SFileException(filename+": The requested variable is not a real scalar: '"+name+"'.");
 	
 	s = arr[0][0];
 	delete [] arr[0];
