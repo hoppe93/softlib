@@ -16,10 +16,10 @@ class MomentumSpaceDistributionFunction;
 class MomentumSpaceDistributionFunction : public DistributionFunction {
     public:
         virtual slibreal_t Eval(const slibreal_t, const slibreal_t) = 0;
-        slibreal_t Eval(
+        virtual slibreal_t Eval(
             const slibreal_t rho __attribute__((unused)), const slibreal_t p,
             const slibreal_t xi, const slibreal_t drift_shift __attribute__((unused))
-        ) { return this->Eval(p, xi); }
+        ) override { return this->Eval(p, xi); }
 
         virtual MomentumSpaceDistributionFunction *MinClone() = 0;
 

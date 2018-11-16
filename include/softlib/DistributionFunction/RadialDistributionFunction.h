@@ -14,9 +14,9 @@ class RadialDistributionFunction : public DistributionFunction {
         RadialDistributionFunction();
         RadialDistributionFunction(RadialProfile*, MomentumSpaceDistributionFunction*);
 
-        slibreal_t Eval(const slibreal_t, const slibreal_t, const slibreal_t, const slibreal_t drift_shift=0.0);
+        virtual slibreal_t Eval(const slibreal_t, const slibreal_t, const slibreal_t, const slibreal_t drift_shift=0.0) override;
         void Initialize(RadialProfile*, MomentumSpaceDistributionFunction*);
-        RadialDistributionFunction *MinClone();
+        virtual RadialDistributionFunction *MinClone() override;
 };
 
 #endif/*_RADIAL_DISTRIBUTION_FUNCTION_H*/

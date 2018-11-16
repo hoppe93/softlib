@@ -67,7 +67,7 @@ H5File *SFile_MAT::CreateMAT(const string& filename) {
     #define NMAGIC 3
     char *s = new char[MATLAB_STRING_LENGTH+1];
     int32_t magic[NMAGIC] = {0x00000000, 0x00000000, 0x4D490200};
-    time_point mom = system_clock::now();
+    time_point<system_clock> mom = system_clock::now();
     time_t tt = system_clock::to_time_t(mom);
     tm local_tm = *localtime(&tt);
 
