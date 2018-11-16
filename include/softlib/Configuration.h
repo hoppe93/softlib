@@ -119,6 +119,7 @@ public:
 	~ConfigBlock();
 
 	Setting& AddSetting(const std::string&, const std::string&);
+    Setting& AddSetting(const std::string&, const std::vector<std::string>&);
 	Setting& AddSetting(const Setting&);
 	ConfigBlock *AddSubBlock(confblock_t, const std::string&);
 	ConfigBlock *AddSubBlock(ConfigBlock&);

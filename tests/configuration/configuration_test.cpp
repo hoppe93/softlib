@@ -17,7 +17,7 @@ const unsigned int Test_Configuration_NCONFIGS=3;
 const string Test_Configuration_configs[Test_Configuration_NCONFIGS] = {
     // Config 1 (very basic)
     "option1 = val1;\n"
-    "option2 = val2;",
+    "option2 = val2 val3;",
     // Config 2 (basic with blocks)
     "option1 = block1;\n"
     "option2 = block2;\n\n"

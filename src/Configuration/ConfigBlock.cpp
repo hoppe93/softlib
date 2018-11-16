@@ -44,6 +44,11 @@ Setting& ConfigBlock::AddSetting(const string& name, const string& value) {
     Setting s(name, value);
     return AddSetting(s);
 }
+Setting& ConfigBlock::AddSetting(const string& name, const vector<string>& value) {
+    Setting s(name, value);
+    return AddSetting(s);
+}
+
 /**
  * Add setting to the list of settings
  * in this block from an existing setting.
@@ -308,7 +313,7 @@ vector<string> *ConfigBlock::Merge(ConfigBlock& cb, bool allowNew) {
 		if (this->HasSetting(set[i].GetName()))
 			this->MergeSetting(set[i]);
 		else if (allowNew)
-			this->AddSetting(set[i].GetName(), set[i].GetString());
+			this->AddSetting(set[i].GetName(), set[i].GetTextVector());
 		else {
 			if (unknown == NULL) unknown = new vector<string>();
 			unknown->push_back(set[i].GetName());
