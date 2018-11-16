@@ -20,11 +20,11 @@ slibreal_t MagneticFieldAnalytical2D::__GetSafetyFactor(slibreal_t r) {
 		case MFASF_CONSTANT:
 			return safety_factor_param1;
 		case MFASF_LINEAR:
-			return safety_factor_param1*rn + 1.0;
+			return safety_factor_param1*rn + safety_factor_param2;
 		case MFASF_QUADRATIC:
-			return safety_factor_param1*rn*rn + 1.0;
+			return safety_factor_param1*rn*rn + safety_factor_param2;
 		case MFASF_EXPONENTIAL:
-			return exp(rn * safety_factor_param1);
+			return exp(rn * safety_factor_param1) + safety_factor_param2;
 		default: return 1.0;
 	}
 }
