@@ -100,6 +100,35 @@ struct magnetic_field_data& MagneticField2D::EvalDerivatives(Vector<3>& xyz) {
 }
 
 /**
+ * Returns the edges of a square which exactly bounds the entire
+ * domain. This can be used as a first, cheaper domain check,
+ * instead of using the relatively expensive 'CrossesDomain()'
+ * routine.
+ *
+ * The function returns the bounds in the four input parameters:
+ *
+ * rmin: Minimum radius of domain.
+ * rmax: Maximum radius of domain.
+ * zmin: Minimum height of domain.
+ * zmax: Maximum height of domain.
+ */
+void MagneticField2D::GetDomainBounds(slibreal_t &rmin, slibreal_t &rmax, slibreal_t &zmin, slibreal_t &zmax) {
+    unsigned int i;
+
+    rmax = GetMaxRadius();
+    rmin = GetMinRadius();
+
+    zmin = zmax = GetMagneticAxisZ();
+
+    for (i = 0; i < ndomain; i++) {
+        if (zdomain[i] < zmin)
+            zmin = zdomain[i];
+        else if (zdomain[i] > zmax)
+            zmax = zdomain[i];
+    }
+}
+
+/**
  * Returns the radial position of the separatrix
  * (or wall, if the separatrix is not available)
  * at the vertical level of the magnetic axis.
@@ -127,7 +156,7 @@ slibreal_t MagneticField2D::FindMinRadius() {
 
 /**
  * Finds the maximum and minimum allowed particle
- * radii, given a domain. Only returns the former.
+ * radii, given a domain. Returns only the former.
  *
  * n: Number of points in the domain.
  * r: R-coordinates of the domain.

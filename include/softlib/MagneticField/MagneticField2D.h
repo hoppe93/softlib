@@ -54,6 +54,8 @@ class MagneticField2D {
         slibreal_t *GetZDomain() { return this->zdomain; }
         unsigned int GetNDomain() { return this->ndomain; }
 
+        void GetDomainBounds(slibreal_t&, slibreal_t&, slibreal_t&, slibreal_t&);
+
 		bool CrossesDomain(slibreal_t*);
 		bool CrossesDomain(slibreal_t*, slibreal_t*);
 		bool CrossesDomain(slibreal_t, slibreal_t, slibreal_t);
