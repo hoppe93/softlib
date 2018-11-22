@@ -113,19 +113,34 @@ struct magnetic_field_data& MagneticField2D::EvalDerivatives(Vector<3>& xyz) {
  * zmax: Maximum height of domain.
  */
 void MagneticField2D::GetDomainBounds(slibreal_t &rmin, slibreal_t &rmax, slibreal_t &zmin, slibreal_t &zmax) {
-    unsigned int i;
-
-    rmax = GetMaxRadius();
-    rmin = GetMinRadius();
-
+    if (this->bounds_set) {
+        rmin = this->bounds.rmin;
+        rmax = this->bounds.rmax;
+        zmin = this->bounds.zmin;
+        zmax = this->bounds.zmax;
+        return;
+    }
+        
+    rmin = rmax = GetMagneticAxisR();
     zmin = zmax = GetMagneticAxisZ();
 
-    for (i = 0; i < ndomain; i++) {
+    for (unsigned int i = 0; i < ndomain; i++) {
+        if (rdomain[i] < rmin)
+            rmin = rdomain[i];
+        else if (rdomain[i] > rmax)
+            rmax = rdomain[i];
+
         if (zdomain[i] < zmin)
             zmin = zdomain[i];
         else if (zdomain[i] > zmax)
             zmax = zdomain[i];
     }
+
+    this->bounds.rmin = rmin;
+    this->bounds.rmax = rmax;
+    this->bounds.zmin = zmin;
+    this->bounds.zmax = zmax;
+    this->bounds_set = true;
 }
 
 /**
@@ -196,6 +211,80 @@ slibreal_t MagneticField2D::FindMaxRadius(unsigned int n, slibreal_t *r, slibrea
 	}
 
 	return this->maxradius;
+}
+
+/**
+ * Find the maximum and minimum z value of the domain
+ * at the given radius.
+ *
+ * r:    Radius at which
+ * zmin: Minimum value of Z at r.
+ * zmax: Maximum value of Z at r.
+ */
+void MagneticField2D::FindMaxZ(const slibreal_t r, slibreal_t &zmin, slibreal_t &zmax) {
+    FindMaxZ(ndomain, rdomain, zdomain, r, zmin, zmax);
+}
+
+/**
+ * Finds the maximum and minimum allowed vertical
+ * locations of the particle, at the given radius.
+ *
+ * n:    Number of points in the domain.
+ * r:    R-coordinates of the domain.
+ * z:    Z-coordinates of the domain.
+ * R:    Radius at which to find zmin/zmax.
+ * zmin: Contains minimum Z on return.
+ * zmax: Contains maximum Z on return.
+ */
+void MagneticField2D::FindMaxZ(
+    unsigned int n, const slibreal_t *r, const slibreal_t *z,
+    const slibreal_t R, slibreal_t &zmin, slibreal_t &zmax
+) {
+    FindMaxMin(n, z, r, R, zmin, zmax);
+}
+
+/**
+ * Find maximum and minimum value of 'x', at 'y' = 'a'.
+ * The minimum and maximum values are returned in 'mn'
+ * and 'mx'.
+ *
+ * n:  Number of points in 'x' and 'y'.
+ * x:  X-vector of points (to find min/max of)
+ * y:  Y-vector of points (to act as constraint)
+ * a:  Value of 'Y' to hold as constraint.
+ * mn: Contains minimum value of 'x' at 'y' = 'a' on return.
+ * mx: Contains maximum value of 'x' at 'y' = 'a' on return.
+ */
+void MagneticField2D::FindMaxMin(
+    unsigned int n, const slibreal_t *x, const slibreal_t *y,
+    const slibreal_t a, slibreal_t &mn, slibreal_t &mx
+) {
+	#define MAGFIELD2D_MAXXPOINTS 2
+	unsigned int i, ix;
+	slibreal_t xpoints[MAGFIELD2D_MAXXPOINTS];
+
+	for (i = ix = 0; i < n-1 && ix < MAGFIELD2D_MAXRPOINTS; i++) {
+		if ((y[i] >= a && y[i+1] <= a) ||
+			(y[i] <= a && y[i+1] >= a)) {
+			if (y[i+1] == y[i])
+				xpoints[ix++] = max(x[i], x[i+1]);
+			else
+				xpoints[ix++] = x[i] + (x[i+1]-x[i]) * (a-y[i])/(y[i+1]-y[i]);
+		}
+	}
+
+	if (ix == 0)
+		throw SOFTLibException("Unable to find maximum point. Requested point is not within the domain.");
+
+	// Find max & min radii
+	mx = xpoints[0];
+	mn = xpoints[0];
+	for (i = 1; i < ix; i++) {
+		if (xpoints[i] > mx)
+			mx = xpoints[i];
+		else if (xpoints[i] < mn)
+			mn = xpoints[i];
+	}
 }
 
 /**

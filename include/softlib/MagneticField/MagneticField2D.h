@@ -19,6 +19,11 @@ class MagneticField2D {
         unsigned int ndomain;
 		slibreal_t maxradius=-1, minradius=-1;		// Maximum and minimum radius from which particles can be dropped
 
+        bool bounds_set = false;
+        struct {
+            slibreal_t rmin, rmax, zmin, zmax;
+        } bounds = {0,0,0,0};
+
 		bool __IntersectsDomain3D(
 			slibreal_t, slibreal_t, slibreal_t, slibreal_t,
 			slibreal_t, slibreal_t, slibreal_t,
@@ -62,8 +67,11 @@ class MagneticField2D {
 		bool CrossesDomain(slibreal_t, slibreal_t, slibreal_t, slibreal_t, slibreal_t, slibreal_t);
 		virtual slibreal_t FindMaxRadius();
 		virtual slibreal_t FindMinRadius();
+        virtual void FindMaxZ(const slibreal_t, slibreal_t&, slibreal_t&);
 		slibreal_t FindMaxRadius(unsigned int, slibreal_t*, slibreal_t*);
 		slibreal_t FindMinRadius(unsigned int, slibreal_t*, slibreal_t*);
+        void FindMaxZ(unsigned int, const slibreal_t*, const slibreal_t*, const slibreal_t, slibreal_t&, slibreal_t&);
+        void FindMaxMin(unsigned int, const slibreal_t*, const slibreal_t*, const slibreal_t, slibreal_t&, slibreal_t&);
 		bool IntersectsDomain3D(slibreal_t*, slibreal_t*, bool has_outer_wall=true);
 		bool IntersectsDomain3D(slibreal_t, slibreal_t, slibreal_t, slibreal_t, slibreal_t, slibreal_t, bool has_outer_wall=true);
         void SetDomain(slibreal_t*, slibreal_t*, unsigned int);

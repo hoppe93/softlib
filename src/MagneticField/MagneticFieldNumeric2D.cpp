@@ -587,6 +587,11 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
 
 		delete [] _rsep;
 	}
+
+    if (rwall != NULL && zwall != NULL)
+        SetDomain(this->rwall, this->zwall, this->nwall);
+    else
+        SetDomain(this->rsep, this->zsep, this->nsep);
 }
 
 /**
