@@ -24,6 +24,7 @@ class MagneticFieldAnalytical2D : public MagneticField2D {
 	private:
 		slibreal_t retval[3];
 		slibreal_t retval_magnitude;
+        struct flux_diff flux_retval;
 
 		/* Safety factor fields */
 		slibreal_t safety_factor_param1,
@@ -43,10 +44,13 @@ class MagneticFieldAnalytical2D : public MagneticField2D {
 		slibreal_t *Eval(slibreal_t, slibreal_t, slibreal_t);
 		struct magnetic_field_data& EvalDerivatives(slibreal_t*);
 		struct magnetic_field_data& EvalDerivatives(slibreal_t, slibreal_t, slibreal_t);
+        virtual slibreal_t EvalFlux(slibreal_t, slibreal_t, slibreal_t) override;
+        virtual struct flux_diff *EvalFluxDerivatives(slibreal_t, slibreal_t, slibreal_t) override;
         MagneticFieldNumeric2D *ToNumeric2D(const unsigned int nr=120, const unsigned int nz=120);
 
         slibreal_t GetRMajor() { return this->Rm; }
         slibreal_t GetRMinor() { return this->rminor; }
+        virtual bool HasMagneticFlux() override { return true; }
 
 		slibreal_t __GetrDqDr(slibreal_t);
 		slibreal_t __GetSafetyFactor(slibreal_t);

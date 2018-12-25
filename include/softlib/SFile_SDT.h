@@ -12,6 +12,7 @@ class SFile_SDT : public SFile {
 		std::vector<ssdt_key> keys;
 	public:
 		void Close();
+        virtual bool HasVariable(const std::string&) override;
 		double **GetDoubles(const char*, sfilesize_t);
 		double *GetDoubles1D(const char*, sfilesize_t);
 		char *GetString(const char*);

@@ -73,7 +73,7 @@ MagneticFieldNumeric2D *Test_MagneticFieldNumeric2D::GenerateMF(
 	}
 
 	return new MagneticFieldNumeric2D(
-		"numeric", "numeric", R, Z, nr, nz, Br, Bphi, Bz,
+		"numeric", "numeric", R, Z, nr, nz, Br, Bphi, Bz, nullptr,
         Rm, 0.0, NULL, NULL, 0, rwall, zwall, nwall
 	);
 }

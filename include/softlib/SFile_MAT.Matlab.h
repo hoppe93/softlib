@@ -13,18 +13,19 @@ class SFile_MAT : public SFile {
 		~SFile_MAT();
 
 		void Close();
-		double GetAttributeScalar(const std::string&, const std::string&);
-		std::string *GetAttributeString(const std::string&, const std::string&);
-		double **GetDoubles(const std::string&, sfilesize_t*);
-		double *GetDoubles1D(const std::string&, sfilesize_t*);
-		std::string *GetString(const std::string&);
-		void Open(const std::string&, enum sfile_mode);
-		void WriteArray(const std::string&, double**, sfilesize_t, sfilesize_t);
-		void WriteAttribute_scalar(const std::string&, const std::string&, double);
-		void WriteAttribute_string(const std::string&, const std::string&, const std::string&);
-		void WriteImage(const std::string&, double**, sfilesize_t);
-		void WriteList(const std::string&, double*, sfilesize_t);
-		void WriteString(const std::string&, const std::string&);
+        virtual bool HasVariable(const std::string&) override;
+		virtual double GetAttributeScalar(const std::string&, const std::string&) override;
+		virtual std::string *GetAttributeString(const std::string&, const std::string&) override;
+		virtual double **GetDoubles(const std::string&, sfilesize_t*) override;
+		virtual double *GetDoubles1D(const std::string&, sfilesize_t*) override;
+		virtual std::string *GetString(const std::string&) override;
+		virtual void Open(const std::string&, enum sfile_mode) override;
+		virtual void WriteArray(const std::string&, double**, sfilesize_t, sfilesize_t) override;
+		virtual void WriteAttribute_scalar(const std::string&, const std::string&, double) override;
+		virtual void WriteAttribute_string(const std::string&, const std::string&, const std::string&) override;
+		virtual void WriteImage(const std::string&, double**, sfilesize_t) override;
+		virtual void WriteList(const std::string&, double*, sfilesize_t) override;
+		virtual void WriteString(const std::string&, const std::string&) override;
 };
 
 #endif/*_SFILE_MATLAB_H*/

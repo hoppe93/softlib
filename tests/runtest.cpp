@@ -43,7 +43,7 @@ void init() {
 	add_test(new Test_RKDP45("int_rkdp45"));
 	add_test(new Test_MagneticFieldAnalytical2D("magnetic_analytical2d"));
 	add_test(new Test_MagneticFieldNumeric2D("magnetic_numeric2d"));
-#ifdef HAS_HDF5
+#ifdef SOFT_HDF5
 	add_test(new Test_SFile_HDF5("sfile_hdf5"));
 #endif
 	add_test(new Test_SFile_MAT("sfile_matlab"));

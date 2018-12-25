@@ -7,7 +7,7 @@
 #include <string>
 #include <softlib/SFile.h>
 #include <softlib/SFile_HDF5.h>
-#include <softlib/SOFTLibException.h>
+#include <softlib/SFileException.h>
 
 #include <iostream>
 
@@ -42,10 +42,10 @@ void SFile_HDF5::Open(const string& filename, enum sfile_mode openmode) {
 				break;
 			default:
 				//fprintf(stderr, "Unrecognized option for opening HDF5 file: %d.\n", mode);
-				throw SOFTLibException("Unrecognized option for opening HDF5 file.");
+				throw SFileException("Unrecognized option for opening HDF5 file.");
 		}
 	} catch (FileIException &error) {
-		throw SOFTLibException("Unable to open HDF5 file.\n"+error.getDetailMsg());
+		throw SFileException("Unable to open HDF5 file.\n"+error.getDetailMsg());
 	}
 
 	this->filename = filename;
@@ -59,6 +59,20 @@ void SFile_HDF5::Close(void) {
 	delete this->file;
 }
 
+/**
+ * Checks if a variable of the given name exists
+ * in the file.
+ */
+bool SFile_HDF5::HasVariable(const string& s) {
+    try {
+        DataSet dset = file->openDataSet(s);
+        dset.close();
+        return true;
+    } catch (FileIException &ex) {
+        return false;
+    }
+}
+
 /*******************************
  ************ INPUT ************
  *******************************/
@@ -70,13 +84,17 @@ void SFile_HDF5::Close(void) {
  * name: Name of attribute to read.
  */
 double SFile_HDF5::GetAttributeScalar(const string& datasetname, const string& name) {
-	double s;
-	DataSet dataset = file->openDataSet(datasetname);
-	Attribute attr = dataset.openAttribute(name);
-	DataType type = attr.getDataType();
+    try {
+        double s;
+        DataSet dataset = file->openDataSet(datasetname);
+        Attribute attr = dataset.openAttribute(name);
+        DataType type = attr.getDataType();
 
-	attr.read(type, &s);
-	return s;
+        attr.read(type, &s);
+        return s;
+    } catch (FileIException &ex) {
+        throw SFileException("Unable to read attribute string '%s'. HDF5 error: %s", datasetname.c_str(), ex.getCDetailMsg());
+    }
 }
 /**
  * Reads a string attribute from the dataset named
@@ -86,13 +104,17 @@ double SFile_HDF5::GetAttributeScalar(const string& datasetname, const string& n
  * name: Name of attribute to read.
  */
 string *SFile_HDF5::GetAttributeString(const string& datasetname, const string& name) {
-	string *s = new string;
-	DataSet dataset = file->openDataSet(datasetname);
-	Attribute attr = dataset.openAttribute(name);
-	DataType type = attr.getDataType();
+    try {
+        string *s = new string;
+        DataSet dataset = file->openDataSet(datasetname);
+        Attribute attr = dataset.openAttribute(name);
+        DataType type = attr.getDataType();
 
-	attr.read(type, *s);
-	return s;
+        attr.read(type, *s);
+        return s;
+    } catch (FileIException &ex) {
+        throw SFileException("Unable to read attribute string '%s'. HDF5 error: %s", datasetname.c_str(), ex.getCDetailMsg());
+    }
 }
 /**
  * Reads a scalar from the dataset with name "name".
@@ -103,14 +125,17 @@ string *SFile_HDF5::GetAttributeString(const string& datasetname, const string& 
  * name: Name of dataset to load string from
  */
 string *SFile_HDF5::GetString(const string& name) {
-	string *s = new string;
-	DataSet dataset = file->openDataSet(name);
-	DataType type = dataset.getDataType();
-	DataSpace dspace = dataset.getSpace();
+    if (!HasVariable(name))
+        throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
 
-	dataset.read(*s, type, dspace);
+    string *s = new string;
+    DataSet dataset = file->openDataSet(name);
+    DataType type = dataset.getDataType();
+    DataSpace dspace = dataset.getSpace();
 
-	return s;
+    dataset.read(*s, type, dspace);
+
+    return s;
 }
 /**
  * Reads an array of C doubles from the dataset
@@ -125,6 +150,9 @@ string *SFile_HDF5::GetString(const string& name) {
  * NULL is returned.
  */
 double **SFile_HDF5::GetDoubles(const string& name, sfilesize_t *dims) {
+    if (!HasVariable(name))
+        throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
+
 	double *data, **pointers;
 	sfilesize_t ndims;
 	unsigned int i;
@@ -156,6 +184,9 @@ double **SFile_HDF5::GetDoubles(const string& name, sfilesize_t *dims) {
 	return pointers;
 }
 double *SFile_HDF5::GetDoubles1D(const string& name, sfilesize_t *dims) {
+    if (!HasVariable(name))
+        throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
+
 	double *data;
 	sfilesize_t ndims;
 	DataSet dset = file->openDataSet(name);

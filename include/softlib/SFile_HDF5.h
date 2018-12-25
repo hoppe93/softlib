@@ -12,6 +12,7 @@ class SFile_HDF5 : public SFile {
 		~SFile_HDF5();
 
 		void Close();
+        virtual bool HasVariable(const std::string&) override;
 		virtual double GetAttributeScalar(const std::string&, const std::string&) override;
 		virtual std::string* GetAttributeString(const std::string&, const std::string&) override;
 		virtual double **GetDoubles(const std::string&, sfilesize_t*) override;

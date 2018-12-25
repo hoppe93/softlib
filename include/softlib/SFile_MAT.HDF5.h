@@ -11,6 +11,7 @@ class SFile_MAT : public SFile_HDF5 {
 	public:
         /* These are derived from 'SFile_HDF5':
 		void Close();
+        bool HasVariable(const std::string&);
 		double **GetDoubles(const std::string&, sfilesize_t*);
 		double *GetDoubles1D(const std::string&, sfilesize_t*);
 		std::string *GetString(const std::string&);

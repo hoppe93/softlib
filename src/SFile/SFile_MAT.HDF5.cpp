@@ -192,6 +192,9 @@ string *SFile_MAT::GetAttributeString(const string& dsetname, const string& name
  * name: Name of variable to read.
  */
 string *SFile_MAT::GetString(const string& name) {
+    if (!HasVariable(name))
+        throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
+
     string *s = new string;
     DataSet dataset = file->openDataSet(name);
     DataType type = dataset.getDataType();

@@ -30,6 +30,8 @@ class SFile {
 		static enum sfile_type GetFileType(const std::string&);
 		static enum sfile_type TypeOfFile(const std::string&);
 
+        virtual bool HasVariable(const std::string&) = 0;
+
 		virtual void Close() = 0;
 		virtual double GetAttributeScalar(const std::string&, const std::string&) = 0;
 		virtual std::string *GetAttributeString(const std::string&, const std::string&) = 0;

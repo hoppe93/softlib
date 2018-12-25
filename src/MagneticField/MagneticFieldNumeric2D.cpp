@@ -25,6 +25,7 @@ MagneticFieldNumeric2D::MagneticFieldNumeric2D(const string& filename) : Magneti
 	InitInterpolation();
 
 	interpval = new slibreal_t[3];
+
     // The 'jacobian' is a 4-by-3 matrix here.
     // The first 3 rows (3-by-3 matrix) is the
     // actual jacobian, while the last row
@@ -40,6 +41,7 @@ MagneticFieldNumeric2D::MagneticFieldNumeric2D(const string& filename, enum sfil
 	InitInterpolation();
 
 	interpval = new slibreal_t[3];
+
 	jacobian  = new slibreal_t*[4];
 	jacobian[0] = new slibreal_t[4*3];
 	jacobian[1] = jacobian[0] + 3;
@@ -74,7 +76,7 @@ MagneticFieldNumeric2D::MagneticFieldNumeric2D(
 	const string& name, const string& description,
 	slibreal_t *R, slibreal_t *Z, unsigned int nr, unsigned int nz,
 	slibreal_t *Br, slibreal_t *Bphi, slibreal_t *Bz,
-    slibreal_t raxis, slibreal_t zaxis,
+    slibreal_t *Psi, slibreal_t raxis, slibreal_t zaxis,
 	slibreal_t *rsep, slibreal_t *zsep, unsigned int nsep,
 	slibreal_t *rwall, slibreal_t *zwall, unsigned int nwall
 ) {
@@ -85,7 +87,7 @@ MagneticFieldNumeric2D::MagneticFieldNumeric2D(
 	jacobian[2] = jacobian[1] + 3;
 	jacobian[3] = jacobian[2] + 3;
 
-	Init(name, description, R, Z, nr, nz, Br, Bphi, Bz, raxis, zaxis, rsep, zsep, nsep, rwall, zwall, nwall);
+	Init(name, description, R, Z, nr, nz, Br, Bphi, Bz, Psi, raxis, zaxis, rsep, zsep, nsep, rwall, zwall, nwall);
 }
 
 /**
@@ -95,7 +97,7 @@ MagneticFieldNumeric2D::MagneticFieldNumeric2D(
  */
 MagneticFieldNumeric2D *MagneticFieldNumeric2D::Clone() {
     unsigned int i, nB;
-    slibreal_t *nR, *nZ, *nBr, *nBphi, *nBz,
+    slibreal_t *nR, *nZ, *nBr, *nBphi, *nBz, *nPsi=nullptr,
         *nrsep, *nzsep, *nrwall, *nzwall;
 
     nB     = this->nr*this->nz;
@@ -128,13 +130,20 @@ MagneticFieldNumeric2D *MagneticFieldNumeric2D::Clone() {
     for (i = 0; i < this->nwall; i++)
         nzwall[i] = this->zwall[i];
 
+    if (this->Psi != nullptr) {
+        nPsi   = new slibreal_t[nB];
+
+        for (i = 0; i < nB; i++)
+            nPsi[i] = this->Psi[i];
+    }
+
     return new MagneticFieldNumeric2D(
         this->name, this->description,
-        this->R, this->Z, this->nr, this->nz,
-        this->Br, this->Bphi, this->Bz,
+        nR, nZ, this->nr, this->nz,
+        nBr, nBphi, nBz, nPsi,
         this->magnetic_axis[0], this->magnetic_axis[1],
-        this->rsep, this->zsep, this->nsep,
-        this->rwall, this->zwall, this->nwall
+        nrsep, nzsep, this->nsep,
+        nrwall, nzwall, this->nwall
     );
 }
 
@@ -188,7 +197,7 @@ void MagneticFieldNumeric2D::Init(
 	const string& name, const string& description,
 	slibreal_t *R, slibreal_t *Z, unsigned int nr, unsigned int nz,
 	slibreal_t *Br, slibreal_t *Bphi, slibreal_t *Bz,
-    slibreal_t raxis, slibreal_t zaxis,
+    slibreal_t *Psi, slibreal_t raxis, slibreal_t zaxis,
 	slibreal_t *rsep, slibreal_t *zsep, unsigned int nsep,
 	slibreal_t *rwall, slibreal_t *zwall, unsigned int nwall
 ) {
@@ -205,6 +214,7 @@ void MagneticFieldNumeric2D::Init(
 	this->Br = Br;
 	this->Bphi = Bphi;
 	this->Bz = Bz;
+    this->Psi = Psi;
     this->magnetic_axis[0] = raxis;
     this->magnetic_axis[1] = zaxis;
 	this->rsep = rsep;
@@ -213,6 +223,8 @@ void MagneticFieldNumeric2D::Init(
 	this->rwall = rwall;
 	this->zwall = zwall;
 	this->nwall = nwall;
+
+    this->hasFluxCoordinates = (Psi != nullptr);
 
     if (rwall != NULL && zwall != NULL)
         SetDomain(this->rwall, this->zwall, this->nwall);
@@ -242,6 +254,11 @@ void MagneticFieldNumeric2D::InitInterpolation() {
 	gsl_spline2d_init(sBr, R, Z, Br, nr, nz);
 	gsl_spline2d_init(sBphi, R, Z, Bphi, nr, nz);
 	gsl_spline2d_init(sBz, R, Z, Bz, nr, nz);
+
+    if (HasMagneticFlux()) {
+        sPsi = gsl_spline2d_alloc(gsl_interp2d_bicubic, nr, nz);
+        gsl_spline2d_init(sPsi, R, Z, Psi, nr, nz);
+    }
 
 	rmin = R[0];
 	rmax = R[nr-1];
@@ -393,6 +410,51 @@ struct magnetic_field_data& MagneticFieldNumeric2D::EvalDerivatives(slibreal_t x
 }
 
 /**
+ * Evaluate the magnetic flux in the given point.
+ * 
+ * x, y, z: Cartesian coordinates of the point to
+ *          evaluate the magnetic flux in.
+ */
+slibreal_t MagneticFieldNumeric2D::EvalFlux(
+    slibreal_t x, slibreal_t y, slibreal_t z
+) {
+    if (!HasMagneticFlux())
+        throw SOFTLibException("Trying to evaluate magnetic flux coordinates which have not been defined.");
+
+    slibreal_t r = hypot(x, y);
+    return (slibreal_t)gsl_spline2d_eval(sPsi, r, z, ra, za);
+}
+
+/**
+ * Evaluate the R and Z derivatives of the magnetic
+ * flux in the given point.
+ *
+ * x, y, z: Cartesian coordinates of the point to
+ *          evaluate the R and Z derivatives of the
+ *          magnetic flux in.
+ *
+ * RETURNS a 2-vector containing the derivatives of
+ * the magnetic flux. The contents are as follows:
+ *
+ *    [0] = d(psi) / dR
+ *    [1] = d(psi) / dZ
+ */
+struct flux_diff *MagneticFieldNumeric2D::EvalFluxDerivatives(
+    slibreal_t x, slibreal_t y, slibreal_t z
+) {
+    if (!HasMagneticFlux())
+        throw SOFTLibException("Trying to evaluate magnetic flux coordinates which have not been defined.");
+
+    slibreal_t r = hypot(x, y);
+
+    flux_data.psi     = (slibreal_t)gsl_spline2d_eval(sPsi, r, z, ra, za);
+    flux_data.dpsi_dR = (slibreal_t)gsl_spline2d_eval_deriv_x(sPsi, r, z, ra, za);
+    flux_data.dpsi_dZ = (slibreal_t)gsl_spline2d_eval_deriv_y(sPsi, r, z, ra, za);
+
+    return &flux_data;
+}
+
+/**
  * Loads a 2D numeric magnetic field from the
  * file named 'filename'.
  *
@@ -404,7 +466,7 @@ void MagneticFieldNumeric2D::Load(const string& filename) {
 }
 void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype) {
 	string *name, *desc;
-	double *_maxis, *_Rgrid, *_Zgrid, **_Br, **_Bphi, **_Bz,
+	double *_maxis, *_Rgrid, *_Zgrid, **_Br, **_Bphi, **_Bz, **_Psi=nullptr,
 		**_temp, *_rwall=nullptr, *_zwall=nullptr, *_rsep=nullptr, *_zsep=nullptr,
         *_verBr=nullptr, *_verBphi=nullptr, *_verBz=nullptr;
 	sfilesize_t fs[2], i, j, nverBr=0, nverBphi=0, nverBz=0;
@@ -433,6 +495,13 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
 	_Bz = sf->GetDoubles("Bz", fs);
 	if (fs[0] != (sfilesize_t)this->nz)
 		_Bz = Transpose(_Bz, fs[0], fs[1]);
+
+    /* Load magnetic flux */
+    try {
+        _Psi = sf->GetDoubles("Psi", fs);
+        if (fs[0] != (sfilesize_t)this->nz)
+            _Psi = Transpose(_Psi, fs[0], fs[1]);
+    } catch (SFileException& ex) {}
 	
     /* Load verification vectors (if present) */
     try {
@@ -556,6 +625,16 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
 	for (i = 0; i < this->nr; i++)
 		for (j = 0; j < this->nz; j++)
 		    this->Bz[i + j*this->nr] = (slibreal_t)_Bz[j][i];
+
+    if (_Psi != nullptr) {
+        this->Psi = new slibreal_t[this->nr*this->nz];
+
+        for (i = 0; i < this->nr; i++)
+            for (j = 0; j < this->nz; j++)
+                this->Psi[i + j*this->nr] = (slibreal_t)_Psi[j][i];
+        
+        this->hasFluxCoordinates = true;
+    }
 	
 	delete [] _maxis;
 	delete [] _Rgrid, delete [] _Zgrid;

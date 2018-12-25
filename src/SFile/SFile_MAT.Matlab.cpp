@@ -54,6 +54,20 @@ void SFile_MAT::Open(const string& filename, enum sfile_mode openmode) {
 	this->filename = filename;
 }
 
+/**
+ * Check if this file contains a variable with
+ * the given name.
+ */
+bool SFile_MAT::HasVariable(const string& name) {
+	mxArray *arr = matGetVariable(mfp, name.c_str());
+    bool exists = (arr != NULL);
+
+    if (exists)
+        mxDestroyArray(arr);
+
+    return exists;
+}
+
 /******************************
  ************ INPUT ***********
  ******************************/

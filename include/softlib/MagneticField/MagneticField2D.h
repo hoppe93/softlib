@@ -12,6 +12,10 @@ struct magnetic_field_data {
 	slibreal_t Babs;
     slibreal_t **J;     // Jacobian (3x3 matrix)
 };
+struct flux_diff {
+    slibreal_t psi;
+    slibreal_t dpsi_dR, dpsi_dZ;
+};
 
 class MagneticField2D {
 	private:
@@ -46,6 +50,12 @@ class MagneticField2D {
 		struct magnetic_field_data& EvalDerivatives(Vector<3>&);
 		struct magnetic_field_data& EvalDerivatives(slibreal_t*);
 		virtual struct magnetic_field_data& EvalDerivatives(slibreal_t, slibreal_t, slibreal_t) = 0;
+        slibreal_t EvalFlux(Vector<3>&);
+        slibreal_t EvalFlux(slibreal_t*);
+        virtual slibreal_t EvalFlux(slibreal_t, slibreal_t, slibreal_t) = 0;
+        struct flux_diff *EvalFluxDerivatives(Vector<3>&);
+        struct flux_diff *EvalFluxDerivatives(slibreal_t*);
+        virtual struct flux_diff *EvalFluxDerivatives(slibreal_t, slibreal_t, slibreal_t) = 0;
 
 		std::string& GetDescription() { return this->description; }
         slibreal_t *GetMagneticAxis();
@@ -54,6 +64,7 @@ class MagneticField2D {
 		slibreal_t GetMaxRadius();
 		slibreal_t GetMinRadius();
 		std::string& GetName() { return this->name; }
+        virtual bool HasMagneticFlux() = 0;
 
         slibreal_t *GetRDomain() { return this->rdomain; }
         slibreal_t *GetZDomain() { return this->zdomain; }

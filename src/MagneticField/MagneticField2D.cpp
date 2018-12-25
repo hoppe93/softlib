@@ -100,6 +100,32 @@ struct magnetic_field_data& MagneticField2D::EvalDerivatives(Vector<3>& xyz) {
 }
 
 /**
+ * Short-hands for evaluating magnetic flux.
+ *
+ * xyz: Cartesian coordinate vector representing
+ *      the point in which to evaluate the flux.
+ */
+slibreal_t MagneticField2D::EvalFlux(slibreal_t *xyz) {
+    return EvalFlux(xyz[0], xyz[1], xyz[2]);
+}
+slibreal_t MagneticField2D::EvalFlux(Vector<3>& xyz) {
+    return EvalFlux(xyz[0], xyz[1], xyz[2]);
+}
+
+/**
+ * Short-hands for evaluating magnetix flux derivatives.
+ *
+ * xyz: Cartesian coordinate vector representing
+ *      the point in which to evaluate the flux.
+ */
+struct flux_diff *MagneticField2D::EvalFluxDerivatives(slibreal_t *xyz) {
+    return EvalFluxDerivatives(xyz[0], xyz[1], xyz[2]);
+}
+struct flux_diff *MagneticField2D::EvalFluxDerivatives(Vector<3> &xyz) {
+    return EvalFluxDerivatives(xyz[0], xyz[1], xyz[2]);
+}
+
+/**
  * Returns the edges of a square which exactly bounds the entire
  * domain. This can be used as a first, cheaper domain check,
  * instead of using the relatively expensive 'CrossesDomain()'

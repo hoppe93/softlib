@@ -14,6 +14,7 @@
 class MagneticFieldNumeric2D : public MagneticField2D {
 	private:
 		slibreal_t *Br, *Bphi, *Bz;
+        slibreal_t *Psi;
 		slibreal_t *R, *Z;
 		slibreal_t *rsep, *zsep;
 		slibreal_t *rwall, *zwall;
@@ -22,16 +23,20 @@ class MagneticFieldNumeric2D : public MagneticField2D {
         /* Interpolated value storage */
         slibreal_t *interpval;
         slibreal_t **jacobian;
+        struct flux_diff flux_data;
 
 		slibreal_t rmin, rmax, zmin, zmax;
 
 		slibreal_t **__EvalJacobian(slibreal_t, slibreal_t, slibreal_t);
+
+        bool hasFluxCoordinates = false;
 
 		/* Interpolation properties */
 #	ifdef INTERP_SPLINTER
 #	else	/* INTERP_GSL */
 		gsl_interp_accel *ra, *za;
 		gsl_spline2d *sBr, *sBphi, *sBz;
+        gsl_spline2d *sPsi;
 #	endif
 	public:
 		MagneticFieldNumeric2D(const std::string&);
@@ -39,7 +44,7 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 		MagneticFieldNumeric2D(
 			const std::string& name, const std::string& description,
 			slibreal_t *R, slibreal_t *Z, unsigned int nr, unsigned int nz,
-			slibreal_t *Br, slibreal_t *Bphi, slibreal_t *Bz,
+			slibreal_t *Br, slibreal_t *Bphi, slibreal_t *Bz, slibreal_t *Psi,
             slibreal_t raxis, slibreal_t zaxis,
 			slibreal_t *rsep, slibreal_t *zsep, unsigned int nsep,
 			slibreal_t *rwall, slibreal_t *zwall, unsigned int nwall
@@ -52,6 +57,8 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 		slibreal_t *Eval(slibreal_t, slibreal_t, slibreal_t);
 		struct magnetic_field_data& EvalDerivatives(slibreal_t*);
 		struct magnetic_field_data& EvalDerivatives(slibreal_t, slibreal_t, slibreal_t);
+        virtual slibreal_t EvalFlux(slibreal_t, slibreal_t, slibreal_t) override;
+        virtual struct flux_diff *EvalFluxDerivatives(slibreal_t, slibreal_t, slibreal_t) override;
 		slibreal_t FindMaxRadius() override;
 		slibreal_t FindMinRadius() override;
 		std::string& GetDescription();
@@ -60,7 +67,7 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 		void Init(
 			const std::string& name, const std::string& description,
 			slibreal_t *R, slibreal_t *Z, unsigned int nr, unsigned int nz,
-			slibreal_t *Br, slibreal_t *Bphi, slibreal_t *Bz,
+			slibreal_t *Br, slibreal_t *Bphi, slibreal_t *Bz, slibreal_t *Psi,
             slibreal_t raxis, slibreal_t zaxis,
 			slibreal_t *rsep, slibreal_t *zsep, unsigned int nsep,
 			slibreal_t *rwall, slibreal_t *zwall, unsigned int nwall
@@ -70,6 +77,8 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 		void Load(const std::string&, enum sfile_type);
 		/* Transpose a matrix from SFile */
 		double **Transpose(double**, sfilesize_t, sfilesize_t);
+
+        virtual bool HasMagneticFlux() override { return hasFluxCoordinates; }
 };
 
 #endif/*_MAGNETIC_FIELD_NUMERIC_2D_H*/

@@ -38,7 +38,7 @@ MagneticField2D *Test_Domain::GenerateMF() {
 		Br[i] = Bphi[i] = Bz[i] = 0.0;
 
 	return new MagneticFieldNumeric2D(
-		"domain", "domain", R, Z, np, np, Br, Bphi, Bz,
+		"domain", "domain", R, Z, np, np, Br, Bphi, Bz, nullptr,
         Test_Domain_magnetic_axis[0], Test_Domain_magnetic_axis[1],
 		NULL, NULL, 0, test_domain[0], test_domain[1], NWALL
 	);

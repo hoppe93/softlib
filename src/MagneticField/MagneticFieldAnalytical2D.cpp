@@ -184,6 +184,53 @@ struct magnetic_field_data& MagneticFieldAnalytical2D::EvalDerivatives(slibreal_
 }
 
 /**
+ * Evaluate magnetic flux in the given point.
+ *
+ * x, y, z: Cartesian coordinates of the point to evaluate
+ *          the magnetic flux in.
+ *
+ * RETURNS the value of the magnetic flux in the
+ * given point.
+ */
+slibreal_t MagneticFieldAnalytical2D::EvalFlux(
+    slibreal_t x, slibreal_t y, slibreal_t z
+) {
+    slibreal_t R  = sqrt(x*x + y*y);
+    slibreal_t r2 = z*z + (Rm - R)*(Rm - R);
+
+    slibreal_t psi = 2.0*M_PI*B0*Rm*(1.0 - sqrt(1.0 - r2/(Rm*Rm)));
+    return psi;
+}
+
+/**
+ * Returns the derivatives of the magnetic flux with respect
+ * to R and Z respectively, in the given point.
+ *
+ * x, y, z: Cartesian coordinates of the point to evaluate
+ *          the magnetic flux derivatives in.
+ *
+ * RETURNS the R and Z derivatives of the magnetic flux
+ * in the given point as a 2-vector. The vector components are
+ *
+ *    [0] = d(psi) / dR
+ *    [1] = d(psi) / dZ
+ */
+struct flux_diff *MagneticFieldAnalytical2D::EvalFluxDerivatives(
+    slibreal_t x, slibreal_t y, slibreal_t z
+) {
+    slibreal_t R  = sqrt(x*x + y*y);
+    slibreal_t r2 = z*z + (Rm - R)*(Rm - R);
+    slibreal_t d  = sqrt(Rm*Rm - r2);
+    slibreal_t p  = 2.0*M_PI*B0;
+
+    flux_retval.psi     = p*Rm*(1.0 - sqrt(1.0 - r2/(Rm*Rm)));
+    flux_retval.dpsi_dR = p * (R - Rm) / d;
+    flux_retval.dpsi_dZ = p * z / d;
+
+    return &flux_retval;
+}
+
+/**
  * Creates a numeric magnetic field from this analytical
  * magnetic field.
  *
@@ -191,7 +238,7 @@ struct magnetic_field_data& MagneticFieldAnalytical2D::EvalDerivatives(slibreal_
  * nz: Number of vertical points in B-fields.
  */
 MagneticFieldNumeric2D *MagneticFieldAnalytical2D::ToNumeric2D(const unsigned int nr, const unsigned int nz) {
-    slibreal_t *R, *Z, *Br, *Bphi, *Bz,
+    slibreal_t *R, *Z, *Br, *Bphi, *Bz, *Psi,
         *rwall, *zwall, *temp,
         Rmin, Rmax, Zmin, Zmax;
     unsigned int i, j, nwall;
@@ -206,6 +253,8 @@ MagneticFieldNumeric2D *MagneticFieldAnalytical2D::ToNumeric2D(const unsigned in
     Br   = new slibreal_t[nr*nz];
     Bphi = new slibreal_t[nr*nz];
     Bz   = new slibreal_t[nr*nz];
+
+    Psi  = new slibreal_t[nr*nz];
 
     for (i = 0; i < nr; i++)
         R[i] = Rmin + (Rmax-Rmin) * ((slibreal_t)i) / ((slibreal_t)(nr-1.0));
@@ -235,7 +284,7 @@ MagneticFieldNumeric2D *MagneticFieldAnalytical2D::ToNumeric2D(const unsigned in
 
     return new MagneticFieldNumeric2D(
         GetName(), GetDescription(),
-        R, Z, nr, nz, Br, Bphi, Bz,
+        R, Z, nr, nz, Br, Bphi, Bz, Psi,
         GetMagneticAxisR(), GetMagneticAxisZ(),
         nullptr, nullptr, 0,
         rwall, zwall, nwall
