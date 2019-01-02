@@ -7,7 +7,8 @@
  * The formula implemented is:
  *
  *   f(p, \xi) = A(p)/(2\pi*m_e*c\gamma_0*p^2)
- *        exp(-\gamma/\gamma_0 - A(p)*(1+\xi)),
+ *        exp(-\gamma/\gamma_0 - A(p)*(1+\xi)) *
+ *        1 / (1 - exp(-2*A(p))),
  * 
  * where m_e is the electron mass, c the speed of light,
  *
@@ -51,7 +52,7 @@ slibreal_t AnalyticalAvalanche::Eval(const slibreal_t p, const slibreal_t xi) {
     A = Ac * gmm;
 
     f  = ELECTRON_MASS*LIGHTSPEED * A / (2.0 * PI * gmm0 * p2);
-    f *= exp(-gmm/gmm0 - A * (1.0 + xi));
+    f *= exp(-gmm/gmm0 - A * (1.0 + xi)) / (1.0 - exp(-2.0*A));
 
     return f;
 }
