@@ -1,7 +1,7 @@
 /**
  * Implements a radial profile of the form
  *
- *   f(a) = (1 - a)^b
+ *   f(a) = 1 - a^b
  * 
  * where a is the normalized radius (range is [0,1])
  * and b is the exponent parameter.
@@ -44,7 +44,7 @@ slibreal_t PowerRadialProfile::Eval(const slibreal_t r, const slibreal_t drift_s
     if (rho >= this->rmax || rho < this->rmin)
         return 0.0;
     else
-        return pow(1.0 - (rho-this->rmin)*this->delr, this->b);
+        return 1.0 - pow((rho-this->rmin)*this->delr, this->b);
 }
 
 /**
