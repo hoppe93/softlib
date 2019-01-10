@@ -77,6 +77,10 @@ ConfigToken *Configuration::gettkn(string& s, ConfigToken *prev) {
 	// First we check for simple tokens
 	if (s == "=") {
 		return new ConfigToken(CTKN_EQUALS, s, prev, this->linecounter, this->charpos, this->file);
+    } else if (s == "(") {
+        return new ConfigToken(CTKN_LPAR, s, prev, this->linecounter, this->charpos, this->file);
+    } else if (s == ")") {
+        return new ConfigToken(CTKN_RPAR, s, prev, this->linecounter, this->charpos, this->file);
 	} else if (s == "{") {
 		return new ConfigToken(CTKN_BLOCK_START, s, prev, this->linecounter, this->charpos, this->file);
 	} else if (s == "}") {
@@ -209,6 +213,8 @@ vector<ConfigToken*> Configuration::Lex(const string& str) {
                 buffer.clear();
             } break;
 			case '=':
+            case '(':
+            case ')':
 			case '{':
 			case '}':
 			case ';': {

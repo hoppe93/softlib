@@ -14,6 +14,7 @@ ConfigBlock::ConfigBlock() { }
 ConfigBlock::ConfigBlock(const ConfigBlock &cb) {
     this->type = cb.GetType();
     this->name = cb.GetName();
+    this->secondary_type = cb.GetSecondaryType();
     this->parent = cb.GetParent();
 
     // Copy sub-blocks
@@ -26,9 +27,10 @@ ConfigBlock::ConfigBlock(const ConfigBlock &cb) {
     for (unsigned int i = 0; i < set.size(); i++)
         settings.push_back(Setting(set.at(i)));
 }
-ConfigBlock::ConfigBlock(confblock_t type, const string& name, ConfigBlock *parent) {
+ConfigBlock::ConfigBlock(confblock_t type, const string& name, const string& secondary_type, ConfigBlock *parent) {
 	this->type = type;
 	this->name = name;
+    this->secondary_type = secondary_type;
 	this->parent = parent;
 }
 ConfigBlock::~ConfigBlock() { }
@@ -72,8 +74,8 @@ Setting& ConfigBlock::AddSetting(const Setting& set) {
  * Add a sub-block to this ConfigBlock and
  * return the newly added object.
  */
-ConfigBlock *ConfigBlock::AddSubBlock(confblock_t type, const string& name) {
-    ConfigBlock cb(type, name, this);
+ConfigBlock *ConfigBlock::AddSubBlock(confblock_t type, const string& name, const string& secondary_block) {
+    ConfigBlock cb(type, name, secondary_block, this);
     return AddSubBlock(cb);
 }
 
@@ -140,6 +142,16 @@ ConfigBlock *ConfigBlock::GetConfigBlock(confblock_t type, const string& name) {
  * Get the name of this ConfigBlock.
  */
 const string& ConfigBlock::GetName() const { return name; }
+
+/**
+ * Get the secondary type of the ConfigBlock.
+ */
+const string& ConfigBlock::GetSecondaryType() const {
+    if (secondary_type.empty())
+        return name;
+    else
+        return secondary_type;
+}
 
 /**
  * Return the parent of this ConfigBlock.
