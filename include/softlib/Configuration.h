@@ -20,6 +20,8 @@ typedef enum {
 	CTKN_EQUALS,		/* Equals sign (=) */
 	CTKN_BLOCKTYPE,
 	CTKN_BLOCKNAME,
+    CTKN_LPAR,          // (
+    CTKN_RPAR,          // )
 	CTKN_BLOCK_START,	// {
 	CTKN_BLOCK_END,		// }
 	CTKN_END_STATEMENT,	// ; (or \n)
@@ -108,6 +110,7 @@ public:
 class ConfigBlock {
 	confblock_t type;
 	std::string name;
+    std::string secondary_type;
 	ConfigBlock *parent;
 	std::vector<ConfigBlock> subblocks;
 	std::vector<Setting> settings;
@@ -115,13 +118,13 @@ class ConfigBlock {
 public:
 	ConfigBlock();
     ConfigBlock(const ConfigBlock&);
-	ConfigBlock(confblock_t, const std::string&, ConfigBlock *parent=NULL);
+	ConfigBlock(confblock_t, const std::string&, const std::string& stype="", ConfigBlock *parent=nullptr);
 	~ConfigBlock();
 
 	Setting& AddSetting(const std::string&, const std::string&);
     Setting& AddSetting(const std::string&, const std::vector<std::string>&);
 	Setting& AddSetting(const Setting&);
-	ConfigBlock *AddSubBlock(confblock_t, const std::string&);
+	ConfigBlock *AddSubBlock(confblock_t, const std::string&, const std::string& stype="");
 	ConfigBlock *AddSubBlock(ConfigBlock&);
 	std::vector<Setting> GetAllSettings() const;
 	std::vector<ConfigBlock> GetAllSubBlocks() const;
@@ -131,6 +134,7 @@ public:
 	Setting *GetSetting(const char*);
 	const std::string& GetName() const;
 	confblock_t GetType() const;
+    const std::string& GetSecondaryType() const;
     std::vector<Setting*> GetUntouchedSettings();
 	bool HasSetting(const std::string&);		// Check if setting with specified name exists
 	bool HasSubBlock(confblock_t, const std::string&);

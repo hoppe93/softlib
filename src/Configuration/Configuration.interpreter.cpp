@@ -114,6 +114,8 @@ const char *Configuration::ttos(conftoken_t type) {
 		case CTKN_NAME: return "name";
 		case CTKN_VALUE: return "value";
 		case CTKN_EQUALS: return "=";
+        case CTKN_LPAR: return "(";
+        case CTKN_RPAR: return ")";
 		case CTKN_BLOCKTYPE: return "block-type";
 		case CTKN_BLOCKNAME: return "block-name";
 		case CTKN_BLOCK_START: return "{";
@@ -132,7 +134,7 @@ ConfigBlock Configuration::Interpret(vector<ConfigToken*>& tkns) {
 	ConfigBlock *blck;
 	ConfigToken *tkn;
 	confblock_t blockt;
-	string name, value;
+	string name, value, sndtype;
 	this->tknstream = tkns.begin();
 
 	blck = &rootblock;
@@ -168,10 +170,18 @@ ConfigBlock Configuration::Interpret(vector<ConfigToken*>& tkns) {
 					tkn = token();
 					name = tkn->GetValue();
 
+                    if (tokent_n() == CTKN_LPAR) {
+                        advance();
+                        expect(CTKN_NAME);
+                        tkn = token();
+                        sndtype = tkn->GetValue();
+                        expect(CTKN_RPAR);
+                    }
+
 					expect(CTKN_BLOCK_START);
 					
 					// Add the new sub-block and make it the active block
-					blck = blck->AddSubBlock(blockt, name);
+					blck = blck->AddSubBlock(blockt, name, sndtype);
 				} break;
 				case CTKN_BLOCK_END: {
 					if (blck->HasParent())

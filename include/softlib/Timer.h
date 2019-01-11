@@ -30,6 +30,8 @@ class Timer {
 
         std::string ToString() const;
         static std::string ToString(struct time&);
+
+        std::chrono::time_point<std::chrono::high_resolution_clock>& GetClock() { return tic; }
 };
 
 #endif/*_TIMER_H*/

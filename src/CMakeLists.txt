@@ -39,8 +39,9 @@ set(core
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Configuration.lexer.cpp"
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Setting.cpp"
 	"${PROJECT_SOURCE_DIR}/src/General/SOFTLibException.cpp"
-	"${PROJECT_SOURCE_DIR}/src/General/Vector.cpp"
+	"${PROJECT_SOURCE_DIR}/src/General/ProgressTracker.cpp"
 	"${PROJECT_SOURCE_DIR}/src/General/Timer.cpp"
+	"${PROJECT_SOURCE_DIR}/src/General/Vector.cpp"
 	"${PROJECT_SOURCE_DIR}/src/SFile/SFile.cpp"
 )
 set(core_tests

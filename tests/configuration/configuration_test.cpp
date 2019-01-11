@@ -13,7 +13,7 @@ using namespace std;
 
 Test_Configuration::Test_Configuration(const string& name) : UnitTest(name) {}
 
-const unsigned int Test_Configuration_NCONFIGS=3;
+const unsigned int Test_Configuration_NCONFIGS=4;
 const string Test_Configuration_configs[Test_Configuration_NCONFIGS] = {
     // Config 1 (very basic)
     "option1 = val1;\n"
@@ -41,6 +41,12 @@ const string Test_Configuration_configs[Test_Configuration_NCONFIGS] = {
     "    option1 = val1;\n"
     "    option2 = val2;\n"
     "    <../tests/configuration/example2>\n"
+    "}",
+    // Config 4 (secondary types)
+    "option1 = block1;\n\n"
+
+    "@Block block1 (btype) {\n"
+    "    option2 = val2;\n"
     "}"
 };
 
