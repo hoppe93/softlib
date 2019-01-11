@@ -99,9 +99,9 @@ set(matlab "${PROJECT_SOURCE_DIR}/src/SFile/SFile_MAT.Matlab.cpp")
 set(matlab_test "${PROJECT_SOURCE_DIR}/tests/sfile/matlab_test.cpp")
 
 if (DEBUG)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-implicit-fallthrough -Wno-misleading-indentation -fopenmp -O0 -g -pg -D_FILE_OFFSET_BITS=64")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-misleading-indentation -fopenmp -O0 -g -pg -D_FILE_OFFSET_BITS=64")
 else (DEBUG)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-implicit-fallthrough -Wno-misleading-indentation -fopenmp -O3 -march=native -D_FILE_OFFSET_BITS=64")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-misleading-indentation -fopenmp -O3 -march=native -D_FILE_OFFSET_BITS=64")
 endif (DEBUG)
 
 if (OFFICIAL_MATLAB)

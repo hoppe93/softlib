@@ -57,6 +57,7 @@ char Configuration::nextc() {
 				this->linecounter++;
 				this->charpos = 1;
                 // Intended fall-through
+                [[fallthrough]];
 			case ' ':
 			case '\t':
 				if (this->prevws) break;
