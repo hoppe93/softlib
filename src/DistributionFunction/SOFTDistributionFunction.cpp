@@ -115,7 +115,7 @@ NumericMomentumSpaceDistributionFunction
 struct softdf_data *SOFTDistributionFunction::__Load(const string &fname) {
     SFile *sf;
     double **tf, **tr, **tp, **txi;
-    string *punits;
+    string punits;
     sfilesize_t fsize[2];
     slibreal_t normf;
     unsigned int i, j, nnr, nnp, nnxi, dn;
@@ -159,14 +159,14 @@ struct softdf_data *SOFTDistributionFunction::__Load(const string &fname) {
     sf->Close();
 
     // Normalize if necessary
-    if (*punits == "ev") {
+    if (punits == "ev") {
         normf = ELECTRON_MASS_EV;
-    } else if (*punits == "normalized") {
+    } else if (punits == "normalized") {
         normf = 1.0;
-    } else if (*punits == "si") {
+    } else if (punits == "si") {
         normf = ELECTRON_MASS * LIGHTSPEED;
     } else
-        throw SOFTLibException("Unrecognized momentum units of SOFT distribution function: '%s'.", (*punits).c_str());
+        throw SOFTLibException("Unrecognized momentum units of SOFT distribution function: '%s'.", punits.c_str());
 
     if (normf != 1.0)
         for (i = 0; i < nnp; i++)

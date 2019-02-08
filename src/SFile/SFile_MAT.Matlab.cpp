@@ -78,9 +78,8 @@ bool SFile_MAT::HasVariable(const string& name) {
  * name: Name of attribute variable.
  */
 double SFile_MAT::GetAttributeScalar(const string& dsetname, const string& name) {
-	string *aname = GetAttributeName(dsetname, name);
-	double s = GetScalar(*aname);
-	delete aname;
+	string aname = GetAttributeName(dsetname, name);
+	double s = GetScalar(aname);
 
 	return s;
 }
@@ -90,10 +89,9 @@ double SFile_MAT::GetAttributeScalar(const string& dsetname, const string& name)
  * dsetname: Name of dataset attribute belongs to.
  * name: Name of attribute variable.
  */
-string *SFile_MAT::GetAttributeString(const string& dsetname, const string& name) {
-	string *aname = GetAttributeName(dsetname, name);
-	string *s = GetString(*aname);
-	delete aname;
+string SFile_MAT::GetAttributeString(const string& dsetname, const string& name) {
+	string aname = GetAttributeName(dsetname, name);
+	string s = GetString(aname);
 
 	return s;
 }
@@ -254,10 +252,8 @@ void SFile_MAT::WriteList(const string& name, double *list, sfilesize_t n) {
  * dsetname: Name of dataset.
  * name: Name of variable.
  */
-string *SFile_MAT::GetAttributeName(const string& dsetname, const string& name) {
-	string *nname = new string();
-	*nname = dsetname + "_" + name;
-	
+string SFile_MAT::GetAttributeName(const string& dsetname, const string& name) {
+	string nname = dsetname + "_" + name;
 	return nname;
 }
 
@@ -271,9 +267,8 @@ string *SFile_MAT::GetAttributeName(const string& dsetname, const string& name) 
  * q: Value of scalar to write
  */
 void SFile_MAT::WriteAttribute_scalar(const string& dsetname, const string& name, double q) {
-	string *nname = GetAttributeName(dsetname, name);
-	WriteList(*nname, &q, 1);
-	delete nname;
+	string nname = GetAttributeName(dsetname, name);
+	WriteList(nname, &q, 1);
 }
 /**
  * Since MATLAB files don't have attributes for
@@ -286,8 +281,7 @@ void SFile_MAT::WriteAttribute_scalar(const string& dsetname, const string& name
  * len: Length of attribute string
  */
 void SFile_MAT::WriteAttribute_string(const string& dsetname, const string& name, const string& str) {
-	string *nname = GetAttributeName(dsetname, name);
-	WriteString(*nname, str);
-	delete nname;
+	string nname = GetAttributeName(dsetname, name);
+	WriteString(nname, str);
 }
 

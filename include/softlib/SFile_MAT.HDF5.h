@@ -7,7 +7,7 @@
 
 class SFile_MAT : public SFile_HDF5 {
 	private:
-		std::string *GetAttributeName(const std::string&, const std::string&);
+		std::string GetAttributeName(const std::string&, const std::string&);
 	public:
         /* These are derived from 'SFile_HDF5':
 		void Close();
@@ -20,8 +20,8 @@ class SFile_MAT : public SFile_HDF5 {
         H5::H5File *CreateMAT(const std::string&);
 
 		virtual double GetAttributeScalar(const std::string&, const std::string&) override;
-		virtual std::string *GetAttributeString(const std::string&, const std::string&) override;
-        virtual std::string *GetString(const std::string&) override;
+		virtual std::string GetAttributeString(const std::string&, const std::string&) override;
+        virtual std::string GetString(const std::string&) override;
 
 		virtual void WriteArray(const std::string&, double**, sfilesize_t, sfilesize_t) override;
 		virtual void WriteAttribute_scalar(const std::string&, const std::string&, double) override;

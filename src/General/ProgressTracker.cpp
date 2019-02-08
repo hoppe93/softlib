@@ -155,9 +155,9 @@ long long int ProgressTracker::EstimateRemainingTimeAverage(const long long int 
  * Returns the number of remaining milliseconds.
  */
 long long int ProgressTracker::EstimateRemainingTimeDeterministic(const long long int i) {
-    long long int dt = DiffPassedTime(), d2t=0, d3t=0, eT;
+    long long int dt = DiffPassedTime(), d2t=0, /*d3t=0,*/ eT;
     long long int Ni = this->nprint - i;
-    long long int NNp12, NNp1Np26;
+    long long int NNp12/*, NNp1Np26*/;
 
     eT = Ni * dt;
 

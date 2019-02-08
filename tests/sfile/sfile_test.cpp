@@ -65,7 +65,7 @@ bool sfile_test(SFile *sf, const string& testname) {
 	string sfile_string = "sfile_test_string2";
 
 	double **arrbuf, *listbuf, scalbuf, scalar = 10;
-	string *strbuf;
+	string strbuf;
 	sfilesize_t lenbuf1, lenbuf2[2];
 	bool success = true;
 
@@ -101,7 +101,7 @@ bool sfile_test(SFile *sf, const string& testname) {
 
 	// Read string attribute
 	strbuf = sf->GetAttributeString("array", "att_string");
-	if (*strbuf != att_string)
+	if (strbuf != att_string)
 		throw SOFTLibException("Reading/writing string attributes did not work.");
 
 	// Read image
@@ -124,7 +124,7 @@ bool sfile_test(SFile *sf, const string& testname) {
 
 	// Read string
 	strbuf = sf->GetString("string");
-	if (*strbuf != sfile_string)
+	if (strbuf != sfile_string)
 		throw SOFTLibException("Reading/writing strings did not work.");
 
     sf->Close();

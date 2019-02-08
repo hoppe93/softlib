@@ -198,7 +198,8 @@ slibreal_t MagneticFieldAnalytical2D::EvalFlux(
     slibreal_t R  = sqrt(x*x + y*y);
     slibreal_t r2 = z*z + (Rm - R)*(Rm - R);
 
-    slibreal_t psi = 2.0*M_PI*B0*Rm*(1.0 - sqrt(1.0 - r2/(Rm*Rm)));
+    //slibreal_t psi = 2.0*M_PI*B0*Rm*Rm*(1.0 - sqrt(1.0 - r2/(Rm*Rm)));
+    slibreal_t psi = M_PI*B0*r2;
     return psi;
 }
 

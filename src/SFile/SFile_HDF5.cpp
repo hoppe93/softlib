@@ -14,7 +14,10 @@
 using namespace H5;
 using namespace std;
 
-SFile_HDF5::SFile_HDF5() {}
+SFile_HDF5::SFile_HDF5() {
+    // Disable HDF5 error messages
+    H5::Exception::dontPrint();
+}
 SFile_HDF5::~SFile_HDF5() {
 	if (this->file != NULL)
 		delete this->file;
@@ -69,6 +72,7 @@ bool SFile_HDF5::HasVariable(const string& s) {
         dset.close();
         return true;
     } catch (FileIException &ex) {
+    //} catch (GroupIException &ex) {
         return false;
     }
 }
@@ -103,14 +107,14 @@ double SFile_HDF5::GetAttributeScalar(const string& datasetname, const string& n
  * datasetname: Name of dataset to read attribute from.
  * name: Name of attribute to read.
  */
-string *SFile_HDF5::GetAttributeString(const string& datasetname, const string& name) {
+string SFile_HDF5::GetAttributeString(const string& datasetname, const string& name) {
     try {
-        string *s = new string;
+        string s;
         DataSet dataset = file->openDataSet(datasetname);
         Attribute attr = dataset.openAttribute(name);
         DataType type = attr.getDataType();
 
-        attr.read(type, *s);
+        attr.read(type, s);
         return s;
     } catch (FileIException &ex) {
         throw SFileException("Unable to read attribute string '%s'. HDF5 error: %s", datasetname.c_str(), ex.getCDetailMsg());
@@ -124,16 +128,16 @@ string *SFile_HDF5::GetAttributeString(const string& datasetname, const string& 
  *
  * name: Name of dataset to load string from
  */
-string *SFile_HDF5::GetString(const string& name) {
+string SFile_HDF5::GetString(const string& name) {
     if (!HasVariable(name))
         throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
 
-    string *s = new string;
+    string s;
     DataSet dataset = file->openDataSet(name);
     DataType type = dataset.getDataType();
     DataSpace dspace = dataset.getSpace();
 
-    dataset.read(*s, type, dspace);
+    dataset.read(s, type, dspace);
 
     return s;
 }

@@ -151,9 +151,8 @@ H5File *SFile_MAT::CreateMAT(const string& filename) {
  * dsetname: Name of dataset.
  * name: Name of variable.
  */
-string *SFile_MAT::GetAttributeName(const string& dsetname, const string& name) {
-	string *nname = new string();
-	*nname = dsetname + "_" + name;
+string SFile_MAT::GetAttributeName(const string& dsetname, const string& name) {
+	string nname = dsetname + "_" + name;
 	
 	return nname;
 }
@@ -165,11 +164,8 @@ string *SFile_MAT::GetAttributeName(const string& dsetname, const string& name) 
  * name: Name of attribute variable.
  */
 double SFile_MAT::GetAttributeScalar(const string& dsetname, const string& name) {
-	string *aname = GetAttributeName(dsetname, name);
-	double s = GetScalar(*aname);
-	delete aname;
-
-	return s;
+	string aname = GetAttributeName(dsetname, name);
+	return GetScalar(aname);
 }
 
 /**
@@ -178,12 +174,9 @@ double SFile_MAT::GetAttributeScalar(const string& dsetname, const string& name)
  * dsetname: Name of dataset attribute belongs to.
  * name: Name of attribute variable.
  */
-string *SFile_MAT::GetAttributeString(const string& dsetname, const string& name) {
-	string *aname = GetAttributeName(dsetname, name);
-	string *s = GetString(*aname);
-	delete aname;
-
-	return s;
+string SFile_MAT::GetAttributeString(const string& dsetname, const string& name) {
+	string aname = GetAttributeName(dsetname, name);
+	return GetString(aname);
 }
 
 /**
@@ -191,11 +184,11 @@ string *SFile_MAT::GetAttributeString(const string& dsetname, const string& name
  *
  * name: Name of variable to read.
  */
-string *SFile_MAT::GetString(const string& name) {
+string SFile_MAT::GetString(const string& name) {
     if (!HasVariable(name))
         throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
 
-    string *s = new string;
+    string s;
     DataSet dataset = file->openDataSet(name);
     DataType type = dataset.getDataType();
     DataSpace dspace = dataset.getSpace();
@@ -203,19 +196,21 @@ string *SFile_MAT::GetString(const string& name) {
     sfilesize_t dims[2]={0,0};
     if (dspace.getSimpleExtentDims(dims) != 2)
         throw SFileException("Invalid number of dimensions for string.");
-
+    
     if (type == PredType::STD_U16LE) {
-        unsigned short arr[dims[0]];
+        sfilesize_t len = (dims[1]==1?dims[0]:dims[1]);
+        unsigned short arr[len];
         dataset.read(arr, type, dspace);
 
         // Convert to proper string
-        char *str = new char[dims[0]];
-        for (sfilesize_t i = 0; i < dims[0]; i++)
+        char *str = new char[len+1];
+        for (sfilesize_t i = 0; i < len; i++)
             str[i] = (char)arr[i];
+        str[len] = 0;
 
-        *s = str;
+        s = str;
     } else if (type == PredType::C_S1) {
-        dataset.read(*s, type, dspace);
+        dataset.read(s, type, dspace);
     } else
         throw SFileException("Unrecognized data type for string.");
 
@@ -246,14 +241,12 @@ void SFile_MAT::WriteArray(const string& name, double **arr, sfilesize_t rows, s
 }
 
 void SFile_MAT::WriteAttribute_scalar(const string& dsetname, const string& name, double q) {
-    string *nname = GetAttributeName(dsetname, name);
-    WriteList(*nname, &q, 1);
-    delete nname;
+    string nname = GetAttributeName(dsetname, name);
+    WriteList(nname, &q, 1);
 }
 void SFile_MAT::WriteAttribute_string(const string& dsetname, const string& name, const string &str) {
-    string *nname = GetAttributeName(dsetname, name);
-    WriteString(*nname, str);
-    delete nname;
+    string nname = GetAttributeName(dsetname, name);
+    WriteString(nname, str);
 }
 
 void SFile_MAT::WriteString(const string& name, const string& str) {

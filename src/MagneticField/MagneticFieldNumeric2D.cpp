@@ -465,7 +465,7 @@ void MagneticFieldNumeric2D::Load(const string& filename) {
 	Load(filename, SFile::TypeOfFile(filename));
 }
 void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype) {
-	string *name, *desc;
+	string name, desc;
 	double *_maxis, *_Rgrid, *_Zgrid, **_Br, **_Bphi, **_Bz, **_Psi=nullptr,
 		**_temp, *_rwall=nullptr, *_zwall=nullptr, *_rsep=nullptr, *_zsep=nullptr,
         *_verBr=nullptr, *_verBphi=nullptr, *_verBz=nullptr;
@@ -502,7 +502,7 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
         if (fs[0] != (sfilesize_t)this->nz)
             _Psi = Transpose(_Psi, fs[0], fs[1]);
     } catch (SFileException& ex) {}
-	
+
     /* Load verification vectors (if present) */
     try {
         _verBr = sf->GetList("verBr", fs);
@@ -598,8 +598,8 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
 	sf->Close();
 	
 	/* Convert doubles to 'slibreal_t' */
-	this->name = *name;
-	this->description = *desc;
+	this->name = name;
+	this->description = desc;
 	this->magnetic_axis[0] = (slibreal_t)_maxis[0];
 	this->magnetic_axis[1] = (slibreal_t)_maxis[1];
 	this->R = new slibreal_t[this->nr];
@@ -634,7 +634,8 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
                 this->Psi[i + j*this->nr] = (slibreal_t)_Psi[j][i];
         
         this->hasFluxCoordinates = true;
-    }
+    } else
+        this->Psi = nullptr;
 	
 	delete [] _maxis;
 	delete [] _Rgrid, delete [] _Zgrid;

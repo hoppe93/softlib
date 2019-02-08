@@ -34,10 +34,10 @@ class SFile {
 
 		virtual void Close() = 0;
 		virtual double GetAttributeScalar(const std::string&, const std::string&) = 0;
-		virtual std::string *GetAttributeString(const std::string&, const std::string&) = 0;
+		virtual std::string GetAttributeString(const std::string&, const std::string&) = 0;
 		virtual double **GetDoubles(const std::string&, sfilesize_t*) = 0;
         virtual double *GetDoubles1D(const std::string&, sfilesize_t*) = 0;
-		virtual std::string *GetString(const std::string&) = 0;
+		virtual std::string GetString(const std::string&) = 0;
 		virtual void Open(const std::string&, enum sfile_mode) = 0;
 		virtual void WriteArray(const std::string&, double**, sfilesize_t, sfilesize_t) = 0;
 		virtual void WriteAttribute_scalar(const std::string&, const std::string&, double) = 0;

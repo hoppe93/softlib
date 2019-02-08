@@ -14,10 +14,10 @@ class SFile_HDF5 : public SFile {
 		void Close();
         virtual bool HasVariable(const std::string&) override;
 		virtual double GetAttributeScalar(const std::string&, const std::string&) override;
-		virtual std::string* GetAttributeString(const std::string&, const std::string&) override;
+		virtual std::string GetAttributeString(const std::string&, const std::string&) override;
 		virtual double **GetDoubles(const std::string&, sfilesize_t*) override;
 		virtual double *GetDoubles1D(const std::string&, sfilesize_t*) override;
-		virtual std::string *GetString(const std::string&) override;
+		virtual std::string GetString(const std::string&) override;
 		virtual void Open(const std::string&, enum sfile_mode) override;
 		virtual void WriteArray(const std::string&, double**, sfilesize_t, sfilesize_t) override;
 		virtual void WriteAttribute_scalar(const std::string&, const std::string&, double) override;
