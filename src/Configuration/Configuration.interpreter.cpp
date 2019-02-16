@@ -176,7 +176,8 @@ ConfigBlock Configuration::Interpret(vector<ConfigToken*>& tkns) {
                         tkn = token();
                         sndtype = tkn->GetValue();
                         expect(CTKN_RPAR);
-                    }
+                    } else
+                        sndtype.clear();
 
 					expect(CTKN_BLOCK_START);
 					
