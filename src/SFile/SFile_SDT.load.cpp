@@ -5,7 +5,10 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <softlib/SFileException.h>
 #include <softlib/SFile_SDT.h>
+
+using namespace std;
 
 /**
  * Load the entire SDT file and parse its contents.
@@ -22,24 +25,23 @@ void SFile_SDT::Load() {
 
         if (type == "@matrix") {
             string name;
-            unsigned int rows, cols;
-            char c;
+            sfilesize_t rows, cols;
 
-            if (!(sdtfile >> name))
+            if (!(ss >> name))
                 throw SFileException("Expected name of matrix after '@matrix'.");
 
-            if (!(sdtfile >> rows) || !stdfile.get(c) || c != 'x' || !(sdtfile >> cols))
-                throw SFileException("Expected matrix dimensions (RxC) after matrix name.");
+            if (!(ss >> rows) || !(ss >> cols))
+                throw SFileException("Expected matrix dimensions (R C) after matrix name.");
 
             LoadMatrix(name, rows, cols);
         } else if (type == "@string") {
             string name;
-            unsigned int length;
+            sfilesize_t length;
 
-            if (!(sdtfile >> name))
+            if (!(ss >> name))
                 throw SFileException("Expected name of string after '@string'.");
 
-            if (!(sdtfile >> length))
+            if (!(ss >> length))
                 throw SFileException("Expected string length after string name.");
 
             LoadString(name, length);
@@ -56,25 +58,32 @@ void SFile_SDT::Load() {
  * nrows: Number of rows of matrix.
  * ncols: Number of columns of matrix.
  */
-void SFile_SDT::LoadMatrix(const string &name, const unsigned int nrows, const unsigned int ncols) {
+void SFile_SDT::LoadMatrix(const string &name, const sfilesize_t nrows, const sfilesize_t ncols) {
     slibreal_t **vals = new slibreal_t*[nrows];
     vals[0] = new slibreal_t[nrows*ncols];
 
-    for (unsigned int i = 0; i < nrows; i++) {
+    for (sfilesize_t i = 0; i < nrows; i++) {
         string line;
         getline(sdtfile, line);
         stringstream ss(line);
 
         if (i > 0)
-            vals[i] = vals[i-1];
+            vals[i] = vals[i-1] + ncols;
 
-        for (unsigned int j = 0; j < ncols; j++) {
+        for (sfilesize_t j = 0; j < ncols; j++) {
             if (!(ss >> vals[i][j]))
-                throw SFileException("Invalid format of matrix '%s' at index (%u ,%u).", name.c_str(), i, j);
+                throw SFileException("Invalid format of matrix '%s' at index (%u, %u).", name.c_str(), i, j);
         }
     }
 
-    // TODO add variable
+    // Add variable
+    SFile_SDT::matrix mat;
+    mat.name = name;
+    mat.value = vals;
+    mat.nrows = nrows;
+    mat.ncols = ncols;
+
+    matrices.emplace(name, mat);
 }
 
 /**
@@ -85,10 +94,20 @@ void SFile_SDT::LoadMatrix(const string &name, const unsigned int nrows, const u
  * length: Length of string to load (this parameter is not
  *         used but is present to prevent compiler warnings).
  */
-void SFile_SDT::LoadString(const string &name, const unsigned int) {
-    string str;
-    getline(sdtfile, str);
+void SFile_SDT::LoadString(const string &name, const sfilesize_t) {
+    string line, value;
+    int c;
+    getline(sdtfile, line);
 
-    // TODO add variable
+    stringstream ss(line);
+    while (ss >> c)
+        value += (char)c;
+
+    // Add variable
+    SFile_SDT::str str;
+    str.name = name;
+    str.value = value;
+
+    strings.emplace(name, str);
 }
 

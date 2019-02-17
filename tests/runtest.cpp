@@ -25,6 +25,7 @@
 #	include "sfile/hdf5_test.h"
 #endif
 #include "sfile/matlab_test.h"
+#include "sfile/sdt_test.h"
 
 using namespace std;
 
@@ -47,6 +48,7 @@ void init() {
 	add_test(new Test_SFile_HDF5("sfile_hdf5"));
 #endif
 	add_test(new Test_SFile_MAT("sfile_matlab"));
+    add_test(new Test_SFile_SDT("sfile_sdt"));
 }
 
 int has_test(const char *name) {

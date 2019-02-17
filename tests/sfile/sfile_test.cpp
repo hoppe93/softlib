@@ -129,8 +129,9 @@ bool sfile_test(SFile *sf, const string& testname) {
 
     sf->Close();
 
-    // Remove test file
-    //remove(testname.c_str());
+    // Remove test file (if successfull)
+    if (success)
+        remove(testname.c_str());
 	
 	return success;
 }

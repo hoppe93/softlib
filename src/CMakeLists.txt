@@ -43,11 +43,14 @@ set(core
 	"${PROJECT_SOURCE_DIR}/src/General/Timer.cpp"
 	"${PROJECT_SOURCE_DIR}/src/General/Vector.cpp"
 	"${PROJECT_SOURCE_DIR}/src/SFile/SFile.cpp"
+	"${PROJECT_SOURCE_DIR}/src/SFile/SFile_SDT.cpp"
+	"${PROJECT_SOURCE_DIR}/src/SFile/SFile_SDT.load.cpp"
 )
 set(core_tests
 	"${PROJECT_SOURCE_DIR}/tests/runtest.cpp"
 	"${PROJECT_SOURCE_DIR}/tests/configuration/configuration_test.cpp"
 	"${PROJECT_SOURCE_DIR}/tests/sfile/sfile_test.cpp"
+	"${PROJECT_SOURCE_DIR}/tests/sfile/sdt_test.cpp"
 )
 set(distribution
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/AnalyticalAvalanche.cpp"

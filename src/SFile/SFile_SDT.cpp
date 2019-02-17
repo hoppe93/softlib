@@ -17,7 +17,7 @@
  * example below illustrates how a 3-by-2 matrix named 'abc'
  * should be specified:
  *
- * @matrix abc 3x2
+ * @matrix abc 3 2
  * 1 2
  * 3 4
  * 5 6
@@ -34,6 +34,7 @@
 #include <fstream>
 #include <string>
 #include <softlib/SFile.h>
+#include <softlib/SFileException.h>
 #include <softlib/SFile_SDT.h>
 
 using namespace std;
@@ -60,7 +61,7 @@ void SFile_SDT::Open(const string &filename, enum sfile_mode openmode) {
             sdtfile.open(filename, ios::out | ios::trunc);
             break;
         default:
-            throw SOFTLibException("Unrecognized option for opening the SDT file: %d.", mode);
+            throw SFileException("Unrecognized option for opening the SDT file: %d.", mode);
     }
 }
 
@@ -69,5 +70,177 @@ void SFile_SDT::Open(const string &filename, enum sfile_mode openmode) {
  */
 void SFile_SDT::Close() {
     sdtfile.close();
+}
+
+/**
+ * Checks if a variable of the given name is present
+ * in the SDT file.
+ *
+ * name: Name of variable to search for.
+ */
+bool SFile_SDT::HasVariable(const string& name) {
+    if (matrices.find(name) == matrices.end() &&
+        strings.find(name) == strings.end())
+        return false;
+    else return true;
+}
+
+/**
+ * HDF5 compatibility function which combines the
+ * name of a dataset with the name of a variable to emulate
+ * HDF5 dataset attributes.
+ *
+ * dsetname: Name of dataset.
+ * name: Name of variable.
+ */
+string SFile_SDT::GetAttributeName(const string& dsetname, const string& name) {
+	string nname = dsetname + "_" + name;
+	
+	return nname;
+}
+
+/**
+ * Loads the matrix with the given name from
+ * the SDT file.
+ * 
+ * name: Name of matrix to load.
+ * dims: Contains the matrix dimensions (rows, cols)
+ *       upon return.
+ */
+double **SFile_SDT::GetDoubles(const string& name, sfilesize_t *dims) {
+    mat_list_t::iterator it = matrices.find(name);
+
+    if (it == matrices.end())
+        throw SFileException("No matrix named '%s' in the SDT file.", name.c_str());
+
+    dims[0] = it->second.nrows;
+    dims[1] = it->second.ncols;
+
+    return it->second.value;
+}
+
+/**
+ * Loads the vector with the given name from
+ * the SDT file.
+ *
+ * name: Name of vector to load.
+ * dims: Contains the number of elements in the vector
+ *       upon return.
+ */
+double *SFile_SDT::GetDoubles1D(const string &name, sfilesize_t *dims) {
+    mat_list_t::iterator it = matrices.find(name);
+
+    if (it == matrices.end())
+        throw SFileException("No vector named '%s' in the SDT file.", name.c_str());
+
+    if (it->second.nrows == 1)
+        *dims = it->second.ncols;
+    else if (it->second.ncols != 1)
+        *dims = it->second.nrows;
+    else
+        throw SFileException("The requested variable is not a vector: '%s'.", name.c_str());
+
+    return it->second.value[0];
+}
+
+/**
+ * Loads the scalar with the given name
+ * as an attribute.
+ *
+ * datasetname: Name of dataset owning the attribute.
+ * name:        Name of attribute scalar to load.
+ */
+double SFile_SDT::GetAttributeScalar(const string& datasetname, const string &name) {
+    string att_name = GetAttributeName(datasetname, name);
+
+    mat_list_t::iterator it = matrices.find(att_name);
+
+    if (it == matrices.end())
+        throw SFileException("No attribute scalar named '%s' for dataset '%s' in the SDT file.", name.c_str(), datasetname.c_str());
+
+    if (it->second.nrows != 1 || it->second.ncols != 1)
+        throw SFileException("The requested variable in dataset '%s' is not a scalar: '%s'.", datasetname.c_str(), name.c_str());
+
+    return it->second.value[0][0];
+}
+
+/**
+ * Loads the string with the given name
+ * as an attribute.
+ *
+ * datasetname: Name of dataset owning the attribute.
+ * name:        Name of attribute string to load.
+ */
+string SFile_SDT::GetAttributeString(const string &datasetname, const string &name) {
+    string att_name = GetAttributeName(datasetname, name);
+
+    str_list_t::iterator it = strings.find(att_name);
+
+    if (it == strings.end())
+        throw SFileException("No attribute string named '%s' for dataset '%s' in the SDT file.", name.c_str(), datasetname.c_str());
+
+    return it->second.value;
+}
+
+/**
+ * Loads the string with the given name from
+ * the file.
+ *
+ * name: Name of string to load.
+ */
+string SFile_SDT::GetString(const string &name) {
+    str_list_t::iterator it = strings.find(name);
+
+    if (it == strings.end())
+        throw SFileException("No string named '%s' in the SDT file.", name.c_str());
+
+    return it->second.value;
+}
+
+
+/************************
+ * ROUTINES FOR WRITING *
+ ************************/
+void SFile_SDT::WriteArray(const string& name, double **arr, sfilesize_t nrows, sfilesize_t ncols) {
+    // Definition string
+    sdtfile << "@matrix " << name << " " << nrows << " " << ncols << endl;
+
+    for (sfilesize_t i = 0; i < nrows; i++) {
+        for (sfilesize_t j = 0; j < ncols; j++) {
+            sdtfile << arr[i][j] << " ";
+        }
+
+        sdtfile << endl;
+    }
+
+    sdtfile << endl;
+}
+
+void SFile_SDT::WriteAttribute_scalar(const string& datasetname, const string& name, double val) {
+    string att_name = GetAttributeName(datasetname, name);
+
+    sdtfile << "@matrix " << att_name << " 1 1" << endl << val << endl << endl;
+}
+void SFile_SDT::WriteAttribute_string(const string& datasetname, const string& name, const string& val) {
+    string att_name = GetAttributeName(datasetname, name);
+    WriteString(att_name, val);
+}
+
+void SFile_SDT::WriteImage(const string& name, double **img, sfilesize_t pixels) {
+    WriteArray(name, img, pixels, pixels);
+}
+
+void SFile_SDT::WriteList(const string& name, double *list, sfilesize_t length) {
+    WriteArray(name, &list, 1, length);
+}
+
+void SFile_SDT::WriteString(const string& name, const string& val) {
+    sdtfile << "@string " << name << " " << val.size() << endl;
+
+    // Encode and write string value
+    for (const char &c : val)
+        sdtfile << (int)c << " ";
+
+    sdtfile << endl << endl;
 }
 
