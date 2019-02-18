@@ -9,7 +9,7 @@
 #   include <softlib/SFile_HDF5.h>
 #endif
 #include <softlib/SFile_MAT.h>
-//#include <softlib/SFile_SDT.h>
+#include <softlib/SFile_SDT.h>
 
 using namespace std;
 
@@ -48,11 +48,9 @@ SFile *SFile::Create(const string& filename, enum sfile_mode mode, enum sfile_ty
 			sf = new SFile_MAT();
 			break;
 			throw SFileException("This version of softlib was not compiled with Matlab support.");
-/*
 		case SFILE_TYPE_SDT:
 			sf = new SFile_SDT();
 			break;
-*/
 		default: 
 			//cerr << "softlib ERROR: Trying to open file of unrecognized format: " << type << "." << endl;
 			//exit(-1);
