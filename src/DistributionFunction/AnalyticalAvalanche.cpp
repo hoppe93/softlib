@@ -52,7 +52,7 @@ slibreal_t AnalyticalAvalanche::Eval(const slibreal_t p, const slibreal_t xi) {
     A = Ac * gmm;
 
     f  = ELECTRON_MASS*LIGHTSPEED * A / (2.0 * PI * gmm0 * p2);
-    f *= exp(-gmm/gmm0 - A * (1.0 + xi)) / (1.0 - exp(-2.0*A));
+    f *= exp(-gmm/gmm0 - A * (1.0 - abs(xi))) / (1.0 - exp(-2.0*A));
 
     return f;
 }
