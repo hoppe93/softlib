@@ -3,40 +3,40 @@
 
 #include <softlib/config.h>
 
-template<unsigned int N>
+template<unsigned int N, class T = slibreal_t>
 class Vector {
 	protected:
 		const unsigned int n = N;
-		slibreal_t elems[N];
+		T elems[N];
 	public:
-		Vector<N>();
-		Vector<N>(const slibreal_t*);
-		Vector<N>(const Vector<N>&);
-		~Vector<N>();
+		Vector<N,T>();
+		Vector<N,T>(const T*);
+		Vector<N,T>(const Vector<N,T>&);
+		~Vector<N,T>();
 
-		slibreal_t& operator[](const unsigned int);
-		const slibreal_t& operator[](const unsigned int) const;
+		T& operator[](const unsigned int);
+		const T& operator[](const unsigned int) const;
 
 		/* Arithmetic */
-		Vector<N>& operator=(const Vector<N>&);
-		Vector<N>& operator=(const slibreal_t*);
-		Vector<N>& operator=(const slibreal_t);
-		Vector<N>& operator+=(const Vector<N>&);
-		Vector<N>& operator+=(const slibreal_t);
-		Vector<N>& operator-=(const Vector<N>&);
-		Vector<N>& operator-=(const slibreal_t);
-		Vector<N>& operator*=(const slibreal_t);
-		Vector<N>& operator/=(const slibreal_t);
-        Vector<N>  operator-();
-		slibreal_t Dot(const Vector<N>&) const;
+		Vector<N,T>& operator=(const Vector<N,T>&);
+		Vector<N,T>& operator=(const T*);
+		Vector<N,T>& operator=(const T&);
+		Vector<N,T>& operator+=(const Vector<N,T>&);
+		Vector<N,T>& operator+=(const T&);
+		Vector<N,T>& operator-=(const Vector<N,T>&);
+		Vector<N,T>& operator-=(const T&);
+		Vector<N,T>& operator*=(const T&);
+		Vector<N,T>& operator/=(const T&);
+        Vector<N,T>  operator-();
+		T Dot(const Vector<N,T>&) const;
 
 		/* Useful operations */
-		slibreal_t Norm() const;
+		T Norm() const;
 		void Normalize();
-		void ToArray(slibreal_t arr[N]) const;
+		void ToArray(T arr[N]) const;
 
-        static Vector<N> Cross(const Vector<N>&, const Vector<N>&);
-        static Vector<N> &Cross(const Vector<N>&, const Vector<N>&, Vector<N>&);
+        static Vector<N,T> Cross(const Vector<N,T>&, const Vector<N,T>&);
+        static Vector<N,T> &Cross(const Vector<N,T>&, const Vector<N,T>&, Vector<N,T>&);
 
 		unsigned int size() const;
 };
@@ -49,15 +49,15 @@ Vector<3> &Vector<3>::Cross(const Vector<3>&, const Vector<3>&, Vector<3>&);
 /**********************
  * OPERATOR OVERLOADS *
  **********************/
-template<unsigned int N> Vector<N> operator+(const Vector<N>&, const Vector<N>&);
-template<unsigned int N> Vector<N> operator+(const Vector<N>&, const slibreal_t);
-template<unsigned int N> Vector<N> operator+(const slibreal_t, const Vector<N>&);
-template<unsigned int N> Vector<N> operator-(const Vector<N>&, const Vector<N>&);
-template<unsigned int N> Vector<N> operator-(const Vector<N>&, const slibreal_t);
-template<unsigned int N> Vector<N> operator-(const slibreal_t, const Vector<N>&);
-template<unsigned int N> Vector<N> operator*(const Vector<N>&, const slibreal_t);
-template<unsigned int N> Vector<N> operator*(const slibreal_t, const Vector<N>&);
-template<unsigned int N> Vector<N> operator/(const Vector<N>&, const slibreal_t);
+template<unsigned int N, class T = slibreal_t> Vector<N,T> operator+(const Vector<N,T>&, const Vector<N,T>&);
+template<unsigned int N, class T = slibreal_t> Vector<N,T> operator+(const Vector<N,T>&, const T&);
+template<unsigned int N, class T = slibreal_t> Vector<N,T> operator+(const T&, const Vector<N,T>&);
+template<unsigned int N, class T = slibreal_t> Vector<N,T> operator-(const Vector<N,T>&, const Vector<N,T>&);
+template<unsigned int N, class T = slibreal_t> Vector<N,T> operator-(const Vector<N,T>&, const T&);
+template<unsigned int N, class T = slibreal_t> Vector<N,T> operator-(const T&, const Vector<N,T>&);
+template<unsigned int N, class T = slibreal_t> Vector<N,T> operator*(const Vector<N,T>&, const T&);
+template<unsigned int N, class T = slibreal_t> Vector<N,T> operator*(const T&, const Vector<N,T>&);
+template<unsigned int N, class T = slibreal_t> Vector<N,T> operator/(const Vector<N,T>&, const T&);
 
 // Implementation
 #include <softlib/General/Vector.tcc>

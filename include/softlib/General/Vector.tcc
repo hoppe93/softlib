@@ -3,21 +3,22 @@
  */
 
 #include <cmath>
+#include <complex>
 #include <softlib/SOFTLibException.h>
 #include <softlib/Vector.h>
 
 /**
  * Constructor
  */
-template<unsigned int N> Vector<N>::Vector() {
+template<unsigned int N, class T> Vector<N,T>::Vector() {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] = 0.0;
 }
-template<unsigned int N> Vector<N>::Vector(const slibreal_t *init) {
+template<unsigned int N, class T> Vector<N,T>::Vector(const T *init) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] = init[i];
 }
-template<unsigned int N> Vector<N>::Vector(const Vector<N>& v) {
+template<unsigned int N, class T> Vector<N,T>::Vector(const Vector<N,T>& v) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] = v[i];
 }
@@ -25,7 +26,7 @@ template<unsigned int N> Vector<N>::Vector(const Vector<N>& v) {
 /**
  * Destructor
  */
-template<unsigned int N> Vector<N>::~Vector() { }
+template<unsigned int N, class T> Vector<N,T>::~Vector() { }
 
 /**************
  * ASSIGNMENT *
@@ -35,8 +36,8 @@ template<unsigned int N> Vector<N>::~Vector() { }
  * This method assigns values to
  * the vector component by component.
  */
-template<unsigned int N>
-Vector<N>& Vector<N>::operator=(const Vector<N>& rhs) {
+template<unsigned int N, class T>
+Vector<N,T>& Vector<N,T>::operator=(const Vector<N,T>& rhs) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] = rhs[i];
 	
@@ -52,8 +53,8 @@ Vector<N>& Vector<N>::operator=(const Vector<N>& rhs) {
  * rhs: Array of floating-point numbers
  *   to copy to this Vector.
  */
-template<unsigned int N>
-Vector<N>& Vector<N>::operator=(const slibreal_t *rhs) {
+template<unsigned int N, class T>
+Vector<N,T>& Vector<N,T>::operator=(const T *rhs) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] = rhs[i];
 	
@@ -62,8 +63,8 @@ Vector<N>& Vector<N>::operator=(const slibreal_t *rhs) {
 /**
  * Assignment of scalar to 1D Vector.
  */
-template<unsigned int N>
-Vector<N>& Vector<N>::operator=(const slibreal_t rhs) {
+template<unsigned int N, class T>
+Vector<N,T>& Vector<N,T>::operator=(const T& rhs) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] = rhs;
 
@@ -75,10 +76,10 @@ Vector<N>& Vector<N>::operator=(const slibreal_t rhs) {
  *
  * i: Index of element to return.
  */
-template<unsigned int N>
-slibreal_t& Vector<N>::operator[](const unsigned int i) { return elems[i]; }
-template<unsigned int N>
-const slibreal_t& Vector<N>::operator[](const unsigned int i) const { return elems[i]; }
+template<unsigned int N, class T>
+T& Vector<N,T>::operator[](const unsigned int i) { return elems[i]; }
+template<unsigned int N, class T>
+const T& Vector<N,T>::operator[](const unsigned int i) const { return elems[i]; }
 
 /**
  * Add and assign operator.
@@ -87,15 +88,15 @@ const slibreal_t& Vector<N>::operator[](const unsigned int i) const { return ele
  *   or
  * s: Scalar to add to each element.
  */
-template<unsigned int N>
-Vector<N>& Vector<N>::operator+=(const Vector<N>& v) {
+template<unsigned int N, class T>
+Vector<N,T>& Vector<N,T>::operator+=(const Vector<N,T>& v) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] += v[i];
 
 	return *this;
 }
-template<unsigned int N>
-Vector<N>& Vector<N>::operator+=(const slibreal_t s) {
+template<unsigned int N, class T>
+Vector<N,T>& Vector<N,T>::operator+=(const T& s) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] += s;
 
@@ -109,15 +110,15 @@ Vector<N>& Vector<N>::operator+=(const slibreal_t s) {
  *   or
  * s: Scalar to subtract from each element.
  */
-template<unsigned int N>
-Vector<N>& Vector<N>::operator-=(const Vector<N>& v) {
+template<unsigned int N, class T>
+Vector<N,T>& Vector<N,T>::operator-=(const Vector<N,T>& v) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] -= v[i];
 
 	return *this;
 }
-template<unsigned int N>
-Vector<N>& Vector<N>::operator-=(const slibreal_t s) {
+template<unsigned int N, class T>
+Vector<N,T>& Vector<N,T>::operator-=(const T& s) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] -= s;
 
@@ -129,8 +130,8 @@ Vector<N>& Vector<N>::operator-=(const slibreal_t s) {
  *
  * s: Scalar value to multiply this vector with.
  */
-template<unsigned int N>
-Vector<N>& Vector<N>::operator*=(const slibreal_t s) {
+template<unsigned int N, class T>
+Vector<N,T>& Vector<N,T>::operator*=(const T& s) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] *= s;
 
@@ -142,8 +143,8 @@ Vector<N>& Vector<N>::operator*=(const slibreal_t s) {
  *
  * s: Scalar value to multiply this vector with.
  */
-template<unsigned int N>
-Vector<N>& Vector<N>::operator/=(const slibreal_t s) {
+template<unsigned int N, class T>
+Vector<N,T>& Vector<N,T>::operator/=(const T& s) {
 	(*this) *= (1.0/s);
 	return *this;
 }
@@ -151,9 +152,9 @@ Vector<N>& Vector<N>::operator/=(const slibreal_t s) {
 /**
  * Negate all elements.
  */
-template<unsigned int N>
-Vector<N> Vector<N>::operator-() {
-    Vector<N> v;
+template<unsigned int N, class T>
+Vector<N,T> Vector<N,T>::operator-() {
+    Vector<N,T> v;
     for (unsigned int i = 0; i < N; i++)
         v[i] = -elems[i];
 
@@ -165,9 +166,9 @@ Vector<N> Vector<N>::operator-() {
  *
  * v: Vector to scalar multiply with.
  */
-template<unsigned int N>
-slibreal_t Vector<N>::Dot(const Vector<N>& v) const {
-	slibreal_t s = 0;
+template<unsigned int N, class T>
+T Vector<N,T>::Dot(const Vector<N,T>& v) const {
+	T s = 0;
 	for (unsigned int i = 0; i < N; i++)
 		s += elems[i] * v[i];
 	
@@ -177,11 +178,11 @@ slibreal_t Vector<N>::Dot(const Vector<N>& v) const {
 /**
  * Calculate the 2-norm of this vector.
  */
-template<unsigned int N>
-slibreal_t Vector<N>::Norm() const {
-	slibreal_t s = 0;
+template<unsigned int N, class T>
+T Vector<N,T>::Norm() const {
+	T s = 0;
 	for (unsigned int i = 0; i < N; i++)
-		s += elems[i] * elems[i];
+		s += elems[i] * std::conj(elems[i]);
 	
 	return std::sqrt(s);
 }
@@ -190,12 +191,12 @@ slibreal_t Vector<N>::Norm() const {
  * Normalize this vector so that its
  * norm is unity.
  */
-template<unsigned int N> void Vector<N>::Normalize() { (*this) /= this->Norm(); }
+template<unsigned int N, class T> void Vector<N,T>::Normalize() { (*this) /= this->Norm(); }
 
 /**
  * Return the number of elements in this vector.
  */
-template<unsigned int N> unsigned int Vector<N>::size() const { return n; }
+template<unsigned int N, class T> unsigned int Vector<N,T>::size() const { return n; }
 
 /**
  * Convert this class to a pure C++ array.
@@ -207,7 +208,7 @@ template<unsigned int N> unsigned int Vector<N>::size() const { return n; }
  *   larger arrays are perfectly okay), to which
  *   the contents of this vector should be copied.
  */
-template<unsigned int N> void Vector<N>::ToArray(slibreal_t *arr) const {
+template<unsigned int N, class T> void Vector<N,T>::ToArray(T *arr) const {
 	unsigned int i;
 	for (i = 0; i < N; i++)
 		arr[i] = elems[i];
@@ -220,39 +221,39 @@ template<unsigned int N> void Vector<N>::ToArray(slibreal_t *arr) const {
 /**
  * Add two vectors.
  */
-template<unsigned int N>
-Vector<N> operator+(const Vector<N>& lhs, const Vector<N>& rhs) {
-	Vector<N> v = Vector<N>(lhs);
+template<unsigned int N, class T>
+Vector<N,T> operator+(const Vector<N,T>& lhs, const Vector<N,T>& rhs) {
+	Vector<N,T> v = Vector<N,T>(lhs);
 	v += rhs;
 	return v;
 }
-template<unsigned int N>
-Vector<N> operator+(const Vector<N>& lhs, const slibreal_t rhs) {
-	Vector<N> v = Vector<N>(lhs);
+template<unsigned int N, class T>
+Vector<N,T> operator+(const Vector<N,T>& lhs, const T& rhs) {
+	Vector<N,T> v = Vector<N,T>(lhs);
 	v += rhs;
 	return v;
 }
-template<unsigned int N>
-Vector<N> operator+(const slibreal_t lhs, const Vector<N>& rhs) { return (rhs + lhs); }
+template<unsigned int N, class T>
+Vector<N,T> operator+(const T& lhs, const Vector<N,T>& rhs) { return (rhs + lhs); }
 
 /**
  * Subtract two vectors.
  */
-template<unsigned int N>
-Vector<N> operator-(const Vector<N>& lhs, const Vector<N>& rhs) {
-	Vector<N> v = Vector<N>(lhs);
+template<unsigned int N, class T>
+Vector<N,T> operator-(const Vector<N,T>& lhs, const Vector<N,T>& rhs) {
+	Vector<N,T> v = Vector<N,T>(lhs);
 	v -= rhs;
 	return v;
 }
-template<unsigned int N>
-Vector<N> operator-(const Vector<N>& lhs, const slibreal_t rhs) {
-	Vector<N> v = Vector<N>(lhs);
+template<unsigned int N, class T>
+Vector<N,T> operator-(const Vector<N,T>& lhs, const T& rhs) {
+	Vector<N,T> v = Vector<N,T>(lhs);
 	v -= rhs;
 	return v;
 }
-template<unsigned int N>
-Vector<N> operator-(const slibreal_t lhs, const Vector<N>& rhs) {
-	Vector<N> v;
+template<unsigned int N, class T>
+Vector<N,T> operator-(const T& lhs, const Vector<N,T>& rhs) {
+	Vector<N,T> v;
 
 	for (unsigned int i = 0; i < N; i++)
 		v[i] = lhs - v[i];
@@ -263,21 +264,21 @@ Vector<N> operator-(const slibreal_t lhs, const Vector<N>& rhs) {
 /**
  * Multiply vector by scalar
  */
-template<unsigned int N>
-Vector<N> operator*(const Vector<N>& lhs, const slibreal_t rhs) {
-	Vector<N> v = Vector<N>(lhs);
+template<unsigned int N, class T>
+Vector<N,T> operator*(const Vector<N,T>& lhs, const T& rhs) {
+	Vector<N,T> v = Vector<N,T>(lhs);
 	v *= rhs;
 	return v;
 }
-template<unsigned int N>
-Vector<N> operator*(const slibreal_t lhs, const Vector<N>& rhs) { return (rhs * lhs); }
+template<unsigned int N, class T>
+Vector<N,T> operator*(const T& lhs, const Vector<N,T>& rhs) { return (rhs * lhs); }
 
 /**
  * Divide vector by scalar
  */
-template<unsigned int N>
-Vector<N> operator/(const Vector<N>& lhs, const slibreal_t rhs) {
-	Vector<N> v = Vector<N>(lhs);
+template<unsigned int N, class T>
+Vector<N,T> operator/(const Vector<N,T>& lhs, const T& rhs) {
+	Vector<N,T> v = Vector<N,T>(lhs);
 	v /= rhs;
 	return v;
 }
@@ -286,12 +287,12 @@ Vector<N> operator/(const Vector<N>& lhs, const slibreal_t rhs) {
  * Evaluate cross-product between two vectors.
  * NOTE: Only defined for Vector<3>.
  */
-template<unsigned int N>
-Vector<N> Vector<N>::Cross(const Vector<N>&, const Vector<N>&) {
+template<unsigned int N, class T>
+Vector<N,T> Vector<N,T>::Cross(const Vector<N,T>&, const Vector<N,T>&) {
     throw SOFTLibException("Cross products are only defined for 3-vectors.");
 }
-template<unsigned int N>
-Vector<N> &Vector<N>::Cross(const Vector<N>&, const Vector<N>&, Vector<N>&) {
+template<unsigned int N, class T>
+Vector<N,T> &Vector<N,T>::Cross(const Vector<N,T>&, const Vector<N,T>&, Vector<N,T>&) {
     throw SOFTLibException("Cross products are only defined for 3-vectors.");
 }
 
