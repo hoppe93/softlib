@@ -11,7 +11,7 @@ class Vector {
 	public:
 		Vector<N,T>();
 		Vector<N,T>(const T*);
-		Vector<N,T>(const Vector<N,T>&);
+        template<class S = T> Vector<N,T>(const Vector<N,S>&);
 		~Vector<N,T>();
 
 		T& operator[](const unsigned int);
@@ -41,10 +41,10 @@ class Vector {
 		unsigned int size() const;
 };
 
-template<>
-Vector<3> Vector<3>::Cross(const Vector<3>&, const Vector<3>&);
-template<>
-Vector<3> &Vector<3>::Cross(const Vector<3>&, const Vector<3>&, Vector<3>&);
+/*template<class T = slibreal_t>
+Vector<3,T> Vector<3,T>::Cross(const Vector<3,T>&, const Vector<3,T>&);
+template<class T = slibreal_t>
+Vector<3,T> &Vector<3,T>::Cross(const Vector<3,T>&, const Vector<3,T>&, Vector<3,T>&);*/
 
 /**********************
  * OPERATOR OVERLOADS *

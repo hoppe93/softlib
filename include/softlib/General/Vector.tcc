@@ -18,9 +18,14 @@ template<unsigned int N, class T> Vector<N,T>::Vector(const T *init) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] = init[i];
 }
-template<unsigned int N, class T> Vector<N,T>::Vector(const Vector<N,T>& v) {
+/*template<unsigned int N, class T> Vector<N,T>::Vector(const Vector<N,T>& v) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] = v[i];
+}*/
+// Allow conversions between vectors of different types.
+template<unsigned int N, class T> template<class S> Vector<N,T>::Vector(const Vector<N,S>& v) {
+    for (unsigned int i = 0; i < N; i++)
+        elems[i] = v[i];
 }
 
 /**
@@ -182,7 +187,7 @@ template<unsigned int N, class T>
 T Vector<N,T>::Norm() const {
 	T s = 0;
 	for (unsigned int i = 0; i < N; i++)
-		s += elems[i] * std::conj(elems[i]);
+		s += std::norm(elems[i]);
 	
 	return std::sqrt(s);
 }
@@ -288,11 +293,47 @@ Vector<N,T> operator/(const Vector<N,T>& lhs, const T& rhs) {
  * NOTE: Only defined for Vector<3>.
  */
 template<unsigned int N, class T>
+Vector<N,T> Vector<N,T>::Cross(const Vector<N,T> &a, const Vector<N,T> &b) {
+    if (N != 3)
+        throw SOFTLibException("Cross products are only defined for 3-vectors.");
+    else {
+        Vector<3,T> c;
+        return Vector<3,T>::Cross(a, b, c);
+    }
+}
+template<unsigned int N, class T>
+Vector<N,T> &Vector<N,T>::Cross(const Vector<N,T> &a, const Vector<N,T> &b, Vector<N,T> &c) {
+    if (N != 3)
+        throw SOFTLibException("Cross products are only defined for 3-vectors.");
+    else {
+        c[0] = a[1]*b[2] - a[2]*b[1];
+        c[1] = a[2]*b[0] - a[0]*b[2];
+        c[2] = a[0]*b[1] - a[1]*b[0];
+
+        return c;
+    }
+}
+
+/*template<class T>
+Vector<3,T> &Vector<3,T>::Cross(const Vector<3,T> &a, const Vector<3,T> &b, Vector<3,T>& c) {
+    c[0] = a[1]*b[2] - a[2]*b[1];
+    c[1] = a[2]*b[0] - a[0]*b[2];
+    c[2] = a[0]*b[1] - a[1]*b[0];
+
+    return c;
+}
+template<class T>
+Vector<3,T> Vector<3,T>::Cross(const Vector<3,T> &a, const Vector<3,T> &b) {
+    Vector<3,T> c;
+    return Vector<3,T>::Cross(a, b, c);
+}
+
+template<unsigned int N, class T>
 Vector<N,T> Vector<N,T>::Cross(const Vector<N,T>&, const Vector<N,T>&) {
     throw SOFTLibException("Cross products are only defined for 3-vectors.");
 }
 template<unsigned int N, class T>
 Vector<N,T> &Vector<N,T>::Cross(const Vector<N,T>&, const Vector<N,T>&, Vector<N,T>&) {
     throw SOFTLibException("Cross products are only defined for 3-vectors.");
-}
+}*/
 
