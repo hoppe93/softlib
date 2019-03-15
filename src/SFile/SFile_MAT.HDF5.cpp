@@ -230,13 +230,7 @@ string SFile_MAT::GetString(const string& name) {
  * cols: Number of columns of data
  */
 void SFile_MAT::WriteArray(const string& name, double **arr, sfilesize_t rows, sfilesize_t cols) {
-	/*hsize_t dims[] = {rows, cols};
-	DataSpace dspace(2, dims);
-	DataSet dset = file->createDataSet(name, PredType::IEEE_F64LE, dspace);
-	dset.write(arr[0], PredType::NATIVE_DOUBLE);
-	dset.close();*/
     SFile_HDF5::WriteArray(name, arr, rows, cols);
-    //SFile_HDF5::WriteAttribute_string(name, "MATLAB_class", "double");
     WriteMATLAB_class(name, "double");
 }
 
@@ -247,6 +241,23 @@ void SFile_MAT::WriteAttribute_scalar(const string& dsetname, const string& name
 void SFile_MAT::WriteAttribute_string(const string& dsetname, const string& name, const string &str) {
     string nname = GetAttributeName(dsetname, name);
     WriteString(nname, str);
+}
+
+/**
+ * Writes the given multi-dimensional array to
+ * the file. Note that the data is given as a single
+ * pointer-to-double, meaning that data must be stored
+ * contiguously in memory.
+ *
+ * name:  Name of variable to store.
+ * arr:   Array to write (stored contiguously in memory).
+ * ndims: Number of dimensions of array.
+ * dims:  Array with 'ndims' elements, specifying the
+ *        the number of elements in each dimension.
+ */
+void SFile_MAT::WriteMultiArray(const string& name, double *arr, sfilesize_t ndims, sfilesize_t *dims) {
+	SFile_HDF5::WriteMultiArray(name, arr, ndims, dims);
+	WriteMATLAB_class(name, "double");
 }
 
 void SFile_MAT::WriteString(const string& name, const string& str) {

@@ -3,7 +3,7 @@
  * MATLAB .MAT files.
  */
 
-#include <omp.h>
+#include <cstring>
 #include <string>
 #include <mat.h>
 #include <softlib/SFile.h>
@@ -43,7 +43,6 @@ void SFile_MAT::Open(const string& filename, enum sfile_mode openmode) {
 			mfp = matOpen(filename.c_str(), "w7.3");
 			break;
 		default:
-			//fprintf(stderr, "Unrecognized option for opening MATLAB file: %d.\n", openmode);
 			throw SFileException("Unrecognized option for opening MATLAB file.");
 	}
 
@@ -167,8 +166,50 @@ double *SFile_MAT::GetDoubles1D(const string& name, sfilesize_t *dims) {
 	}
 
 	double *data = mxGetPr(arr);
+	return data;
+}
 
-	//mxDestroyArray(arr);
+/**
+ * Loads a multidimensional array from the given file.
+ * Returns the array as a single vector. This vector
+ * can be turned into a C++ multidimensional array
+ * of the appropriate sizes using 'SFile::GetMultiArray()'.
+ *
+ * name:   Name of variable to load.
+ * nndims: Number of allowed elements in 'dims'.
+ * ndims:  On return, contains the number of elements in 'dims'.
+ * dims:   On return, contains a list of sizes of each
+ *         dimension in the array.
+ *
+ * RETURNS the data of the array. If 'nndims' < 'ndims', then
+ * a 'nullptr' is returned. All other failures lead to an
+ * exception being thrown.
+ */
+double *SFile_MAT::GetMultiArray_linear(const string& name, const sfilesize_t nndims, sfilesize_t& ndims, sfilesize_t *dims) {
+	mxArray *ma = matGetVariable(mfp, name.c_str());
+
+	if (ma == NULL || mxIsEmpty(ma))
+		throw SFileException(filename+": The variable '"+name+"' does not exist in the file.");
+	if (!mxIsDouble(ma))
+		throw SFileException(filename+": The variable '"+name+"' is not a vector or matrix.");
+	
+	ndims = mxGetNumberOfDimensions(ma);
+	if (ndims > nndims)
+		return nullptr;
+	
+	const mwSize *mxDims = mxGetDimensions(ma);
+	sfilesize_t nel = 1;
+	for (sfilesize_t i = 0; i < ndims; i++) {
+		dims[i] = mxDims[i];
+		nel *= dims[i];
+	}
+	
+	double *tdata = mxGetPr(ma);
+	double *data = new double[nel];
+	memcpy(data, tdata, sizeof(slibreal_t)*nel);
+
+	mxDestroyArray(ma);
+
 	return data;
 }
 
@@ -183,7 +224,7 @@ double *SFile_MAT::GetDoubles1D(const string& name, sfilesize_t *dims) {
  * variable cannot be interpreted as a
  * string, NULL is returned.
  */
-string *SFile_MAT::GetString(const string& name) {
+string SFile_MAT::GetString(const string& name) {
 	mxArray *arr = matGetVariable(mfp, name.c_str());
 
 	if (arr == NULL || mxIsEmpty(arr))
@@ -197,9 +238,10 @@ string *SFile_MAT::GetString(const string& name) {
 	
 	mxDestroyArray(arr);
 
-	string *s = new string(str);
+	/*string *s = new string(str);
 	delete [] str;
-	return s;
+	return s;*/
+	return string(str);
 }
 
 /******************************
@@ -224,7 +266,7 @@ void SFile_MAT::WriteArray(const string& name, double **arr, sfilesize_t rows, s
 	mxArray *ma;
 
 	ma = mxCreateDoubleMatrix(cols, rows, mxREAL);
-	if (ma == NULL) throw SFileException("Unable to allocate MATLAB array for '"+name+"'.");
+	if (ma == NULL) throw SFileException("Unable to allocate MATLAB array for variable '%s'.", name.c_str());
 
 	t = mxGetPr(ma);
 	for (i = 0; i < rows; i++) {
@@ -235,13 +277,49 @@ void SFile_MAT::WriteArray(const string& name, double **arr, sfilesize_t rows, s
 
 	status = matPutVariable(mfp, name.c_str(), ma);
 	mxDestroyArray(ma);
-	if (status != 0) throw SFileException("Unable to write variable '"+name+"' to MATLAB file.");
+	if (status != 0) throw SFileException("Unable to write variable '%s' to MATLAB file.", name.c_str());
 }
 void SFile_MAT::WriteImage(const string& name, double **image, sfilesize_t n) {
 	WriteArray(name, image, n, n);
 }
 void SFile_MAT::WriteList(const string& name, double *list, sfilesize_t n) {
 	WriteArray(name, &list, 1, n);
+}
+
+/**
+ * Writes the given multi-dimensional array to
+ * the file. Note that the data is given as a single
+ * pointer-to-double, meaning that data must be stored
+ * contiguously in memory.
+ *
+ * name:  Name of variable to store.
+ * arr:   Array to write (stored contiguously in memory).
+ * ndims: Number of dimensions of array.
+ * dims:  Array with 'ndims' elements, specifying the
+ *        the number of elements in each dimension.
+ */
+void SFile_MAT::WriteMultiArray(const string& name, double *arr, sfilesize_t ndims, sfilesize_t *dims) {
+	mwSize mxDims[ndims];
+
+	for (sfilesize_t i = 0; i < ndims; i++)
+		mxDims[i] = dims[i];
+
+	mxArray *ma = mxCreateNumericArray(ndims, mxDims, mxDOUBLE_CLASS, mxREAL);
+	if (ma == NULL) throw SFileException("Unable to allocate MATLAB array for variable '%s'.", name.c_str());
+
+	// Calculate total number of elements
+	sfilesize_t nel = 1;
+	for (sfilesize_t i = 0; i < ndims; i++)
+		nel *= dims[i];
+
+	// Copy array
+	double *t = (double*)mxGetPr(ma);
+	memcpy(t, arr, sizeof(double)*nel);
+
+	// Write to MAT file
+	int status = matPutVariable(mfp, name.c_str(), ma);
+	mxDestroyArray(ma);
+	if (status != 0) throw SFileException("Unable to write variable '%s' to MATLAB file.", name.c_str());
 }
 
 /**

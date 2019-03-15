@@ -77,6 +77,54 @@ enum sfile_type SFile::GetFileType(const string& type) {
 
 	return SFILE_TYPE_UNKNOWN;
 }
+
+/**
+ * Reads a multidimensional array from the file.
+ *
+ * name:   Name of variable to read.
+ * nndims: Number of elements allowed in the 'dims' array.
+ * ndims:  On return, containts the number of dimensions in array.
+ * dims:   On return, points to a list of sizes of each dimension.
+ *
+ * RETURNS an ndims-pointer on success. If ndims > nndims,
+ * the function returns a 'nullptr'. Note that all other
+ * failures cause an exception.
+ *
+ * The array is stored contiguously in memory, so dereferencing
+ * the pointer 'ndims-1' times gives a (double*) to the
+ * contents of the entire array. Note that if you want to access
+ * the array linearly, you should use 'GetMultiArray_linear()'
+ * instead.
+ */
+void *SFile::GetMultiArray(const string& name, const sfilesize_t nndims, sfilesize_t &ndims, sfilesize_t *dims) {
+	double *ptr = GetMultiArray_linear(name, nndims, ndims, dims);
+	
+	if (ptr == nullptr)
+		return nullptr;
+
+	// Convert to multidimensional pointer
+	sfilesize_t nel = 1;
+	for (sfilesize_t i = 0; i < ndims; i++)
+		nel *= dims[i];
+
+	// Yes, this is horrible abuse of pointers...
+	double **arr;
+	for (sfilesize_t i = ndims-2; true; i--) {
+		sfilesize_t n = dims[i+1];
+		nel /= n;
+
+		arr = new double*[nel];
+		for (sfilesize_t j = 0; j < nel; j++)
+			arr[j] = ptr + j * n;
+		
+		ptr = (double*)arr;
+
+		if (i == 0) break;
+	}
+
+	return (void*)arr;
+}
+
 /**
  * Identifies the filetype of a file based on
  * its filename extension. Assumes filename extension

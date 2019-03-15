@@ -18,7 +18,7 @@ bool Test_SFile_SDT::Run() {
 
 	try {
 		SFile *sf = new SFile_SDT();
-		success = sfile_test(sf, "sfile_sdt_test.sdt");
+		success = sfile_test(sf, "sfile_sdt_test.sdt", false);
 	} catch (SOFTLibException& ex) {
 		this->PrintError("SFile_SDT: "+ex.whats());
 		success = false;

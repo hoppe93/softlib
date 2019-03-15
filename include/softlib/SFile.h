@@ -30,6 +30,8 @@ class SFile {
 		static enum sfile_type GetFileType(const std::string&);
 		static enum sfile_type TypeOfFile(const std::string&);
 
+		virtual void *GetMultiArray(const std::string&, const sfilesize_t, sfilesize_t&, sfilesize_t*);
+
         virtual bool HasVariable(const std::string&) = 0;
 
 		virtual void Close() = 0;
@@ -37,6 +39,7 @@ class SFile {
 		virtual std::string GetAttributeString(const std::string&, const std::string&) = 0;
 		virtual double **GetDoubles(const std::string&, sfilesize_t*) = 0;
         virtual double *GetDoubles1D(const std::string&, sfilesize_t*) = 0;
+		virtual double *GetMultiArray_linear(const std::string&, const sfilesize_t, sfilesize_t&, sfilesize_t*) = 0;
 		virtual std::string GetString(const std::string&) = 0;
 		virtual void Open(const std::string&, enum sfile_mode) = 0;
 		virtual void WriteArray(const std::string&, double**, sfilesize_t, sfilesize_t) = 0;
@@ -44,6 +47,7 @@ class SFile {
 		virtual void WriteAttribute_string(const std::string&, const std::string&, const std::string&) = 0;
 		virtual void WriteImage(const std::string&, double**, sfilesize_t) = 0;
 		virtual void WriteList(const std::string&, double*, sfilesize_t) = 0;
+		virtual void WriteMultiArray(const std::string&, double*, sfilesize_t, sfilesize_t*) = 0;
 		virtual void WriteString(const std::string&, const std::string&) = 0;
 
 		// Functions implemented in the base class

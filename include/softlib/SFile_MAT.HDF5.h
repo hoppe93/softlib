@@ -26,6 +26,7 @@ class SFile_MAT : public SFile_HDF5 {
 		virtual void WriteArray(const std::string&, double**, sfilesize_t, sfilesize_t) override;
 		virtual void WriteAttribute_scalar(const std::string&, const std::string&, double) override;
 		virtual void WriteAttribute_string(const std::string&, const std::string&, const std::string&) override;
+        virtual void WriteMultiArray(const std::string&, double*, sfilesize_t, sfilesize_t*) override;
 		virtual void WriteString(const std::string&, const std::string&) override;
 
         void WriteMATLAB_class(const std::string&, const std::string&, H5::DataSet *dset=nullptr);

@@ -120,6 +120,18 @@ double **SFile_SDT::GetDoubles(const string& name, sfilesize_t *dims) {
 }
 
 /**
+ * !!! NOT SUPPORTED !!!
+ *
+ * Loads the multidimensional array with the given
+ * name from the SDT file.
+ *
+ * !!! NOT SUPPORTED !!!
+ */
+double *SFile_SDT::GetMultiArray_linear(const string& name, const sfilesize_t, sfilesize_t&, sfilesize_t*) {
+	throw SFileException("When loading variable '%s': The SDT format has no support for multidimensional arrays.", name.c_str());
+}
+
+/**
  * Loads the vector with the given name from
  * the SDT file.
  *
@@ -224,6 +236,10 @@ void SFile_SDT::WriteAttribute_scalar(const string& datasetname, const string& n
 void SFile_SDT::WriteAttribute_string(const string& datasetname, const string& name, const string& val) {
     string att_name = GetAttributeName(datasetname, name);
     WriteString(att_name, val);
+}
+
+void SFile_SDT::WriteMultiArray(const string& name, double*, sfilesize_t, sfilesize_t*) {
+	throw SFileException("Trying to write variable '%s': The SDT format does not support higher than 2-dimensional arrays.", name.c_str());
 }
 
 void SFile_SDT::WriteImage(const string& name, double **img, sfilesize_t pixels) {

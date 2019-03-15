@@ -38,6 +38,7 @@ class SFile_SDT : public SFile {
 		virtual double *GetDoubles1D(const std::string&, sfilesize_t*) override;
         virtual double GetAttributeScalar(const std::string&, const std::string&) override;
         virtual std::string GetAttributeString(const std::string&, const std::string&) override;
+		virtual double *GetMultiArray_linear(const std::string&, const sfilesize_t, sfilesize_t&, sfilesize_t*) override;
 		virtual std::string GetString(const std::string&) override;
 		virtual void Open(const std::string&, enum sfile_mode) override;
 		virtual void WriteArray(const std::string&, double**, sfilesize_t, sfilesize_t) override;
@@ -45,6 +46,7 @@ class SFile_SDT : public SFile {
 		virtual void WriteAttribute_string(const std::string&, const std::string&, const std::string&) override;
 		virtual void WriteImage(const std::string&, double**, sfilesize_t) override;
 		virtual void WriteList(const std::string&, double*, sfilesize_t) override;
+        virtual void WriteMultiArray(const std::string&, double*, sfilesize_t, sfilesize_t*) override;
 		virtual void WriteString(const std::string&, const std::string&) override;
 };
 

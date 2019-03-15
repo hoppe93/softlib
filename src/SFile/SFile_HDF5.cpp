@@ -157,21 +157,18 @@ double **SFile_HDF5::GetDoubles(const string& name, sfilesize_t *dims) {
     if (!HasVariable(name))
         throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
 
+	if (dims == nullptr)
+		throw SFileException("Null-pointer given for storing length of vector.");
+
 	double *data, **pointers;
 	sfilesize_t ndims;
 	unsigned int i;
 	DataSet dset = file->openDataSet(name);
 	DataSpace dspace = dset.getSpace();
-	if (dims != NULL)
-		ndims = dspace.getSimpleExtentDims(dims);
-	else
-		ndims = dspace.getSimpleExtentNdims();
+
+	ndims = dspace.getSimpleExtentDims(dims);
 	
-	if (dims == NULL) {
-		data = new double[ndims];
-		pointers = new double*;
-		pointers[0] = data;
-	} else if (ndims == 1) {
+	if (ndims == 1) {
 		data = new double[dims[0]];
 		pointers = new double*;
 		pointers[0] = data;
@@ -190,23 +187,49 @@ double **SFile_HDF5::GetDoubles(const string& name, sfilesize_t *dims) {
 double *SFile_HDF5::GetDoubles1D(const string& name, sfilesize_t *dims) {
     if (!HasVariable(name))
         throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
+	
+	if (dims == nullptr)
+		throw SFileException("Null-pointer given for storing length of vector.");
 
 	double *data;
 	sfilesize_t ndims;
 	DataSet dset = file->openDataSet(name);
 	DataSpace dspace = dset.getSpace();
-	if (dims != NULL)
-		ndims = dspace.getSimpleExtentDims(dims);
-	else
-		ndims = dspace.getSimpleExtentNdims();
+
+	ndims = dspace.getSimpleExtentDims(dims);
 	
-	if (dims == NULL)
-		data = new double[ndims];
-	else if (ndims == 1)
+	if (ndims == 1)
 		data = new double[dims[0]];
 	else
 		data = new double[dims[0]*dims[1]];
 
+	dset.read(data, PredType::IEEE_F64LE, dspace);
+
+	return data;
+}
+
+/**
+ * Same as 'GetMultiArray', but returns the array
+ * as a "linear" array, i.e. as a single-pointer-to-double.
+ */
+double *SFile_HDF5::GetMultiArray_linear(const string& name, const sfilesize_t nndims, sfilesize_t &ndims, sfilesize_t *dims) {
+    if (!HasVariable(name))
+        throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
+
+	DataSet dset = file->openDataSet(name);
+	DataSpace dspace = dset.getSpace();
+
+	ndims = dspace.getSimpleExtentNdims();
+	if (ndims > nndims)
+		return nullptr;
+
+	dspace.getSimpleExtentDims(dims);
+	
+	sfilesize_t nel = 1;
+	for (sfilesize_t i = 0; i < ndims; i++)
+		nel *= dims[i];
+		
+	double *data = new double[nel];
 	dset.read(data, PredType::IEEE_F64LE, dspace);
 
 	return data;
@@ -275,6 +298,29 @@ void SFile_HDF5::WriteImage(const string& name, double **image, sfilesize_t n) {
  */
 void SFile_HDF5::WriteList(const string& name, double *list, sfilesize_t n) {
 	WriteArray(name, &list, 1, n);
+}
+
+/**
+ * Writes the given multi-dimensional array to
+ * the file. Note that the data is given as a single
+ * pointer-to-double, meaning that data must be stored
+ * contiguously in memory.
+ *
+ * name:  Name of variable to store.
+ * arr:   Array to write (stored contiguously in memory).
+ * ndims: Number of dimensions of array.
+ * dims:  Array with 'ndims' elements, specifying the
+ *        the number of elements in each dimension.
+ */
+void SFile_HDF5::WriteMultiArray(const string& name, double *arr, sfilesize_t ndims, sfilesize_t *dims) {
+	hsize_t *h_dims = new hsize_t[ndims];
+	for (sfilesize_t i = 0; i < ndims; i++)
+		h_dims[i] = dims[i];
+
+	DataSpace dspace(ndims, dims);
+	DataSet dset = file->createDataSet(name, PredType::IEEE_F64LE, dspace);
+	dset.write(arr, PredType::NATIVE_DOUBLE);
+	dset.close();
 }
 
 /**
