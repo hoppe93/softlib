@@ -18,7 +18,7 @@
 
 class NumericDistributionFunction : public DistributionFunction {
     private:
-        slibreal_t **f=nullptr,     // Distribution function (of size nr*np*nxi)
+        slibreal_t *f=nullptr,      // Distribution function (of size nr*np*nxi)
                    // Grid points
                    *r=nullptr,      // Radial coordinate
                    *p=nullptr,      // Magnitude of momentum
@@ -55,12 +55,12 @@ class NumericDistributionFunction : public DistributionFunction {
         int __FindNearestR(const slibreal_t);
         void Initialize(
             const unsigned int, const unsigned int, const unsigned int,
-            slibreal_t*, slibreal_t*, slibreal_t*, slibreal_t**,
+            slibreal_t*, slibreal_t*, slibreal_t*, slibreal_t*,
             int interp=INTERPOLATION_CUBIC
         );
         void InitializeLog(
             const unsigned int, const unsigned int, const unsigned int,
-            slibreal_t*, slibreal_t*, slibreal_t*, slibreal_t**,
+            slibreal_t*, slibreal_t*, slibreal_t*, slibreal_t*,
             int interp=INTERPOLATION_CUBIC, bool alloc=false
         );
         bool IsLogarithmic() { return this->logarithmic; }

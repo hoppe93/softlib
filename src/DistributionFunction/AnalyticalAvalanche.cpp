@@ -6,8 +6,8 @@
  *
  * The formula implemented is:
  *
- *   f(p, \xi) = A(p)/(2\pi*m_e*c\gamma_0*p^2)
- *        exp(-\gamma/\gamma_0 - A(p)*(1+\xi)) *
+ *   f(p, \xi) = m_e*c*A(p)/(2\pi*\gamma_0*p^2)
+ *        exp(-\gamma/\gamma_0 - A(p)*(1 - |\xi|)) *
  *        1 / (1 - exp(-2*A(p))),
  * 
  * where m_e is the electron mass, c the speed of light,

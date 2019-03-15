@@ -56,6 +56,7 @@ set(distribution
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/AnalyticalAvalanche.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/CODEDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/LinearRadialProfile.cpp"
+    "${PROJECT_SOURCE_DIR}/src/DistributionFunction/LUKEDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/MomentumSpaceDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/NumericDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/NumericMomentumSpaceDistributionFunction.cpp"
@@ -68,7 +69,9 @@ set(distribution_tests
     "${PROJECT_SOURCE_DIR}/tests/distribution/Test_AnalyticalAvalanche.cpp"
     "${PROJECT_SOURCE_DIR}/tests/distribution/Test_CODEDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/tests/distribution/Test_DistributionFunction.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/distribution/Test_LUKEDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/tests/distribution/Test_NumericMomentumSpaceDistribution.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/distribution/Test_NumericDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/tests/distribution/Test_SOFTDistributionFunction.cpp"
 )
 set(hdf5 "${PROJECT_SOURCE_DIR}/src/SFile/SFile_HDF5.cpp" "${PROJECT_SOURCE_DIR}/src/SFile/SFile_MAT.HDF5.cpp")

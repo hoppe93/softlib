@@ -9,12 +9,13 @@
 
 #include <softlib/constants.h>
 #include <softlib/DistributionFunction/SOFTDistributionFunction.h>
+#include <softlib/MagneticField/MagneticField2D.h>
 #include <softlib/SFile.h>
 #include <softlib/SOFTLibException.h>
 
 using namespace std;
 
-SOFTDistributionFunction::SOFTDistributionFunction(const string &fname, bool logarithmic, int interptype) {
+SOFTDistributionFunction::SOFTDistributionFunction(const string &fname, MagneticField2D*, bool logarithmic, int interptype) {
     Load(fname, logarithmic, interptype);
 }
 
@@ -32,7 +33,7 @@ SOFTDistributionFunction::SOFTDistributionFunction(const string &fname, bool log
  */
 void SOFTDistributionFunction::Load(const string& fname, bool logarithmic, int interptype) {
     struct softdf_data *dat;
-    dat = SOFTDistributionFunction::__Load(fname);
+    dat = SOFTDistributionFunction::__Load(fname, nullptr);
 
     if (logarithmic) {
         this->InitializeLog(
@@ -58,6 +59,10 @@ void SOFTDistributionFunction::Load(const string& fname, bool logarithmic, int i
  *
  * fname:       Name of file containing SOFT distribution
  *              function to load.
+ * mf:          Magnetic field in which the distribution
+ *              function lives. Not used, but here for
+ *              compatibility with other numerical
+ *              distribution functions.
  * logarithmic: If true, stores the logarithm of f instead of
  *              f itself and interpolates in the logarithm.
  *              The value returned by 'Eval()' later is f though.
@@ -72,7 +77,8 @@ void SOFTDistributionFunction::Load(const string& fname, bool logarithmic, int i
  */
 NumericMomentumSpaceDistributionFunction
 *SOFTDistributionFunction::LoadMomentumSpace(
-    const string& fname, bool logarithmic, unsigned int radindex,
+    const string& fname, MagneticField2D*,
+	bool logarithmic, unsigned int radindex,
     int interptype
 ) {
     NumericMomentumSpaceDistributionFunction *msdf
@@ -86,7 +92,7 @@ NumericMomentumSpaceDistributionFunction
 
     // Copy selected part of distribution function
     slibreal_t *tf = new slibreal_t[dat->np*dat->nxi];
-    memcpy(tf, dat->f[radindex], sizeof(slibreal_t)*dat->np*dat->nxi);
+    memcpy(tf, dat->f + radindex*(dat->np*dat->nxi), sizeof(slibreal_t)*dat->np*dat->nxi);
     
     if (logarithmic)
         msdf->InitializeLog(dat->np, dat->nxi, dat->p, dat->xi, tf, interptype);
@@ -94,7 +100,6 @@ NumericMomentumSpaceDistributionFunction
         msdf->Initialize(dat->np, dat->nxi, dat->p, dat->xi, tf, interptype);
 
     delete [] dat->r;
-    delete [] dat->f[0];
     delete [] dat->f;
     // p and xi are still used!
     delete dat;
@@ -112,47 +117,51 @@ NumericMomentumSpaceDistributionFunction
  *
  * RETURNS a data structure representing the SOFT data file.
  */
-struct softdf_data *SOFTDistributionFunction::__Load(const string &fname) {
-    SFile *sf;
-    double **tf, **tr, **tp, **txi;
+struct softdf_data *SOFTDistributionFunction::__Load(const string &fname, MagneticField2D*) {
     string punits;
     sfilesize_t fsize[2];
     slibreal_t normf;
-    unsigned int i, j, nnr, nnp, nnxi, dn;
+    unsigned int i, nnr, nnp, nnxi, dn;
     struct softdf_data *dat;
 
-    sf = SFile::Create(fname, SFILE_MODE_READ);
+    SFile *sf = SFile::Create(fname, SFILE_MODE_READ);
 
     // r grid
-    tr = sf->GetDoubles("r", fsize);
+    double **tr = sf->GetDoubles("r", fsize);
     if (fsize[0] == 1) nnr = fsize[1];
     else if (fsize[1] == 1) nnr = fsize[0];
     else throw SOFTLibException("Invalid size of SOFT distribution function 'r' vector: %llu x %llu.", fsize[0], fsize[1]);
 
     // p grid
-    tp = sf->GetDoubles("p", fsize);
+    double **tp = sf->GetDoubles("p", fsize);
     if (fsize[0] == 1) nnp = fsize[1];
     else if (fsize[1] == 1) nnp = fsize[0];
     else throw SOFTLibException("Invalid size of SOFT distribution function 'p' vector: %llu x %llu.", fsize[0], fsize[1]);
 
     // xi grid
-    txi = sf->GetDoubles("xi", fsize);
+    double **txi = sf->GetDoubles("xi", fsize);
     if (fsize[0] == 1) nnxi = fsize[1];
     else if (fsize[1] == 1) nnxi = fsize[0];
     else throw SOFTLibException("Invalid size of SOFT distribution function 'xi' vector: %llu x %llu.", fsize[0], fsize[1]);
 
     // Distribution function
-    tf = sf->GetDoubles("f", fsize);
-    if (fsize[0] != nnr || fsize[1] != (nnp*nnxi))
+    double **ttf = sf->GetDoubles("f", fsize);
+	double *tf = ttf[0];
+
+    if (!(fsize[0] == nnr && fsize[1] == (nnp*nnxi)) &&
+		!(fsize[0] == 1   && fsize[1] == (nnp*nnxi*nnr)) &&
+		!(fsize[1] == 1   && fsize[0] == (nnp*nnxi*nnr)))
         throw SOFTLibException("Invalid size of SOFT distribution function 'f' vector: %llu x %llu.", fsize[0], fsize[1]);
 
     // f(p,xi0)
-    if (!Verify("fp0", tf, nnp, 1, sf))
+    if (!Verify("fp0", ttf, nnp, 1, sf))
         throw SOFTLibException("Verification of distribution function failed in 'p' dimension.");
-    if (!Verify("fxi0", tf, nnxi, nnp, sf))
+    if (!Verify("fxi0", ttf, nnxi, nnp, sf))
         throw SOFTLibException("Verification of distribution function failed in 'xi' dimension.");
-    if (!Verify("fr0", tf, nnr, nnp*nnxi, sf))
+    if (!Verify("fr0", ttf, nnr, nnp*nnxi, sf))
         throw SOFTLibException("Verification of distribution function failed in 'r' dimension.");
+
+	delete [] ttf;
 
     punits = sf->GetString("punits");
 
@@ -199,15 +208,10 @@ struct softdf_data *SOFTDistributionFunction::__Load(const string &fname) {
         for (i = 0; i < nnxi; i++)
             dat->xi[i] = (slibreal_t)txi[0][i];
 
-        dn = nnp*nnxi;
-        dat->f    = new slibreal_t*[nnr];
-        dat->f[0] = new slibreal_t[nnr*dn];
-        for (i = 0; i < nnr; i++) {
-            if (i > 0) dat->f[i] = dat->f[i-1] + dn;
-
-            for (j = 0; j < dn; j++) {
-                dat->f[i][j] = (slibreal_t)tf[i][j];
-            }
+        dn = nnp*nnxi*nnr;
+        dat->f = new slibreal_t[dn];
+        for (i = 0; i < dn; i++) {
+			dat->f[i] = (slibreal_t)tf[i];
         }
 
         delete [] tr[0];
@@ -216,7 +220,6 @@ struct softdf_data *SOFTDistributionFunction::__Load(const string &fname) {
         delete [] tp;
         delete [] txi[0];
         delete [] txi;
-        delete [] tf[0];
         delete [] tf;
     }
 

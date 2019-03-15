@@ -7,7 +7,8 @@ clc; clear;
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PARAMETER VALUES
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-OUTPUTFILE = 'soft_test_distribution.mat';
+OUTPUTFILE_SOFT = 'soft_test_distribution.mat';
+OUTPUTFILE_LUKE = 'luke_test_distribution.mat';
 EHat = 4;
 Zeff = 2;
 lnLambda = 17;
@@ -31,7 +32,7 @@ g = @(p) sqrt(p.^2 + 1);
 A = @(p) (EHat + 1) / (Zeff + 1) .* g(p);
 g0 = lnLambda * sqrt(Zeff + 5);
 
-fAva = @(p,xi) m*c*A(p) ./ (2*pi*g0.*p.^2) .* exp(-g(p)/g0 - A(p).*(1+xi));
+fAva = @(p,xi) m*c*A(p) ./ (2*pi*g0.*p.^2) .* exp(-g(p)/g0 - A(p).*(1-abs(xi))) ./ (1 - exp(-2.0*A(p)));
 fr = @(r) (1 - (r-rmin)/(rmax-rmin));
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,9 +46,11 @@ punits = 'normalized';
 [P,XI] = meshgrid(p, xi);
 
 f = zeros(np*nxi, nr);
+lf = zeros(np, nxi, nr);
 for i=1:nr
     tf = fAva(P,XI)';
     f(:,i) = fr(r(i)) * reshape(tf, [np*nxi,1]);
+    lf(:,:,i) = fr(r(i)) * tf;
 end
 fp0 = fAva(p', xi(1));
 fxi0 = fAva(p(1), xi');
@@ -63,4 +66,15 @@ if sum(abs(fxi0 - f(1:np:(nxi*np),1))) > np*eps
     error('Hash error: xi');
 end
 
-save(OUTPUTFILE, 'r', 'p', 'xi', 'f', 'fr0', 'fp0', 'fxi0', 'punits');
+save(OUTPUTFILE_SOFT, '-v7.3', 'r', 'p', 'xi', 'f', 'fr0', 'fp0', 'fxi0', 'punits');
+
+%% Generate LUKE distribution function
+betath_ref = rand;
+ne_ref = 1;
+
+f = lf;
+mhu = xi;
+xrhoG = (r-rmin) / (rmax-rmin);
+pn = p*betath_ref;
+
+save(OUTPUTFILE_LUKE, '-v7.3', 'betath_ref', 'f', 'mhu', 'xrhoG', 'pn');

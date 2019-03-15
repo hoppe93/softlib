@@ -15,6 +15,7 @@
 #include "configuration/configuration_test.h"
 #include "distribution/Test_AnalyticalAvalanche.h"
 #include "distribution/Test_CODEDistributionFunction.h"
+#include "distribution/Test_LUKEDistributionFunction.h"
 #include "distribution/Test_NumericMomentumSpaceDistribution.h"
 #include "distribution/Test_SOFTDistributionFunction.h"
 #include "magnetic/domain.h"
@@ -38,6 +39,7 @@ void init() {
 	add_test(new Test_Configuration("configuration"));
     add_test(new Test_AnalyticalAvalanche("distribution_analytical"));
     add_test(new Test_CODEDistributionFunction("distribution_code"));
+    add_test(new Test_LUKEDistributionFunction("distribution_luke"));
     add_test(new Test_NumericMomentumSpaceDistribution("distribution_numericms"));
     add_test(new Test_SOFTDistributionFunction("distribution_soft"));
 	add_test(new Test_Domain("domain"));

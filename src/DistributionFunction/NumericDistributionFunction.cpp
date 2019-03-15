@@ -90,11 +90,10 @@ int NumericDistributionFunction::__FindNearestR(const slibreal_t r) {
  * r:          Radial location (vector of size nr).
  * p:          Momentum of particle (vector of size np).
  * xi:         Pitch of particle (vector of size nxi).
- * f:          Distribution function. 2-D array with first dimension
- *             corresponding to radius, and the second the
- *             momentum-space part of size np*nxi. The order of
- *             the momentum-space part should be "p-first", i.e.
- *               f(p0,xi0)  f(p1,xi0)  f(p2,xi0) ... f(pN,xi0)  f(p0,xi1) f(p1,xi1) ...
+ * f:          Distribution function. Linear array of size
+ *             nr*nxi*np. The order of elements in the array
+ *             should be p-first, xi-second, r-third
+ *               f(p0,xi0,r0)  f(p1,xi0,r0)  f(p2,xi0,r0) ... f(pN,xi0,r0)  f(p0,xi1,r0) f(p1,xi1,r0) ... f(pN,xiN,r0) f(p0,xi0,r1) ... f(pN,xiN,rN)
  *             where N = np-1.
  * interptype: interpolation method to use
  *    (NumericDistributionFunction::INTERPOLATION_???).
@@ -102,7 +101,7 @@ int NumericDistributionFunction::__FindNearestR(const slibreal_t r) {
 void NumericDistributionFunction::Initialize(
     const unsigned int nr, const unsigned int np, const unsigned int nxi,
     slibreal_t *r, slibreal_t *p, slibreal_t *xi,
-    slibreal_t **f, int interptype
+    slibreal_t *f, int interptype
 ) {
     bool ascnd = true;
     unsigned int i;
@@ -118,9 +117,9 @@ void NumericDistributionFunction::Initialize(
 
     for (i = 0; i < nr; i++) {
         if (interptype == INTERPOLATION_LINEAR)
-            this->msdf[i].Initialize(np, nxi, p, xi, f[i], NumericMomentumSpaceDistributionFunction::INTERPOLATION_LINEAR);
+            this->msdf[i].Initialize(np, nxi, p, xi, f+i*(np*nxi), NumericMomentumSpaceDistributionFunction::INTERPOLATION_LINEAR);
         else
-            this->msdf[i].Initialize(np, nxi, p, xi, f[i], NumericMomentumSpaceDistributionFunction::INTERPOLATION_CUBIC);
+            this->msdf[i].Initialize(np, nxi, p, xi, f+i*(np*nxi), NumericMomentumSpaceDistributionFunction::INTERPOLATION_CUBIC);
     }
 
     // Ensure that the radial grid is monotonically increasing or decreasing
@@ -152,14 +151,13 @@ void NumericDistributionFunction::Initialize(
  * r:          Radial location (vector of size nr).
  * p:          Momentum of particle (vector of size np).
  * xi:         Pitch of particle (vector of size nxi).
- * f:          Distribution function. 2-D array with first dimension
- *             corresponding to radius, and the second the
- *             momentum-space part of size np*nxi. The order of
- *             the momentum-space part should be "p-first", i.e.
- *               f(p0,xi0)  f(p1,xi0)  f(p2,xi0) ... f(pN,xi0)  f(p0,xi1) f(p1,xi1) ...
+ * f:          Distribution function. Linear array of size
+ *             nr*nxi*np. The order of elements in the array
+ *             should be
+ *               f(p0,xi0,r0)  f(p1,xi0,r0)  f(p2,xi0,r0) ... f(pN,xi0,r0)  f(p0,xi1,r0) f(p1,xi1,r0) ... f(pN,xiN,r0) f(p0,xi0,r1) ... f(pN,xiN,rN)
  *             where N = np-1.
  * interptype: interpolation method to use
- *    (NumericDistributionFunction::INTERPOLATION_???).
+ *               (NumericDistributionFunction::INTERPOLATION_???).
  * alloc:      If true, allocates a new array to store
  *             the logarithm of f in. Otherwise, the matrix
  *             f given here is overwritten (default).
@@ -167,31 +165,27 @@ void NumericDistributionFunction::Initialize(
 void NumericDistributionFunction::InitializeLog(
     const unsigned int nr, const unsigned int np, const unsigned int nxi,
     slibreal_t *r, slibreal_t *p, slibreal_t *xi,
-    slibreal_t **f, int interptype, bool alloc
+    slibreal_t *f, int interptype, bool alloc
 ) {
-    unsigned int i, j;
-    slibreal_t **tf;
+	slibreal_t *tf;
 
     if (alloc) {
-        tf = new slibreal_t*[nr];
-        tf[0] = new slibreal_t[nr*np*nxi];
-        for (i = 1; i < nr; i++)
+        tf = new slibreal_t[nr*np*nxi];
+        for (unsigned int i = 1; i < nr; i++)
             tf[i] = tf[i-1] + np*nxi;
     } else tf = f;
 
-    for (i = 0; i < nr; i++) {
-        for (j = 0; j < np*nxi; j++) {
-            if (f[i][j] <= 0)
-                tf[i][j] = -std::numeric_limits<slibreal_t>::infinity();
-            else
-                tf[i][j] = log(f[i][j]);
-        }
+    for (unsigned int i = 0; i < nr*np*nxi; i++) {
+		if (f[i] <= 0)
+			tf[i] = -std::numeric_limits<slibreal_t>::infinity();
+		else
+			tf[i] = log(f[i]);
     }
 
     this->logarithmic = true;
     this->Initialize(nr, np, nxi, r, p, xi, tf, interptype);
 
-    for (i = 0; i < nr; i++)
+    for (unsigned int i = 0; i < nr; i++)
         this->msdf[i].SetLogarithmic(true);
 }
 

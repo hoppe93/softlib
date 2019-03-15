@@ -16,7 +16,7 @@ using namespace std;
 
 SFile_HDF5::SFile_HDF5() {
     // Disable HDF5 error messages
-    H5::Exception::dontPrint();
+    //H5::Exception::dontPrint();
 }
 SFile_HDF5::~SFile_HDF5() {
 	if (this->file != NULL)
