@@ -48,6 +48,7 @@ class NumericDistributionFunction : public DistributionFunction {
         slibreal_t pmin, pmax;
         slibreal_t ximin, ximax;
 
+		bool allowExtrapolation = true;
         bool logarithmic = false;
         int interptype = INTERPOLATION_CUBIC;       // Type of interpolation done
     public:
@@ -65,6 +66,7 @@ class NumericDistributionFunction : public DistributionFunction {
         );
         bool IsLogarithmic() { return this->logarithmic; }
         virtual NumericDistributionFunction *MinClone();
+		void SetExtrapolationPermission(bool e) { this->allowExtrapolation = e; }
         void SetLogarithmic(bool l) { this->logarithmic = l; }
 
         // Available interpolation methods

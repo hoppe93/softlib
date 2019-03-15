@@ -65,8 +65,10 @@ bool Test_NumericDistributionFunction::RunInternal(const string& inputfilename) 
     T *df1
         = new T(inputfilename, mfa);
 
+	// Generate points on a slightly larger grid to
+	// test extrapolation
     failed = RandomPoints(
-        adf1, df1, NPOINTS1, TOLERANCE1, RMIN, RMAX, PMIN, PMAX
+        adf1, df1, NPOINTS1, TOLERANCE1, RMIN-0.05, RMAX-0.05, PMIN, PMAX
     );
 
     if (failed > 0) {

@@ -28,8 +28,10 @@ slibreal_t NumericDistributionFunction::Eval(
     slibreal_t rho = r-drift_shift, dr, fval1, fval2;
     unsigned int ir;
 
-    if (rho < this->rmin || rho > this->rmax)
-        throw SOFTLibException("Numeric distribution function: No data available for particle position. rho = %e, (shifted by %e from r = %e).", rho, drift_shift, r);
+	if (!this->allowExtrapolation) {
+		if (rho < this->rmin || rho > this->rmax)
+			throw SOFTLibException("Numeric distribution function: No data available for particle position. rho = %e, (shifted by %e from r = %e).", rho, drift_shift, r);
+	}
 
     ir = (unsigned int)__FindNearestR(rho);
     dr = rho - this->r[ir];
@@ -37,11 +39,11 @@ slibreal_t NumericDistributionFunction::Eval(
     if (ir >= nr-1) {
         fval1 = msdf[nr-1].Eval(p, xi);
         fval2 = 0.0;
-        dr = 0.0;
+        dr   /= this->r[nr-1] - this->r[nr-2];
     } else {
         fval1 = this->msdf[ir].Eval(p, xi);
         fval2 = this->msdf[ir+1].Eval(p, xi);
-        dr = dr / (this->r[ir+1] - this->r[ir]);
+        dr   /= this->r[ir+1] - this->r[ir];
     }
 
     return ((1.0-dr)*fval1 + dr*fval2);
