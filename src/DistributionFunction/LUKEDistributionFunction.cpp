@@ -149,7 +149,7 @@ struct LUKEDistributionFunction::lukedf_data *LUKEDistributionFunction::__Load(c
 	
 	// Normalize momentum
 	for (i = 0; i < nnp; i++)
-		tp[0][i] /= **tbetath;
+		tp[0][i] *= **tbetath;
 
     // xi grid
     double **txi = sf->GetDoubles("mhu", fsize);
