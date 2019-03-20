@@ -75,6 +75,6 @@ ne_ref = 1;
 f = lf;
 mhu = xi;
 xrhoG = (r-rmin) / (rmax-rmin);
-pn = p*betath_ref;
+pn = p/betath_ref;
 
 save(OUTPUTFILE_LUKE, '-v7.3', 'betath_ref', 'f', 'mhu', 'xrhoG', 'pn');

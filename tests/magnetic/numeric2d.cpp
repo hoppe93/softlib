@@ -170,7 +170,7 @@ bool Test_MagneticFieldNumeric2D::Run() {
 	MagneticFieldAnalytical2D *mfa;
 
 	// Construct the analytical magnetic field object
-	mfa = new MagneticFieldAnalytical2D(B0, Rm, rminor, MFATFS_CW, MFASF_CONSTANT, qa_const, 0.0);
+	mfa = new MagneticFieldAnalytical2D(B0, Rm, rminor, MFAFS_CW, MFAFS_CCW, MFASF_CONSTANT, qa_const, 0.0);
 	
 	// Generate the numeric magnetic field
 	mf = GenerateMF(mfa, Rm, rminor, NR, NZ, NWALL);

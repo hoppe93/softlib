@@ -1,4 +1,4 @@
-function [B,Babs,gradB,curlB] = magnetic_field(x0,B0,Rm,q,rDqDr)
+function [B,Babs,gradB,curlB] = magnetic_field(x0,B0,Rm,sigmaB,sigmaI,q,rDqDr)
 
     x = x0(1);
     y = x0(2);
@@ -16,7 +16,7 @@ function [B,Babs,gradB,curlB] = magnetic_field(x0,B0,Rm,q,rDqDr)
     thetahat = [sintheta*cosphi; sintheta*sinphi; costheta];
     phihat   = [-sinphi; cosphi; 0];
     
-    B = B0*Rm ./ R * (r/(q*Rm)*thetahat + phihat);
+    B = B0*Rm ./ R * (sigmaI*r/(q*Rm)*thetahat + sigmaB*phihat);
     Babs = norm(B);
     
     DBr = B0*Rm./R * (r./(q*Rm).^2 .* (1-rDqDr)./sqrt((r/(q*Rm)).^2 + 1) + costheta./R.*sqrt((r/(q*Rm)).^2+1));
@@ -24,6 +24,6 @@ function [B,Babs,gradB,curlB] = magnetic_field(x0,B0,Rm,q,rDqDr)
     
     gradB = DBr * rhat + DB0 * thetahat;
     
-    curlB = B0./(q.*R) .* (Rm./R + 1 - rDqDr./q) * phihat;
+    curlB = sigmaI * B0./(q.*R) .* (Rm./R + 1 - rDqDr./q) * phihat;
 
 end

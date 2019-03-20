@@ -56,7 +56,7 @@ bool Test_NumericDistributionFunction::RunInternal(const string& inputfilename) 
 	// Create dummy magnetic field (we just need the
 	// radial interval)
 	MagneticFieldAnalytical2D *mfa =
-		new MagneticFieldAnalytical2D(5.0, 1.6, 0.6, MFATFS_CW, MFASF_CONSTANT, 1.0, 1.0);
+		new MagneticFieldAnalytical2D(5.0, 1.6, 0.6, MFAFS_CW, MFAFS_CCW, MFASF_CONSTANT, 1.0, 1.0);
 
     // Test full phase-space distribution
     RadialDistributionFunction *adf1 = GeneratePhaseSpaceDistribution(

@@ -43,10 +43,10 @@ for i=1:npoints
     
     x = [(Rm-minr*cos(pola))*cos(tora), (Rm-minr*cos(pola))*sin(tora), minr*sin(pola)];
     
-    [Bc, cBabs, gradBc, curlBc] = magnetic_field(x, B0, Rm, qc(minr/rminor), qpc(minr/rminor));
-    [Bl, lBabs, gradBl, curlBl] = magnetic_field(x, B0, Rm, ql(minr/rminor), qpl(minr/rminor));
-    [Bq, qBabs, gradBq, curlBq] = magnetic_field(x, B0, Rm, qq(minr/rminor), qpq(minr/rminor));
-    [Be, eBabs, gradBe, curlBe] = magnetic_field(x, B0, Rm, qe(minr/rminor), qpe(minr/rminor));
+    [Bc, cBabs, gradBc, curlBc] = magnetic_field(x, B0, Rm, -1, +1, qc(minr/rminor), qpc(minr/rminor));
+    [Bl, lBabs, gradBl, curlBl] = magnetic_field(x, B0, Rm, -1, +1, ql(minr/rminor), qpl(minr/rminor));
+    [Bq, qBabs, gradBq, curlBq] = magnetic_field(x, B0, Rm, -1, +1, qq(minr/rminor), qpq(minr/rminor));
+    [Be, eBabs, gradBe, curlBe] = magnetic_field(x, B0, Rm, -1, +1, qe(minr/rminor), qpe(minr/rminor));
     
     c = [x, Bc', gradBc', curlBc'];
     l = [x, Bl', gradBl', curlBl'];
@@ -161,7 +161,7 @@ maxis = [Rm 0];
 for i=1:nr
     for j=1:nz
         minr = r(i) - Rm;
-        B = magnetic_field([r(i), 0, z(j)], B0, Rm, qc(minr/rminor), qpc(minr/rminor));
+        B = magnetic_field([r(i), 0, z(j)], B0, Rm, -1, +1, qc(minr/rminor), qpc(minr/rminor));
         
         Br(i,j)   = B(1);
         Bphi(i,j) = B(2);
@@ -169,4 +169,4 @@ for i=1:nr
     end
 end
 
-save('circular-benchmark.mat', 'Bphi', 'Br', 'Bz', 'desc', 'maxis', 'name', 'r', 'wall', 'z');
+save('circular-benchmark.mat', '-v7.3', 'Bphi', 'Br', 'Bz', 'desc', 'maxis', 'name', 'r', 'wall', 'z');

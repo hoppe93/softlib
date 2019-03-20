@@ -13,9 +13,9 @@ enum MFASafetyFactorType {
 	MFASF_EXPONENTIAL
 };
 
-enum MFAToroidalFieldSign {
-    MFATFS_CW,      // Toroidal field pointing clock-wise (seen from above tokamak)
-    MFATFS_CCW      // Toroidal field pointing counter-clock-wise (seen from above tokamak)
+enum MFAFieldSign {
+    MFAFS_CW,      // Toroidal field/current pointing clock-wise (seen from above tokamak)
+    MFAFS_CCW      // Toroidal field/current pointing counter-clock-wise (seen from above tokamak)
 };
 
 #define MAGNETIC_FIELD_ANALYTICAL2D_NDOMAINPOINTS 50
@@ -31,10 +31,10 @@ class MagneticFieldAnalytical2D : public MagneticField2D {
 				   safety_factor_param2;
 		enum MFASafetyFactorType safety_factor_type;
 
-		slibreal_t B0, Rm, rminor, sigmaB, **jacobian;
+		slibreal_t B0, Rm, rminor, sigmaB, sigmaI, **jacobian;
 	public:
-		MagneticFieldAnalytical2D(slibreal_t, slibreal_t, slibreal_t, enum MFAToroidalFieldSign, enum MFASafetyFactorType, slibreal_t, slibreal_t);
-		MagneticFieldAnalytical2D(slibreal_t, slibreal_t, slibreal_t, enum MFAToroidalFieldSign, enum MFASafetyFactorType, slibreal_t, slibreal_t, const std::string&, const std::string&);
+		MagneticFieldAnalytical2D(slibreal_t, slibreal_t, slibreal_t, enum MFAFieldSign, enum MFAFieldSign, enum MFASafetyFactorType, slibreal_t, slibreal_t);
+		MagneticFieldAnalytical2D(slibreal_t, slibreal_t, slibreal_t, enum MFAFieldSign, enum MFAFieldSign, enum MFASafetyFactorType, slibreal_t, slibreal_t, const std::string&, const std::string&);
 		virtual ~MagneticFieldAnalytical2D() {}
 
         MagneticFieldAnalytical2D *Clone();

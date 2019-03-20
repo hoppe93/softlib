@@ -16,6 +16,7 @@ using namespace std;
  * Rm: Major radius of tokamak.
  * rminor: Minor radius of tokamak (used to define domain).
  * sigmaB: Toroidal field sign.
+ * sigmaI: Plasma current sign.
  * qt: Type of q-factor.
  * qa1: q-factor param1.
  * qa2: q-factor param2 (may be optional).
@@ -24,22 +25,24 @@ using namespace std;
  * description: Description of the magnetic field.
  */
 MagneticFieldAnalytical2D::MagneticFieldAnalytical2D(
-	slibreal_t B0, slibreal_t Rm, slibreal_t rminor, enum MFAToroidalFieldSign sigmaB,
-	enum MFASafetyFactorType qt, slibreal_t qa1, slibreal_t qa2
+	slibreal_t B0, slibreal_t Rm, slibreal_t rminor, enum MFAFieldSign sigmaB,
+	enum MFAFieldSign sigmaI, enum MFASafetyFactorType qt,
+	slibreal_t qa1, slibreal_t qa2
 ) : MagneticFieldAnalytical2D(
-    B0, Rm, rminor, sigmaB, qt, qa1, qa2,
+    B0, Rm, rminor, sigmaB, sigmaI, qt, qa1, qa2,
     "Analytical Magnetic Field",
     "A magnetic field with a simple analytical description"
 ) {}
 MagneticFieldAnalytical2D::MagneticFieldAnalytical2D(
-	slibreal_t B0, slibreal_t Rm, slibreal_t rminor, enum MFAToroidalFieldSign sigmaB,
-	enum MFASafetyFactorType qt, slibreal_t qa1, slibreal_t qa2,
-	const string &name, const string &description
+	slibreal_t B0, slibreal_t Rm, slibreal_t rminor, enum MFAFieldSign sigmaB,
+	enum MFAFieldSign sigmaI, enum MFASafetyFactorType qt,
+	slibreal_t qa1, slibreal_t qa2, const string &name, const string &description
 ) {
 	this->B0 	 	  = B0;
 	this->Rm 	 	  = Rm;
 	this->rminor 	  = rminor;
-    this->sigmaB      = (sigmaB==MFATFS_CW?(+1.0):(-1.0));
+    this->sigmaB      = (sigmaB==MFAFS_CW?(-1.0):(+1.0));
+	this->sigmaI      = (sigmaI==MFAFS_CW?(-1.0):(+1.0));
 	this->name   	  = name;
 	this->description = description;
 
@@ -62,7 +65,9 @@ MagneticFieldAnalytical2D::MagneticFieldAnalytical2D(
  */
 MagneticFieldAnalytical2D *MagneticFieldAnalytical2D::Clone() {
     return new MagneticFieldAnalytical2D(
-        this->B0, this->Rm, this->rminor, ((this->sigmaB>0)?MFATFS_CW:MFATFS_CCW),
+        this->B0, this->Rm, this->rminor,
+		((this->sigmaB>0)?MFAFS_CCW:MFAFS_CW),
+		((this->sigmaI>0)?MFAFS_CCW:MFAFS_CW),
         this->safety_factor_type, this->safety_factor_param1,
         this->safety_factor_param2, this->name, this->description
     );
@@ -115,9 +120,9 @@ slibreal_t *MagneticFieldAnalytical2D::Eval(slibreal_t x, slibreal_t y, slibreal
 	pf = B0*Rm * iR;
 	t1 = r / (Rm*__GetSafetyFactor(r));
 
-	retval[0] = pf * (t1 * (sintheta*cosphi) - sigmaB*sinphi);
-	retval[1] = pf * (t1 * (sintheta*sinphi) + sigmaB*cosphi);
-	retval[2] = pf * (t1 * costheta);
+	retval[0] = pf * (sigmaI * t1 * (sintheta*cosphi) - sigmaB*sinphi);
+	retval[1] = pf * (sigmaI * t1 * (sintheta*sinphi) + sigmaB*cosphi);
+	retval[2] = pf * (sigmaI * t1 * costheta);
 
 	return retval;
 }
@@ -151,11 +156,11 @@ struct magnetic_field_data& MagneticFieldAnalytical2D::EvalDerivatives(slibreal_
 
 	DBr = B0*Rm * iR * (r_qRm/(Rm * q)*(1 - rdq_dr)/sqr + costheta * iR * sqr);
 	DB0 =-B0*Rm*sintheta * iR*iR * sqr;
-	ddr_rB0 = B0 * iR / q * (Rm*iR + 1 - rdq_dr/q);
+	ddr_rB0 = sigmaI * B0 * iR / q * (Rm*iR + 1 - rdq_dr/q);
 
-	magdata.B[0] = B0*Rm*iR * (r_qRm * (sintheta*cosphi) - sigmaB*sinphi);
-	magdata.B[1] = B0*Rm*iR * (r_qRm * (sintheta*sinphi) + sigmaB*cosphi);
-	magdata.B[2] = B0*Rm*iR * (r_qRm * costheta);
+	magdata.B[0] = B0*Rm*iR * (sigmaI * r_qRm * (sintheta*cosphi) - sigmaB*sinphi);
+	magdata.B[1] = B0*Rm*iR * (sigmaI * r_qRm * (sintheta*sinphi) + sigmaB*cosphi);
+	magdata.B[2] = B0*Rm*iR * (sigmaI * r_qRm * costheta);
 	magdata.Babs = B0*Rm*iR * sqr;
     magdata.J    = this->jacobian;
 
@@ -168,17 +173,17 @@ struct magnetic_field_data& MagneticFieldAnalytical2D::EvalDerivatives(slibreal_
 	magdata.curlB[2] = 0;
 
     // Bx
-    magdata.J[0][0] = B0*Rm*( z/(q*Rm*R*R)*(1.0-2.0*cosphi*cosphi)  +  2.0*sigmaB/(R*R)*sinphi*cosphi  +  rdq_dr/(q*q*Rm*R)*cosphi*cosphi*sintheta*costheta );
-    magdata.J[0][1] = B0*Rm*( 2.0*sigmaB/(R*R)*sinphi*sinphi  -  sigmaB/(R*R)  -  2.0*z/(q*Rm*R*R)*sinphi*cosphi  +  rdq_dr/(q*q*Rm*R)*sinphi*cosphi*sintheta*costheta );
-    magdata.J[0][2] = B0/(q*R)*cosphi * ( 1 - rdq_dr / q * sintheta*sintheta );
+    magdata.J[0][0] = B0*Rm*( sigmaI*z/(q*Rm*R*R)*(1.0-2.0*cosphi*cosphi)  +  2.0*sigmaB/(R*R)*sinphi*cosphi  +  sigmaI*rdq_dr/(q*q*Rm*R)*cosphi*cosphi*sintheta*costheta );
+    magdata.J[0][1] = B0*Rm*( 2.0*sigmaB/(R*R)*sinphi*sinphi  -  sigmaB/(R*R)  -  2.0*sigmaI*z/(q*Rm*R*R)*sinphi*cosphi  +  sigmaI*rdq_dr/(q*q*Rm*R)*sinphi*cosphi*sintheta*costheta );
+    magdata.J[0][2] = sigmaI*B0/(q*R)*cosphi * ( 1 - rdq_dr / q * sintheta*sintheta );
     // By
-    magdata.J[1][0] = B0*Rm*( sigmaB/(R*R)  -  2.0*sigmaB/(R*R)*cosphi*cosphi  -  2.0*z/(q*Rm*R*R)*sinphi*cosphi  +  rdq_dr/(q*q*Rm*R)*sinphi*cosphi*sintheta*costheta );
-    magdata.J[1][1] = B0*Rm*( z/(q*Rm*R*R)*(1.0-2.0*sinphi*sinphi)  -  2.0*sigmaB/(R*R)*sinphi*cosphi  +  rdq_dr/(q*q*Rm*R)*sinphi*sinphi*sintheta*costheta );
-    magdata.J[1][2] = B0/(q*R)*sinphi*( 1.0 - rdq_dr/q*sintheta*sintheta );
+    magdata.J[1][0] = B0*Rm*( sigmaB/(R*R)  -  2.0*sigmaB/(R*R)*cosphi*cosphi  -  2.0*sigmaI*z/(q*Rm*R*R)*sinphi*cosphi  +  sigmaI*rdq_dr/(q*q*Rm*R)*sinphi*cosphi*sintheta*costheta );
+    magdata.J[1][1] = B0*Rm*( sigmaI*z/(q*Rm*R*R)*(1.0-2.0*sinphi*sinphi)  -  2.0*sigmaB/(R*R)*sinphi*cosphi  +  sigmaI*rdq_dr/(q*q*Rm*R)*sinphi*sinphi*sintheta*costheta );
+    magdata.J[1][2] = sigmaI*B0/(q*R)*sinphi*( 1.0 - rdq_dr/q*sintheta*sintheta );
     // Bz
-    magdata.J[2][0] = B0/(q*R)*cosphi * ( rdq_dr/q*costheta*costheta  -  Rm/R );
-    magdata.J[2][1] = B0/(q*R)*sinphi * ( rdq_dr/q*costheta*costheta  -  Rm/R );
-    magdata.J[2][2] = -B0/(q*q*R) * rdq_dr * sintheta*costheta;
+    magdata.J[2][0] = sigmaI*B0/(q*R)*cosphi * ( rdq_dr/q*costheta*costheta  -  Rm/R );
+    magdata.J[2][1] = sigmaI*B0/(q*R)*sinphi * ( rdq_dr/q*costheta*costheta  -  Rm/R );
+    magdata.J[2][2] = -sigmaI*B0/(q*q*R) * rdq_dr * sintheta*costheta;
 
 	return magdata;
 }
@@ -197,9 +202,10 @@ slibreal_t MagneticFieldAnalytical2D::EvalFlux(
 ) {
     slibreal_t R  = sqrt(x*x + y*y);
     slibreal_t r2 = z*z + (Rm - R)*(Rm - R);
+	slibreal_t q  = __GetSafetyFactor(sqrt(r2));
 
-    //slibreal_t psi = 2.0*M_PI*B0*Rm*Rm*(1.0 - sqrt(1.0 - r2/(Rm*Rm)));
-    slibreal_t psi = M_PI*B0*r2;
+    slibreal_t psi = sigmaI * M_PI*B0*r2 / q;
+
     return psi;
 }
 
@@ -219,14 +225,22 @@ slibreal_t MagneticFieldAnalytical2D::EvalFlux(
 struct flux_diff *MagneticFieldAnalytical2D::EvalFluxDerivatives(
     slibreal_t x, slibreal_t y, slibreal_t z
 ) {
-    slibreal_t R  = sqrt(x*x + y*y);
-    slibreal_t r2 = z*z + (Rm - R)*(Rm - R);
-    slibreal_t d  = sqrt(Rm*Rm - r2);
-    slibreal_t p  = 2.0*M_PI*B0;
+    slibreal_t R     = sqrt(x*x + y*y);
+    slibreal_t r2    = z*z + (Rm - R)*(Rm - R);
+    //slibreal_t d     = sqrt(Rm*Rm - r2);
+    //slibreal_t p     = 2.0*M_PI*B0;
+	slibreal_t r     = sqrt(r2);
+	slibreal_t q     = __GetSafetyFactor(r);
+	slibreal_t rdqdr = __GetrDqDr(r);
 
-    flux_retval.psi     = p*Rm*(1.0 - sqrt(1.0 - r2/(Rm*Rm)));
+	// Toroidal flux
+    /*flux_retval.psi     = p*Rm*(1.0 - sqrt(1.0 - r2/(Rm*Rm)));
     flux_retval.dpsi_dR = p * (R - Rm) / d;
-    flux_retval.dpsi_dZ = p * z / d;
+    flux_retval.dpsi_dZ = p * z / d;*/
+
+	flux_retval.psi     = sigmaI * M_PI*B0*r2 / q;
+	flux_retval.dpsi_dR = sigmaI * M_PI*B0*(R-Rm)/q * (2.0 - rdqdr / q);
+	flux_retval.dpsi_dZ = sigmaI * M_PI*B0*z/q      * (2.0 - rdqdr / q);
 
     return &flux_retval;
 }

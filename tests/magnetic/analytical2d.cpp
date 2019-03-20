@@ -39,10 +39,10 @@ bool Test_MagneticFieldAnalytical2D::Run() {
 
 	MagneticFieldAnalytical2D *mf_const, *mf_lin, *mf_quad, *mf_exp;
 
-	mf_const = new MagneticFieldAnalytical2D(B0, Rm, rminor, MFATFS_CW, MFASF_CONSTANT, qa_const, 0.0);
-	mf_lin   = new MagneticFieldAnalytical2D(B0, Rm, rminor, MFATFS_CW, MFASF_LINEAR, qa_lin, 0.0);
-	mf_quad  = new MagneticFieldAnalytical2D(B0, Rm, rminor, MFATFS_CW, MFASF_QUADRATIC, qa_quad, 0.0);
-	mf_exp   = new MagneticFieldAnalytical2D(B0, Rm, rminor, MFATFS_CW, MFASF_EXPONENTIAL, qa_exp, 0.0);
+	mf_const = new MagneticFieldAnalytical2D(B0, Rm, rminor, MFAFS_CW, MFAFS_CCW, MFASF_CONSTANT, qa_const, 0.0);
+	mf_lin   = new MagneticFieldAnalytical2D(B0, Rm, rminor, MFAFS_CW, MFAFS_CCW, MFASF_LINEAR, qa_lin, 1.0);
+	mf_quad  = new MagneticFieldAnalytical2D(B0, Rm, rminor, MFAFS_CW, MFAFS_CCW, MFASF_QUADRATIC, qa_quad, 1.0);
+	mf_exp   = new MagneticFieldAnalytical2D(B0, Rm, rminor, MFAFS_CW, MFAFS_CCW, MFASF_EXPONENTIAL, qa_exp, 0.0);
 
 	// Test list of values
 	try {
