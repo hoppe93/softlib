@@ -1,7 +1,7 @@
 /**
  * Test of the numeric 2D magnetic field.
  */ 
-#include <iostream>
+
 #include <runtest.h>
 
 #include <softlib/config.h>
@@ -176,7 +176,7 @@ bool Test_MagneticFieldNumeric2D::Run() {
 	mf = GenerateMF(mfa, Rm, rminor, NR, NZ, NWALL);
 
 	try {
-		ComparePoints(magnetic_field_test_data_const, mf, B0, "constant");
+		ComparePoints(magnetic_field_test_data_const, mf, B0, "constant", true);
 	} catch (SOFTLibException &ex) {
 		this->PrintError("[MagneticFieldNumeric2D]: "+ex.whats());
 		return false;
@@ -188,7 +188,7 @@ bool Test_MagneticFieldNumeric2D::Run() {
 	try {
 		mff = new MagneticFieldNumeric2D(TESTFILE);
 		try {
-			ComparePoints(magnetic_field_test_data_const, mff, B0, "constant");
+			ComparePoints(magnetic_field_test_data_const, mff, B0, "constant", true);
 		} catch (SOFTLibException &ex) {
 			this->PrintError("[MagneticFieldNumeric2D]: "+ex.whats());
 			return false;

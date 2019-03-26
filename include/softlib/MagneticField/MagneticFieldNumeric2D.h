@@ -12,7 +12,7 @@
 #endif
 
 class MagneticFieldNumeric2D : public MagneticField2D {
-	private:
+	protected:
 		slibreal_t *Br, *Bphi, *Bz;
         slibreal_t *Psi;
 		slibreal_t *R, *Z;
@@ -39,6 +39,7 @@ class MagneticFieldNumeric2D : public MagneticField2D {
         gsl_spline2d *sPsi;
 #	endif
 	public:
+		MagneticFieldNumeric2D();
 		MagneticFieldNumeric2D(const std::string&);
 		MagneticFieldNumeric2D(const std::string&, enum sfile_type);
 		MagneticFieldNumeric2D(
@@ -53,6 +54,7 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 
         MagneticFieldNumeric2D *Clone();
 
+		void BaseInit();
 		slibreal_t *Eval(slibreal_t*);
 		slibreal_t *Eval(slibreal_t, slibreal_t, slibreal_t);
 		struct magnetic_field_data& EvalDerivatives(slibreal_t*);
@@ -73,8 +75,8 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 			slibreal_t *rwall, slibreal_t *zwall, unsigned int nwall
 		);
 		void InitInterpolation();
-		void Load(const std::string&);
-		void Load(const std::string&, enum sfile_type);
+		virtual void Load(const std::string&);
+		virtual void Load(const std::string&, enum sfile_type);
 		/* Transpose a matrix from SFile */
 		double **Transpose(double**, sfilesize_t, sfilesize_t);
 

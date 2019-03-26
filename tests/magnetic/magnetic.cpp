@@ -22,18 +22,23 @@ Test_MagneticField::Test_MagneticField(const string& name, const slibreal_t thre
  * Run through the test points, evaluate them with softlib
  * and compare them to the expected values.
  *
- * points: The list of test points to run and compare to.
- * mf:     The magnetic field object to test.
- * B0:     The magnetic field strength on-axis (for normalization of result).
- * qprof:  Name of the safety factor used.
+ * points:  The list of test points to run and compare to.
+ * mf:      The magnetic field object to test.
+ * B0:      The magnetic field strength on-axis (for normalization of result).
+ * qprof:   Name of the safety factor used.
+ * outside: Also check points that may be outside the domain.
  */
-bool Test_MagneticField::ComparePoints(const slibreal_t points[MAGNETIC_FIELD_TEST_NPOINTS][12], MagneticField2D *mf, slibreal_t B0, const string &qprof) {
+bool Test_MagneticField::ComparePoints(const slibreal_t points[MAGNETIC_FIELD_TEST_NPOINTS][12], MagneticField2D *mf, slibreal_t B0, const string &qprof, bool outside) {
 	unsigned int i;
 	slibreal_t x[3], B[3], *mB, d[3];
+
 	for (i = 0; i < MAGNETIC_FIELD_TEST_NPOINTS; i++) {
 		x[0] = points[i][0];
 		x[1] = points[i][1];
 		x[2] = points[i][2];
+
+		if (!outside && mf->CrossesDomain(x[0], x[1], x[2]))
+			continue;
 
 		B[0] = points[i][3];
 		B[1] = points[i][4];

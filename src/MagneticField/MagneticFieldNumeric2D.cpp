@@ -15,6 +15,14 @@ using namespace std;
 #include <softlib/SOFTLibException.h>
 
 /**
+ * Minimal contsructor. Intended for use with
+ * derived classes that load different kinds of files.
+ */
+MagneticFieldNumeric2D::MagneticFieldNumeric2D() : MagneticField2D() {
+	BaseInit();
+}
+
+/**
  * Construct from file
  * 
  * filename: Name of file containing magnetic field data.
@@ -24,29 +32,13 @@ MagneticFieldNumeric2D::MagneticFieldNumeric2D(const string& filename) : Magneti
 	Load(filename);
 	InitInterpolation();
 
-	interpval = new slibreal_t[3];
-
-    // The 'jacobian' is a 4-by-3 matrix here.
-    // The first 3 rows (3-by-3 matrix) is the
-    // actual jacobian, while the last row
-    // (1-by-3 vector) is the magnetic field vector.
-	jacobian  = new slibreal_t*[4];
-	jacobian[0] = new slibreal_t[4*3];
-	jacobian[1] = jacobian[0] + 3;
-	jacobian[2] = jacobian[1] + 3;
-	jacobian[3] = jacobian[2] + 3;
+	BaseInit();
 }
 MagneticFieldNumeric2D::MagneticFieldNumeric2D(const string& filename, enum sfile_type ftype) : MagneticField2D() {
 	Load(filename, ftype);
 	InitInterpolation();
 
-	interpval = new slibreal_t[3];
-
-	jacobian  = new slibreal_t*[4];
-	jacobian[0] = new slibreal_t[4*3];
-	jacobian[1] = jacobian[0] + 3;
-	jacobian[2] = jacobian[1] + 3;
-	jacobian[3] = jacobian[2] + 3;
+	BaseInit();
 }
 MagneticFieldNumeric2D::~MagneticFieldNumeric2D() {
 	delete [] interpval;
@@ -61,6 +53,24 @@ MagneticFieldNumeric2D::~MagneticFieldNumeric2D() {
 	if (nsep > 0)
 		delete [] rsep, delete [] zsep;
 }
+
+/**
+ * Do basic initialization of this class.
+ */
+void MagneticFieldNumeric2D::BaseInit() {
+	interpval = new slibreal_t[3];
+
+    // The 'jacobian' is a 4-by-3 matrix here.
+    // The first 3 rows (3-by-3 matrix) is the
+    // actual jacobian, while the last row
+    // (1-by-3 vector) is the magnetic field vector.
+	jacobian  = new slibreal_t*[4];
+	jacobian[0] = new slibreal_t[4*3];
+	jacobian[1] = jacobian[0] + 3;
+	jacobian[2] = jacobian[1] + 3;
+	jacobian[3] = jacobian[2] + 3;
+}
+
 /**
  * Construct from data *
  * name: Name of magnetic field.
@@ -69,8 +79,8 @@ MagneticFieldNumeric2D::~MagneticFieldNumeric2D() {
  * Br: Radial component of magnetic field.
  * Bphi: Toroidal component of magnetic field.
  * Bz: Vertical component of magnetic field.
- * rsep, zsep: R and Z points of separatrix data. Can be NULL if rwall/zwall is not.
- * rwall, zwall: R and Z points of wall data. Can be NULL if rsep/zsep is not.
+ * rsep, zsep: R and Z points of separatrix data. Can be nullptr if rwall/zwall is not.
+ * rwall, zwall: R and Z points of wall data. Can be nullptr if rsep/zsep is not.
  */
 MagneticFieldNumeric2D::MagneticFieldNumeric2D(
 	const string& name, const string& description,
@@ -190,8 +200,8 @@ slibreal_t MagneticFieldNumeric2D::FindMinRadius() {
  * Bphi: Toroidal component of the magnetic field.
  * Bz: Vertical component of the magnetic field.
  * raxis, zaxis: R and Z coordinates of the magnetic axis.
- * rsep, zsep: R and Z points of separatrix data. Can be NULL if rwall/zwall is not.
- * rwall, zwall: R and Z points of wall data. Can be NULL if rsep/zsep is not.
+ * rsep, zsep: R and Z points of separatrix data. Can be nullptr if rwall/zwall is not.
+ * rwall, zwall: R and Z points of wall data. Can be nullptr if rsep/zsep is not.
  */
 void MagneticFieldNumeric2D::Init(
 	const string& name, const string& description,
@@ -201,9 +211,9 @@ void MagneticFieldNumeric2D::Init(
 	slibreal_t *rsep, slibreal_t *zsep, unsigned int nsep,
 	slibreal_t *rwall, slibreal_t *zwall, unsigned int nwall
 ) {
-	if ((rsep == NULL || zsep == NULL) &&
-		(rwall == NULL || zwall == NULL))
-		throw SOFTLibException("Wall and separatrix cannot both be NULL.");
+	if ((rsep == nullptr || zsep == nullptr) &&
+		(rwall == nullptr || zwall == nullptr))
+		throw SOFTLibException("Wall and separatrix cannot both be nullptr.");
 
 	this->name = name;
 	this->description = description;
@@ -226,7 +236,7 @@ void MagneticFieldNumeric2D::Init(
 
     this->hasFluxCoordinates = (Psi != nullptr);
 
-    if (rwall != NULL && zwall != NULL)
+    if (rwall != nullptr && zwall != nullptr)
         SetDomain(this->rwall, this->zwall, this->nwall);
     else
         SetDomain(this->rsep, this->zsep, this->nsep);
@@ -565,8 +575,8 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
         }
 	} catch (SFileException& ex) {
 		this->nwall = 0;
-		this->rwall = NULL;
-		this->zwall = NULL;
+		this->rwall = nullptr;
+		this->zwall = nullptr;
 	}
 
 	try {
@@ -591,8 +601,8 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
         }
 	} catch (SFileException& ex) {
 		this->nsep = 0;
-		this->rsep = NULL;
-		this->zsep = NULL;
+		this->rsep = nullptr;
+		this->zsep = nullptr;
 	}
 
 	sf->Close();
@@ -642,10 +652,10 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
 	delete [] _Br[0], delete [] _Bphi[0], delete [] _Bz[0];
 	delete [] _Br, delete [] _Bphi, delete [] _Bz;
 
-	if (_rwall == NULL && _zsep == NULL)
-		throw new SOFTLibException(filename+": At least one of 'wall' and 'separatrix' must be provided in the magnetic equilibrium file.");
+	if (_rwall == nullptr && _zsep == nullptr)
+		throw SOFTLibException(filename+": At least one of 'wall' and 'separatrix' must be provided in the magnetic equilibrium file.");
 
-	if (_rwall != NULL) {
+	if (_rwall != nullptr) {
 		this->rwall = new slibreal_t[this->nwall];
 		this->zwall = new slibreal_t[this->nwall];
 
@@ -656,7 +666,7 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
 		
 		delete [] _rwall;
 	}
-	if (_rsep != NULL) {
+	if (_rsep != nullptr) {
 		this->rsep  = new slibreal_t[this->nsep];
 		this->zsep  = new slibreal_t[this->nsep];
 
@@ -668,7 +678,7 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
 		delete [] _rsep;
 	}
 
-    if (rwall != NULL && zwall != NULL)
+    if (rwall != nullptr && zwall != nullptr)
         SetDomain(this->rwall, this->zwall, this->nwall);
     else
         SetDomain(this->rsep, this->zsep, this->nsep);

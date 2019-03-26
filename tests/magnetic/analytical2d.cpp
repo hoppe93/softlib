@@ -46,10 +46,10 @@ bool Test_MagneticFieldAnalytical2D::Run() {
 
 	// Test list of values
 	try {
-		success &= ComparePoints(magnetic_field_test_data_const, mf_const, B0, "constant");
-		success &= ComparePoints(magnetic_field_test_data_linear, mf_lin, B0, "linear");
-		success &= ComparePoints(magnetic_field_test_data_quadratic, mf_quad, B0, "quadratic");
-		success &= ComparePoints(magnetic_field_test_data_exponential, mf_exp, B0, "exponential");
+		success &= ComparePoints(magnetic_field_test_data_const, mf_const, B0, "constant", true);
+		success &= ComparePoints(magnetic_field_test_data_linear, mf_lin, B0, "linear", true);
+		success &= ComparePoints(magnetic_field_test_data_quadratic, mf_quad, B0, "quadratic", true);
+		success &= ComparePoints(magnetic_field_test_data_exponential, mf_exp, B0, "exponential", true);
 	} catch (SOFTLibException &ex) {
 		this->PrintError("[MagneticFieldAnalytical2D]: "+ex.whats());
 		return false;

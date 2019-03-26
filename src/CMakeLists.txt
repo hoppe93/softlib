@@ -94,10 +94,12 @@ set(magnetic
 	"${PROJECT_SOURCE_DIR}/src/MagneticField/MagneticFieldNumeric2D.cpp"
 	"${PROJECT_SOURCE_DIR}/src/MagneticField/MagneticFieldAnalytical2D.cpp"
 	"${PROJECT_SOURCE_DIR}/src/MagneticField/MagneticFieldAnalytical2D.q.cpp"
+	"${PROJECT_SOURCE_DIR}/src/MagneticField/MagneticFieldLUKE.cpp"
 )
 set(magnetic_test
 	"${PROJECT_SOURCE_DIR}/tests/magnetic/analytical2d.cpp"
 	"${PROJECT_SOURCE_DIR}/tests/magnetic/domain.cpp"
+	"${PROJECT_SOURCE_DIR}/tests/magnetic/luke.cpp"
 	"${PROJECT_SOURCE_DIR}/tests/magnetic/magfield_points.cpp"
 	"${PROJECT_SOURCE_DIR}/tests/magnetic/magnetic.cpp"
 	"${PROJECT_SOURCE_DIR}/tests/magnetic/numeric2d.cpp"

@@ -11,7 +11,7 @@ class Test_MagneticField : public UnitTest {
 	public:
 		Test_MagneticField(const string&);
 		Test_MagneticField(const string&, const slibreal_t);
-		bool ComparePoints(const slibreal_t[MAGNETIC_FIELD_TEST_NPOINTS][12], MagneticField2D*, slibreal_t, const string&);
+		bool ComparePoints(const slibreal_t[MAGNETIC_FIELD_TEST_NPOINTS][12], MagneticField2D*, slibreal_t, const string&, bool);
 		bool CompareDerivatives(const slibreal_t[MAGNETIC_FIELD_TEST_NPOINTS][12], MagneticField2D*, slibreal_t, const string&);
 		void SetThreshold(const slibreal_t);
 		virtual bool Run() = 0;

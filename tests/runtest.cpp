@@ -21,6 +21,7 @@
 #include "magnetic/domain.h"
 #include "integrator/rkdp45.h"
 #include "magnetic/analytical2d.h"
+#include "magnetic/luke.h"
 #include "magnetic/numeric2d.h"
 #ifdef SOFT_HDF5
 #	include "sfile/hdf5_test.h"
@@ -45,6 +46,7 @@ void init() {
 	add_test(new Test_Domain("domain"));
 	add_test(new Test_RKDP45("int_rkdp45"));
 	add_test(new Test_MagneticFieldAnalytical2D("magnetic_analytical2d"));
+	add_test(new Test_MagneticFieldLUKE("magnetic_luke"));
 	add_test(new Test_MagneticFieldNumeric2D("magnetic_numeric2d"));
 #ifdef SOFT_HDF5
 	add_test(new Test_SFile_HDF5("sfile_hdf5"));
