@@ -19,7 +19,7 @@ bool Test_SFile_HDF5::Run() {
 
 	try {
 		SFile *sf = new SFile_HDF5();
-		success = sfile_test(sf, "sfile_hdf5_test.h5");
+		success = sfile_test(sf, "sfile_hdf5_test.h5", true, true);
 	} catch (SOFTLibException& ex) {
 		this->PrintError("[SFile_HDF5]: "+ex.whats());
 		success = false;

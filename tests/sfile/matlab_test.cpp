@@ -18,7 +18,11 @@ bool Test_SFile_MAT::Run() {
 
 	try {
 		SFile *sf = new SFile_MAT();
-		success = sfile_test(sf, "sfile_matlab_test.mat");
+#ifdef OFFICIAL_MATLAB
+		success = sfile_test(sf, "sfile_matlab_test.mat", true, false);
+#else
+		success = sfile_test(sf, "sfile_matlab_test.mat", true, true);
+#endif
 	} catch (SOFTLibException& ex) {
 		this->PrintError("SFile_MAT: "+ex.whats());
 		success = false;

@@ -2,7 +2,9 @@
 #define _SFILE_H
 
 #include "config.h"
+#include <map>
 #include <string>
+#include <vector>
 
 typedef unsigned long long int sfilesize_t;
 
@@ -35,6 +37,7 @@ class SFile {
         virtual bool HasVariable(const std::string&) = 0;
 
 		virtual void Close() = 0;
+		virtual void CreateStruct(const std::string&) = 0;
 		virtual double GetAttributeScalar(const std::string&, const std::string&) = 0;
 		virtual std::string GetAttributeString(const std::string&, const std::string&) = 0;
 		virtual double **GetDoubles(const std::string&, sfilesize_t*) = 0;

@@ -19,6 +19,7 @@ class SFile_MAT : public SFile_HDF5 {
 		virtual void Open(const std::string&, enum sfile_mode) override;
         H5::H5File *CreateMAT(const std::string&);
 
+		virtual void CreateStruct(const std::string&) override;
 		virtual double GetAttributeScalar(const std::string&, const std::string&) override;
 		virtual std::string GetAttributeString(const std::string&, const std::string&) override;
         virtual std::string GetString(const std::string&) override;
@@ -29,8 +30,8 @@ class SFile_MAT : public SFile_HDF5 {
         virtual void WriteMultiArray(const std::string&, double*, sfilesize_t, sfilesize_t*) override;
 		virtual void WriteString(const std::string&, const std::string&) override;
 
-        void WriteMATLAB_class(const std::string&, const std::string&, H5::DataSet *dset=nullptr);
-        void WriteMATLAB_int_decode(const std::string&, H5::DataSet *dset=nullptr, const int val=2);
+        void WriteMATLAB_class(const std::string&, const std::string&, H5::H5Object *obj=nullptr);
+        void WriteMATLAB_int_decode(const std::string&, H5::H5Object *obj=nullptr, const int val=2);
 };
 
 #endif/*_SFILE_MAT_HDF5_H*/

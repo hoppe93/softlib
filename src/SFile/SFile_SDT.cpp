@@ -213,6 +213,14 @@ string SFile_SDT::GetString(const string &name) {
 /************************
  * ROUTINES FOR WRITING *
  ************************/
+/**
+ * Creates a struct with the given name.
+ * NOTE: SDT has no special feature for structs. Instead,
+ * they are identified by their variable names, which will
+ * contain slashes (/).
+ */
+void SFile_SDT::CreateStruct(const string&) { }
+
 void SFile_SDT::WriteArray(const string& name, double **arr, sfilesize_t nrows, sfilesize_t ncols) {
     // Definition string
     sdtfile << "@matrix " << name << " " << nrows << " " << ncols << endl;

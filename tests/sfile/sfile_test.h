@@ -8,6 +8,6 @@ using namespace std;
 
 bool sfile_compareArray(double**,double**,sfilesize_t*,sfilesize_t*);
 bool sfile_compareLists(double*, double*, sfilesize_t, sfilesize_t);
-bool sfile_test(SFile*, const string&, const bool multisupp=true);
+bool sfile_test(SFile*, const string&, const bool multisupp=true, const bool structsupp=true);
 
 #endif/*_SFILE_TEST_H*/

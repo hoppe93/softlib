@@ -13,6 +13,7 @@ class SFile_HDF5 : public SFile {
 
 		void Close();
         virtual bool HasVariable(const std::string&) override;
+		virtual void CreateStruct(const std::string&) override;
 		virtual double GetAttributeScalar(const std::string&, const std::string&) override;
 		virtual std::string GetAttributeString(const std::string&, const std::string&) override;
 		virtual double **GetDoubles(const std::string&, sfilesize_t*) override;
@@ -27,6 +28,8 @@ class SFile_HDF5 : public SFile {
 		virtual void WriteList(const std::string&, double*, sfilesize_t) override;
 		virtual void WriteMultiArray(const std::string&, double*, sfilesize_t, sfilesize_t*) override;
 		virtual void WriteString(const std::string&, const std::string&) override;
+
+		H5::Group __GetParentGroup(const std::string&, std::string&);
 };
 
 #endif/*_SFILE_HDF5_H*/

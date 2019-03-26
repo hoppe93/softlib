@@ -70,9 +70,9 @@ bool SFile_HDF5::HasVariable(const string& s) {
     try {
         DataSet dset = file->openDataSet(s);
         dset.close();
+
         return true;
     } catch (FileIException &ex) {
-    //} catch (GroupIException &ex) {
         return false;
     }
 }
@@ -95,6 +95,7 @@ double SFile_HDF5::GetAttributeScalar(const string& datasetname, const string& n
         DataType type = attr.getDataType();
 
         attr.read(type, &s);
+
         return s;
     } catch (FileIException &ex) {
         throw SFileException("Unable to read attribute string '%s'. HDF5 error: %s", datasetname.c_str(), ex.getCDetailMsg());
@@ -110,6 +111,7 @@ double SFile_HDF5::GetAttributeScalar(const string& datasetname, const string& n
 string SFile_HDF5::GetAttributeString(const string& datasetname, const string& name) {
     try {
         string s;
+
         DataSet dataset = file->openDataSet(datasetname);
         Attribute attr = dataset.openAttribute(name);
         DataType type = attr.getDataType();
@@ -133,6 +135,7 @@ string SFile_HDF5::GetString(const string& name) {
         throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
 
     string s;
+
     DataSet dataset = file->openDataSet(name);
     DataType type = dataset.getDataType();
     DataSpace dspace = dataset.getSpace();
@@ -163,6 +166,7 @@ double **SFile_HDF5::GetDoubles(const string& name, sfilesize_t *dims) {
 	double *data, **pointers;
 	sfilesize_t ndims;
 	unsigned int i;
+
 	DataSet dset = file->openDataSet(name);
 	DataSpace dspace = dset.getSpace();
 
@@ -193,6 +197,7 @@ double *SFile_HDF5::GetDoubles1D(const string& name, sfilesize_t *dims) {
 
 	double *data;
 	sfilesize_t ndims;
+
 	DataSet dset = file->openDataSet(name);
 	DataSpace dspace = dset.getSpace();
 
@@ -238,6 +243,16 @@ double *SFile_HDF5::GetMultiArray_linear(const string& name, const sfilesize_t n
 /*******************************
  *********** OUTPUT ************
  *******************************/
+ /**
+  * Creates a struct in the output file with the given name.
+  *
+  * name: Name of struct to create.
+  */
+void SFile_HDF5::CreateStruct(const string& name) {
+	Group *grp = new Group(file->createGroup(name));
+	delete grp;
+}
+
 /**
  * Write a dataset consisting of a string
  *

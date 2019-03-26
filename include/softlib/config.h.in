@@ -29,7 +29,7 @@ typedef ${REALTYPE} slibreal_t;
 #if defined(__GNUC__)
 #   define __UNUSED__(x) UNUSED_ ## x __attribute__((unused))
 #   define __RESTRICT__(x) __restrict__ x
-#elif define(__LCLINT__)
+#elif defined(__LCLINT__)
 #   define __UNUSED__(x) /*@unused@*/ x
 #   define __RESTRICT__(x) __restrict__ x
 #elif defined(__cplusplus)

@@ -221,6 +221,19 @@ string SFile_MAT::GetString(const string& name) {
  ******** OUTPUT ********
  ************************/
 /**
+ * Creates a MATLAB 'struct' with the given name
+ * in the file.
+ *
+ * name: Name of the struct to create.
+ */
+void SFile_MAT::CreateStruct(const string& name) {
+	Group *grp = new Group(file->createGroup(name));
+	WriteMATLAB_class(name, "struct", grp);
+
+	delete grp;
+}
+
+/**
  * Write a 2-D array to the target file.
  *
  * fileid: hid_t id of the HDF5 file
@@ -284,11 +297,11 @@ void SFile_MAT::WriteString(const string& name, const string& str) {
  *
  * name: Name of dataset.
  * cls:  MATLAB class.
- * dset: Dataset to apply the attribute to. If nullptr,
+ * obj:  H5Object to apply the attribute to. If nullptr,
  *       opens the dataset.
  */
-void SFile_MAT::WriteMATLAB_class(const string& name, const string& cls, DataSet *dset) {
-    if (dset == nullptr) {
+void SFile_MAT::WriteMATLAB_class(const string& name, const string& cls, H5Object *obj) {
+    if (obj == nullptr) {
         DataSet ds = file->openDataSet(name);
 
         DataSpace dspace_class(H5S_SCALAR);
@@ -301,7 +314,7 @@ void SFile_MAT::WriteMATLAB_class(const string& name, const string& cls, DataSet
     } else {
         DataSpace dspace_class(H5S_SCALAR);
         StrType dtype(PredType::C_S1, cls.length());
-        Attribute att_class = dset->createAttribute(
+        Attribute att_class = obj->createAttribute(
             "MATLAB_class", dtype, dspace_class
         );
         att_class.write(dtype, cls);
@@ -312,11 +325,11 @@ void SFile_MAT::WriteMATLAB_class(const string& name, const string& cls, DataSet
  * Set the "MATLAB_int_decode" attribute of a given dataset.
  *
  * name: Name of dataset.
- * dset: Dataset to apply the attribute to. If nullptr,
+ * obj:  H5Object to apply the attribute to. If nullptr,
  *       opens the dataset.
  */
-void SFile_MAT::WriteMATLAB_int_decode(const string& name, DataSet *dset, const int val) {
-    if (dset == nullptr) {
+void SFile_MAT::WriteMATLAB_int_decode(const string& name, H5Object *obj, const int val) {
+    if (obj == nullptr) {
         DataSet ds = file->openDataSet(name);
 
         DataSpace dspace_int_decode(H5S_SCALAR);
@@ -328,7 +341,7 @@ void SFile_MAT::WriteMATLAB_int_decode(const string& name, DataSet *dset, const 
         ds.close();
     } else {
         DataSpace dspace_int_decode(H5S_SCALAR);
-        Attribute att_int_decode = dset->createAttribute(
+        Attribute att_int_decode = obj->createAttribute(
             "MATLAB_int_decode", PredType::STD_I32LE, dspace_int_decode
         );
         int val = 2;

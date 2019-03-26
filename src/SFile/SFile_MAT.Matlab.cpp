@@ -247,6 +247,18 @@ string SFile_MAT::GetString(const string& name) {
 /******************************
  *********** OUTPUT ***********
  ******************************/
+/**
+ * Create a MATLAB struct with the given name.
+ * NOTE: This feature is currently unsupported when linking
+ * with the official MATLAB libraries (i.e. when using
+ * this implementation of 'SFile_MAT').
+ *
+ * name: Name of struct to create.
+ */
+void SFile_MAT::CreateStruct(const string& name) {
+	throw SFileException("While attempting to create struct '%s': SFile with official MATLAB libraries does not support creating structs.", name.c_str());
+}
+
 void SFile_MAT::WriteString(const string& name, const string& str) {
 	int status;
 	mxArray *ms;

@@ -59,11 +59,12 @@ bool sfile_compareLists(double *list1, double *list2, sfilesize_t l1, sfilesize_
  * Do a file test on the given SFile object.
  * Write output to the file named 'testname'.
  *
- * sf:        SFile object to use for testing.
- * testname:  Name of test (used for generating file name).
- * multisupp: Run the multi-dimensional array tests
+ * sf:         SFile object to use for testing.
+ * testname:   Name of test (used for generating file name).
+ * multisupp:  Run the multi-dimensional array tests
+ * structsupp: Run the 'struct'-writing/reading tests.
  */
-bool sfile_test(SFile *sf, const string& testname, const bool multisupp) {
+bool sfile_test(SFile *sf, const string& testname, const bool multisupp, const bool structsupp) {
 	sfilesize_t i, j, k;
 
 	// Construct the array
@@ -138,6 +139,11 @@ bool sfile_test(SFile *sf, const string& testname, const bool multisupp) {
 
 	if (multisupp)
 		sf->WriteMultiArray("multiArray", **mularr, 3, mularr_dims);
+	
+	if (structsupp) {
+		sf->CreateStruct("struct");
+		sf->WriteString("struct/struct_string", sfile_string);
+	}
 
 	sf->Close();
 
@@ -208,6 +214,12 @@ bool sfile_test(SFile *sf, const string& testname, const bool multisupp) {
 	strbuf = sf->GetString("string");
 	if (strbuf != sfile_string)
 		throw SOFTLibException("Reading/writing strings did not work.");
+
+	if (structsupp) {
+		strbuf = sf->GetString("struct/struct_string");
+		if (strbuf != sfile_string)
+			throw SOFTLibException("Reading/writing struct did not work.");
+	}
 
     sf->Close();
 

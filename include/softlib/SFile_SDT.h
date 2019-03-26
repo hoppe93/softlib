@@ -33,6 +33,7 @@ class SFile_SDT : public SFile {
         void LoadString(const std::string&, const sfilesize_t);
 	public:
 		void Close();
+		virtual void CreateStruct(const std::string&) override;
         virtual bool HasVariable(const std::string&) override;
 		virtual double **GetDoubles(const std::string&, sfilesize_t*) override;
 		virtual double *GetDoubles1D(const std::string&, sfilesize_t*) override;
