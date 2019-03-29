@@ -13,11 +13,11 @@
 
 class MagneticFieldNumeric2D : public MagneticField2D {
 	protected:
-		slibreal_t *Br, *Bphi, *Bz;
-        slibreal_t *Psi;
-		slibreal_t *R, *Z;
-		slibreal_t *rsep, *zsep;
-		slibreal_t *rwall, *zwall;
+		slibreal_t *Br=nullptr, *Bphi=nullptr, *Bz=nullptr;
+        slibreal_t *Psi=nullptr;
+		slibreal_t *R=nullptr, *Z=nullptr;
+		slibreal_t *rsep=nullptr, *zsep=nullptr;
+		slibreal_t *rwall=nullptr, *zwall=nullptr;
 		unsigned int nr, nz, nwall, nsep;
 
         /* Interpolated value storage */
@@ -77,6 +77,8 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 		void InitInterpolation();
 		virtual void Load(const std::string&);
 		virtual void Load(const std::string&, enum sfile_type);
+		void Save(const std::string&);
+		void Save(const std::string&, enum sfile_type);
 		/* Transpose a matrix from SFile */
 		double **Transpose(double**, sfilesize_t, sfilesize_t);
 

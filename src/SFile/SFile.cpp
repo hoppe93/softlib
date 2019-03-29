@@ -47,13 +47,10 @@ SFile *SFile::Create(const string& filename, enum sfile_mode mode, enum sfile_ty
 		case SFILE_TYPE_MATLAB:
 			sf = new SFile_MAT();
 			break;
-			throw SFileException("This version of softlib was not compiled with Matlab support.");
 		case SFILE_TYPE_SDT:
 			sf = new SFile_SDT();
 			break;
 		default: 
-			//cerr << "softlib ERROR: Trying to open file of unrecognized format: " << type << "." << endl;
-			//exit(-1);
 			throw SFileException("Trying to open file of unrecognized format: '%s'.", filename.c_str());
 	}
 

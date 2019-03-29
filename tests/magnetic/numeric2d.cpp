@@ -18,6 +18,7 @@ using namespace std;
 #define NZ 95
 #define NWALL 100
 #define TESTFILE "../tests/magnetic/circular-benchmark.mat"
+#define TESTFILE_NUMERIC "test-numeric2d-save.mat"
 
 #define THRESHOLD 5e-7
 #define PI 3.14159265359
@@ -54,9 +55,6 @@ MagneticFieldNumeric2D *Test_MagneticFieldNumeric2D::GenerateMF(
 
 			/* When phi = 0,
 			 * 	 Br = Bx, Bphi = By, Bz =Bz */
-			/*Br[i*nz + j]   = B[0];
-			Bphi[i*nz + j] = B[1];
-			Bz[i*nz + j]   = B[2];*/
             Br[i + j*nr]   = B[0];
             Bphi[i + j*nr] = B[1];
             Bz[i + j*nr]   = B[2];
@@ -93,11 +91,6 @@ bool Test_MagneticFieldNumeric2D::CheckNumericDerivatives(
     Zmax = mfa->GetRMinor();
 
     for (i = 0; i < NPOINTS; i++) {
-        /*
-        r = Rand(Rmin, Rmax);
-        p = Rand(0.0, 2.0*M_PI);
-        z = Rand(Zmin, Zmax);
-        */
         r = Rmin + (Rmax-Rmin)*((slibreal_t)i) / ((slibreal_t)(NPOINTS-1));
         p =        (2.0*PI)   *((slibreal_t)i) / ((slibreal_t)(NPOINTS-1));
         z = Zmin + (Zmax-Zmin)*((slibreal_t)i) / ((slibreal_t)(NPOINTS-1));
@@ -135,23 +128,37 @@ bool Test_MagneticFieldNumeric2D::CheckNumericDerivatives(
         return false;
     }
 
-    /*
-    bool printJ = true;
-    if (printJ) {
-        printf("Maximum errors in J:\n");
-        printf("  %10.3e  %10.3e  %10.3e\n", maxerrJ[0][0], maxerrJ[0][1], maxerrJ[0][2]);
-        printf("  %10.3e  %10.3e  %10.3e\n", maxerrJ[1][0], maxerrJ[1][1], maxerrJ[1][2]);
-        printf("  %10.3e  %10.3e  %10.3e\n\n", maxerrJ[2][0], maxerrJ[2][1], maxerrJ[2][2]);
-
-        printf("Minimum errors in J:\n");
-        printf("  %10.3e  %10.3e  %10.3e\n", minerrJ[0][0], minerrJ[0][1], minerrJ[0][2]);
-        printf("  %10.3e  %10.3e  %10.3e\n", minerrJ[1][0], minerrJ[1][1], minerrJ[1][2]);
-        printf("  %10.3e  %10.3e  %10.3e\n\n", minerrJ[2][0], minerrJ[2][1], minerrJ[2][2]);
-    } else
-        printf("Maximum error in J: %.3e (%u,%u).\n", maxerr, maxj, maxk);
-    */
-    
     return true;
+}
+
+/**
+ * Verifies that the numeric magnetic field is properly
+ * saved to an output file.
+ */
+bool Test_MagneticFieldNumeric2D::CheckMagneticFieldSave(MagneticFieldNumeric2D *mfn, const slibreal_t B0) {
+	MagneticFieldNumeric2D *mf = nullptr;
+	bool succ = true;
+
+	try {
+		mfn->Save(TESTFILE_NUMERIC);
+
+		MagneticFieldNumeric2D *mf = new MagneticFieldNumeric2D(TESTFILE_NUMERIC);
+		succ = ComparePoints(magnetic_field_test_data_const, mf, B0, "constant", true);
+
+		delete mf;
+	} catch (SOFTLibException &ex) {
+		this->PrintError("[MagneticFieldNumeric2D]: "+ex.whats());
+
+		if (mf != nullptr)
+			delete mf;
+
+		succ = false;
+	}
+
+	if (succ)
+		remove(TESTFILE_NUMERIC);
+
+	return succ;
 }
 
 /**
@@ -205,6 +212,12 @@ bool Test_MagneticFieldNumeric2D::Run() {
         return false;
     else
         this->PrintOK("Magnetic field derivative evaluation");
+	
+	// Check that the magnetic field is saved properly
+	if (!CheckMagneticFieldSave(mfn, B0))
+		return false;
+	else
+		this->PrintOK("Save-to-file");
 
 	return true;
 }

@@ -34,7 +34,6 @@ void SFile_HDF5::Open(const string& filename, enum sfile_mode openmode) {
 	try {
 		switch (openmode) {
 			case SFILE_MODE_READ:
-				//identifier = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
 				this->file = new H5File(filename, H5F_ACC_RDONLY);
 				break;
 			case SFILE_MODE_UPDATE:
@@ -44,11 +43,10 @@ void SFile_HDF5::Open(const string& filename, enum sfile_mode openmode) {
 				this->file = new H5File(filename, H5F_ACC_TRUNC);
 				break;
 			default:
-				//fprintf(stderr, "Unrecognized option for opening HDF5 file: %d.\n", mode);
 				throw SFileException("Unrecognized option for opening HDF5 file.");
 		}
 	} catch (FileIException &error) {
-		throw SFileException("Unable to open HDF5 file.\n"+error.getDetailMsg());
+		throw SFileException("%s: Unable to open HDF5 file.\n%s", filename.c_str(), error.getCDetailMsg());
 	}
 
 	this->filename = filename;

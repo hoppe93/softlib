@@ -41,12 +41,19 @@ MagneticFieldNumeric2D::MagneticFieldNumeric2D(const string& filename, enum sfil
 	BaseInit();
 }
 MagneticFieldNumeric2D::~MagneticFieldNumeric2D() {
-	delete [] interpval;
-	delete [] jacobian[0];
-	delete [] jacobian;
+	if (interpval != nullptr)
+		delete [] interpval;
+	if (jacobian != nullptr) {
+		delete [] jacobian[0];
+		delete [] jacobian;
+	}
 
-	delete [] R, delete [] Z;
-	delete [] Br, delete [] Bphi, delete [] Bz;
+	if (R != nullptr) delete [] R;
+	if (Z != nullptr) delete [] Z;
+
+	if (Br != nullptr) delete [] Br;
+	if (Bphi != nullptr) delete [] Bphi;
+	if (Bz != nullptr) delete [] Bz;
 
 	if (nwall > 0)
 		delete [] rwall, delete [] zwall;
@@ -709,3 +716,70 @@ double **MagneticFieldNumeric2D::Transpose(double **a, sfilesize_t rows, sfilesi
 
 	return r;
 }
+
+/**
+ * Save this numeric magnetic field to the output
+ * file with the given name.
+ *
+ * filename: Name of output file to save magnetic field to.
+ */
+void MagneticFieldNumeric2D::Save(const string& filename) {
+	Save(filename, SFile::TypeOfFile(filename));
+}
+void MagneticFieldNumeric2D::Save(const string& filename, enum sfile_type ftype) {
+	SFile *sf = SFile::Create(filename, SFILE_MODE_WRITE, ftype);
+	sfilesize_t dims[2] = {this->nz, this->nr};
+
+	sf->WriteMultiArray("Bphi", this->Bphi, 2, dims);
+	sf->WriteMultiArray("Br",   this->Br,   2, dims);
+	sf->WriteMultiArray("Bz",   this->Bz,   2, dims);
+
+	sf->WriteString("desc", this->description);
+	sf->WriteString("name", this->name);
+
+	sf->WriteList("maxis", this->magnetic_axis, 2);
+
+	sf->WriteMultiArray("Psi", this->Psi, 2, dims);
+
+	sf->WriteList("r", this->R, this->nr);
+	sf->WriteList("z", this->Z, this->nz);
+
+	sf->WriteList("verBphi", this->Bphi, this->nr);
+	sf->WriteList("verBr",   this->Br,   this->nr);
+	sf->WriteList("verBz",   this->Bz,   this->nr);
+
+	if (this->nsep > 0) {
+		double **separatrix = new double*[2];
+		separatrix[0] = new double[2*this->nsep];
+		separatrix[1] = separatrix[0] + this->nsep;
+
+		for (unsigned int i = 0; i < this->nsep; i++) {
+			separatrix[0][i] = rsep[i];
+			separatrix[1][i] = zsep[i];
+		}
+
+		sf->WriteArray("separatrix", separatrix, 2, this->nsep);
+
+		delete [] separatrix[0];
+		delete [] separatrix;
+	}
+
+	if (this->nwall > 0) {
+		double **wall = new double*[2];
+		wall[0] = new double[2*this->nwall];
+		wall[1] = wall[0] + this->nwall;
+
+		for (unsigned int i = 0; i < this->nwall; i++) {
+			wall[0][i] = rwall[i];
+			wall[1][i] = zwall[i];
+		}
+
+		sf->WriteArray("wall", wall, 2, this->nwall);
+
+		delete [] wall[0];
+		delete [] wall;
+	}
+
+	sf->Close();
+}
+

@@ -15,6 +15,7 @@ class Test_MagneticFieldNumeric2D : public Test_MagneticField {
             NPOINTS = 1000;
 	public:
 		Test_MagneticFieldNumeric2D(const string&);
+		bool CheckMagneticFieldSave(MagneticFieldNumeric2D*, const slibreal_t);
 		MagneticFieldNumeric2D *GenerateMF(MagneticFieldAnalytical2D*, slibreal_t, slibreal_t, unsigned int, unsigned int, unsigned int);
         bool CheckNumericDerivatives(MagneticFieldAnalytical2D*, MagneticFieldNumeric2D*);
 		bool Run();

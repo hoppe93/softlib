@@ -47,23 +47,23 @@
 
 using namespace std;
 
-MagneticFieldLUKE::MagneticFieldLUKE(const string& name) : MagneticFieldNumeric2D() {
+MagneticFieldLUKE::MagneticFieldLUKE(const string& name) {
 	Load(name);
 	InitInterpolation();
 }
-MagneticFieldLUKE::MagneticFieldLUKE(const string& name, enum sfile_type type) : MagneticFieldNumeric2D() {
+MagneticFieldLUKE::MagneticFieldLUKE(const string& name, enum sfile_type type) {
 	Load(name, type);
 	InitInterpolation();
 }
-MagneticFieldLUKE::MagneticFieldLUKE(const string& name, const string& wallname) : MagneticFieldNumeric2D() {
+MagneticFieldLUKE::MagneticFieldLUKE(const string& name, const string& wallname) {
 	Load(name, wallname);
 	InitInterpolation();
 }
-MagneticFieldLUKE::MagneticFieldLUKE(const string& name, enum sfile_type type, const string& wallname) : MagneticFieldNumeric2D() {
+MagneticFieldLUKE::MagneticFieldLUKE(const string& name, enum sfile_type type, const string& wallname) {
 	Load(name, type, wallname);
 	InitInterpolation();
 }
-MagneticFieldLUKE::MagneticFieldLUKE(const string& name, enum sfile_type type, const string& wallname, enum sfile_type walltype) : MagneticFieldNumeric2D() {
+MagneticFieldLUKE::MagneticFieldLUKE(const string& name, enum sfile_type type, const string& wallname, enum sfile_type walltype) {
 	Load(name, type, wallname, walltype);
 	InitInterpolation();
 }
@@ -123,17 +123,17 @@ void MagneticFieldLUKE::Load(const string& name, enum sfile_type type, const str
 	double psia = sf->GetScalar("equil/eqdsk/psia");
 	
 	// Build poloidal angle grid
-	double **_theta = new double*[nxgpsi];
+	double **_theta = new double*[nygpsi];
 	_theta[0] = new double[nxgpsi*nygpsi];
-	for (sfilesize_t i = 1; i < nxgpsi; i++)
-		_theta[i] = _theta[i-1] + nygpsi;
+	for (sfilesize_t i = 1; i < nygpsi; i++)
+		_theta[i] = _theta[i-1] + nxgpsi;
 	
-	for (sfilesize_t i = 0; i < nygpsi; i++) {
-		for (sfilesize_t j = 0; j < nxgpsi; j++) {
-			_theta[i][j] = atan2(_ygpsi[i], _xgpsi[j]);
+	for (sfilesize_t i = 0; i < nxgpsi; i++) {
+		for (sfilesize_t j = 0; j < nygpsi; j++) {
+			_theta[j][i] = atan2(_ygpsi[j], _xgpsi[i]);
 
-			if (_theta[i][j] < 0)
-				_theta[i][j] = 2.0*M_PI + _theta[i][j];
+			if (_theta[j][i] < 0)
+				_theta[j][i] = 2.0*M_PI + _theta[j][i];
 		}
 	}
 
@@ -157,9 +157,11 @@ void MagneticFieldLUKE::Load(const string& name, enum sfile_type type, const str
 	// so we need to take the absolute value of every element.
 	// This is only used for interpolating from psi/theta to R/Z,
 	// and does not enter anywhere else.
+	// While we're at it, we also normalize to the value on the
+	// LCFS, so that we get the normalized flux.
 	for (unsigned int i = 0; i < npsig; i++)
-		_psig[i] = fabs(_psig[i]);
-
+		_psig[i] = fabs(_psig[i] / _psig[npsig-1]);
+	
 	// Theta grid (on which MF is given)
 	double *_tsig = sf->GetList("equil/theta", fs);
 	sfilesize_t ntsig = fs[0];
@@ -186,13 +188,19 @@ void MagneticFieldLUKE::Load(const string& name, enum sfile_type type, const str
 		);
 	
 	// Setup interpolation
-	gsl_interp2d *wspaceR = gsl_interp2d_alloc(gsl_interp2d_bicubic, ntsig, npsig);
-	gsl_interp2d *wspaceZ = gsl_interp2d_alloc(gsl_interp2d_bicubic, ntsig, npsig);
-	gsl_interp2d *wspaceT = gsl_interp2d_alloc(gsl_interp2d_bicubic, ntsig, npsig);
+	// Bicubic interpolation seems to become unstable for these types of
+	// magnetic fields, and so we are required to use bilinear interpolation instead.
+	/*gsl_interp2d *wspaceR = gsl_interp2d_alloc(gsl_interp2d_bicubic, npsig, ntsig);
+	gsl_interp2d *wspaceZ = gsl_interp2d_alloc(gsl_interp2d_bicubic, npsig, ntsig);
+	gsl_interp2d *wspaceT = gsl_interp2d_alloc(gsl_interp2d_bicubic, npsig, ntsig);*/
 
-	gsl_interp2d_init(wspaceR, _tsig, _psig, _Br[0], ntsig, npsig);
-	gsl_interp2d_init(wspaceZ, _tsig, _psig, _Bz[0], ntsig, npsig);
-	gsl_interp2d_init(wspaceT, _tsig, _psig, _Bt[0], ntsig, npsig);
+	gsl_interp2d *wspaceR = gsl_interp2d_alloc(gsl_interp2d_bilinear, npsig, ntsig);
+	gsl_interp2d *wspaceZ = gsl_interp2d_alloc(gsl_interp2d_bilinear, npsig, ntsig);
+	gsl_interp2d *wspaceT = gsl_interp2d_alloc(gsl_interp2d_bilinear, npsig, ntsig);
+
+	gsl_interp2d_init(wspaceR, _psig, _tsig, _Br[0], npsig, ntsig);
+	gsl_interp2d_init(wspaceZ, _psig, _tsig, _Bz[0], npsig, ntsig);
+	gsl_interp2d_init(wspaceT, _psig, _tsig, _Bt[0], npsig, ntsig);
 
 	gsl_interp_accel
 		*raccR = gsl_interp_accel_alloc(),
@@ -208,29 +216,14 @@ void MagneticFieldLUKE::Load(const string& name, enum sfile_type type, const str
 	this->Bz   = new slibreal_t[this->nr*this->nz];
 	this->Psi  = new slibreal_t[this->nr*this->nz];
 
+	for (unsigned int j = 0; j < this->nz; j++) {
+		for (unsigned int i = 0; i < this->nr; i++) { 
+			slibreal_t psival          = _Psi[j][i];
+			this->Psi[i + j*this->nr]  = psival * psia;
 
-	slibreal_t
-		psimin = _psig[0],
-		psimax = _psig[npsig-1];
-
-	for (unsigned int i = 0; i < this->nr; i++) { 
-		for (unsigned int j = 0; j < this->nz; j++) {
-			slibreal_t psival          = _Psi[j][i] * psia;
-			this->Psi[i + j*this->nr]  = psival;
-
-			if (psimax < fabs(psival)) {
-				this->Br[i + j*this->nr]   = _Br[0][npsig-1];
-				this->Bphi[i + j*this->nr] = _Bt[0][npsig-1];
-				this->Bz[i + j*this->nr]   = _Bz[0][npsig-1];
-			} else if (psimin > fabs(psival)) {
-				this->Br[i + j*this->nr]   = _Br[0][0];
-				this->Bphi[i + j*this->nr] = _Bt[0][0];
-				this->Bz[i + j*this->nr]   = _Bz[0][0];
-			} else {
-				this->Br[i + j*this->nr]   = gsl_interp2d_eval(wspaceR, _tsig, _psig, _Br[0], _theta[j][i], fabs(psival), zaccR, raccR);
-				this->Bphi[i + j*this->nr] = gsl_interp2d_eval(wspaceR, _tsig, _psig, _Bt[0], _theta[j][i], fabs(psival), zaccT, raccT);
-				this->Bz[i + j*this->nr]   = gsl_interp2d_eval(wspaceR, _tsig, _psig, _Bz[0], _theta[j][i], fabs(psival), zaccZ, raccZ);
-			}
+			this->Br[i + j*this->nr]   = gsl_interp2d_eval_extrap(wspaceR, _psig, _tsig, _Br[0], fabs(psival), _theta[j][i], raccR, zaccR);
+			this->Bphi[i + j*this->nr] = gsl_interp2d_eval_extrap(wspaceR, _psig, _tsig, _Bt[0], fabs(psival), _theta[j][i], raccT, zaccT);
+			this->Bz[i + j*this->nr]   = gsl_interp2d_eval_extrap(wspaceR, _psig, _tsig, _Bz[0], fabs(psival), _theta[j][i], raccZ, zaccZ);
 		}
 	}
 

@@ -56,7 +56,7 @@ bool MagneticField2D::CrossesDomain(
         y11 = zdomain[i+1] - y10;
 
         /* Check if matrix is zero */
-        if (x00-x10 == 0 && y00-y10 == 0) return false;
+        if (x00-x10 == 0 && y00-y10 == 0) continue;
         
         /* Compute determinant and check if zero */
         det = x11*y01 - x01*y11;
@@ -66,10 +66,10 @@ bool MagneticField2D::CrossesDomain(
         t =-(1/det) * ((y00-y10)*x11 - (x00-x10)*y11);
 
         /* If s and t are between 0 and 1 => intersection */
-        if (s>=0 && s<=1 && t>=0 && t<=1) return false;
+        if (s>=0 && s<=1 && t>=0 && t<=1) return true;
     }
     
-    return true;
+    return false;
 }
 
 /**

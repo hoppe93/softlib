@@ -45,7 +45,7 @@ void SFile_MAT::Open(const string& filename, enum sfile_mode openmode) {
 				throw SFileException("Unrecognized option for opening HDF5 file.");
 		}
 	} catch (FileIException &error) {
-		throw SFileException("Unable to open HDF5 file.\n"+error.getDetailMsg());
+		throw SFileException("%s: Unable to open HDF5 file.\n%s", filename.c_str(), error.getCDetailMsg());
 	}
 
 	this->filename = filename;

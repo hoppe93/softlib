@@ -10,7 +10,7 @@
 #include <softlib/MagneticField/MagneticFieldLUKE.h>
 #include <softlib/SFileException.h>
 
-#define THRESHOLD 			5e-7
+#define THRESHOLD 			1e-3
 #define TESTFILE_LUKE 		"test_equil_luke.mat"
 #define TESTFILE_LUKE_WALL	"test_equil_luke_wall.mat"
 #define NR					99
@@ -46,21 +46,24 @@ void Test_MagneticFieldLUKE::GenerateLUKEMF(
 	// Poloidal flux on LCFS
 	double psia = mfa->EvalFlux(Rm + rminor, 0.0, 0.0);
 
-	for (unsigned int j = 0; j < nz; j++)
+	for (unsigned int j = 0; j < nz; j++) {
 		for (unsigned int i = 0; i < nr; i++) {
 			Psi[j][i] = mfa->EvalFlux(R[i] + Rm, 0.0, Z[j]) / psia;
+		}
 	}
 
 	// XXX Assume circular flux surfaces
-	unsigned int npsi = nr/2, nrbase = nr/2 + nr%2;
+	unsigned int
+		npsi = nr/2 + nr%2,
+		nrbase = nr/2,
+		nzbase = nz/2;
 	double *pgrid = new double[npsi];
 	double *tgrid = new double[ntheta];
 
 	for (unsigned int i = 0; i < npsi; i++)
-		pgrid[i] = Psi[(nz/2)][nrbase + i] * psia;
-
-	tgrid[0] = 0.0;
-	for (unsigned int i = 1; i < ntheta; i++)
+		pgrid[i] = Psi[nzbase][nrbase + i] * psia;
+	
+	for (unsigned int i = 0; i < ntheta; i++)
 		tgrid[i] = 2.0*M_PI * ((double)i)/((double)(ntheta-1));
 	
 	double **ptx = new double*[ntheta];
@@ -172,8 +175,13 @@ bool Test_MagneticFieldLUKE::Run() {
 		success = false;
 	}
 
-	if (success)
+	if (success) {
 		this->PrintOK("Magnetic field evaluation -- compared to table");
+
+		// Delete test files
+		remove(TESTFILE_LUKE_WALL);
+		remove(TESTFILE_LUKE);
+	}
 
 	return success;
 }

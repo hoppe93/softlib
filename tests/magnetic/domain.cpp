@@ -68,7 +68,7 @@ bool Test_Domain::Run() {
 		y2 = test_domain_inside[1][i+1];
 
 		/* Test with another inside point */
-		if (!mf->CrossesDomain(x*s, x*c, y, x2, 0.0, y2)) {
+		if (mf->CrossesDomain(x*s, x*c, y, x2, 0.0, y2)) {
 			this->PrintError("[Domain]: The two points (%u) and (%u), both located inside, are marked as lying outside domain.", i, i+1);
 			return false;
 		}
@@ -86,7 +86,7 @@ bool Test_Domain::Run() {
 		y2 = test_domain_outside[1][i+1];
 
 		/* Test with another inside point */
-		if (mf->CrossesDomain(x*s, x*c, y, x2, 0.0, y2)) {
+		if (!mf->CrossesDomain(x*s, x*c, y, x2, 0.0, y2)) {
 			this->PrintError("[Domain]: The two points (%u) and (%u), located inside and outside, are marked as lying inside domain.", i, i+1);
 			return false;
 		}
