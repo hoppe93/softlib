@@ -1,6 +1,6 @@
 /**
  * Implementation of private methods for
- * the 'Configuration' class.
+ * the 'ConfigurationScript' class.
  */
 
 #include <fstream>
@@ -10,11 +10,12 @@
 #include <vector>
 
 #include <softlib/Configuration.h>
-#include <softlib/SOFTLibException.h>
+#include <softlib/Configuration/ConfigurationScript.h>
+#include <softlib/ConfigurationException.h>
 
 using namespace std;
 
-void Configuration::initbuffer(const string& buf) {
+void ConfigurationScript::initbuffer(const string& buf) {
 	this->cnfbuffer = buf;
 	this->cnfbufferpos = 0;
 	this->cnfbufferlength = buf.length();
@@ -29,7 +30,7 @@ void Configuration::initbuffer(const string& buf) {
  * If 'instring == true', all characters are
  * returned, even whitespace.
  */
-char Configuration::nextc() {
+char ConfigurationScript::nextc() {
 	char c;
 	if (this->cnfbufferpos >= this->cnfbufferlength) return 0;
 
@@ -74,7 +75,7 @@ char Configuration::nextc() {
 
 	return 0;
 }
-ConfigToken *Configuration::gettkn(string& s, ConfigToken *prev) {
+ConfigToken *ConfigurationScript::gettkn(string& s, ConfigToken *prev) {
 	// First we check for simple tokens
 	if (s == "=") {
 		return new ConfigToken(CTKN_EQUALS, s, prev, this->linecounter, this->charpos, this->file);
@@ -108,7 +109,7 @@ ConfigToken *Configuration::gettkn(string& s, ConfigToken *prev) {
 	// Else, it must be a name.
 	return new ConfigToken(CTKN_NAME, s, prev, this->linecounter, this->charpos, this->file);
 }
-void Configuration::pushbuffer(string& buffer, vector<ConfigToken*>& tkns) {
+void ConfigurationScript::pushbuffer(string& buffer, vector<ConfigToken*>& tkns) {
 	if (buffer.empty()) return;
 
     ConfigToken *ct;
@@ -130,7 +131,7 @@ void Configuration::pushbuffer(string& buffer, vector<ConfigToken*>& tkns) {
  *
  * name: Name of configuration file to read.
  */
-vector<ConfigToken*> Configuration::include_file(const string& name) {
+vector<ConfigToken*> ConfigurationScript::include_file(const string& name) {
     ifstream cfile(name);
     stringstream buf;
     string oldname, oldbuf;
@@ -178,7 +179,7 @@ vector<ConfigToken*> Configuration::include_file(const string& name) {
 /**
  * Perform lexical analysis on the configuration script.
  */
-vector<ConfigToken*> Configuration::Lex(const string& str) {
+vector<ConfigToken*> ConfigurationScript::Lex(const string& str) {
 	vector<ConfigToken*> tkns;
 	ConfigToken tkn;
 	char c;

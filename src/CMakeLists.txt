@@ -33,10 +33,11 @@ set(RK_TOLERANCE "1e-6")
 
 set(core
 	"${PROJECT_SOURCE_DIR}/src/Configuration/ConfigBlock.cpp"
-	"${PROJECT_SOURCE_DIR}/src/Configuration/ConfigToken.cpp"
+	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/ConfigToken.cpp"
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Configuration.cpp"
-	"${PROJECT_SOURCE_DIR}/src/Configuration/Configuration.interpreter.cpp"
-	"${PROJECT_SOURCE_DIR}/src/Configuration/Configuration.lexer.cpp"
+	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/ConfigurationScript.cpp"
+	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/Interpreter.cpp"
+	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/Lexer.cpp"
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Setting.cpp"
 	"${PROJECT_SOURCE_DIR}/src/General/SOFTLibException.cpp"
 	"${PROJECT_SOURCE_DIR}/src/General/ProgressTracker.cpp"

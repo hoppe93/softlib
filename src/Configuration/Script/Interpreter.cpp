@@ -8,6 +8,7 @@
 #include <vector>
 #include <softlib/Configuration.h>
 #include <softlib/ConfigurationException.h>
+#include <softlib/Configuration/ConfigurationScript.h>
 
 using namespace std;
 
@@ -16,7 +17,7 @@ using namespace std;
  * Returns TRUE as long as the end of the stream
  * (i.e. EOF) has not been reached.
  */
-bool Configuration::advance() {
+bool ConfigurationScript::advance() {
 	// If current token is EOF, we're already done
 	if (tokent() == CTKN_EOF) return false;
 
@@ -34,7 +35,7 @@ bool Configuration::advance() {
  * type: Array of types to search for. The function stops
  *   at the first match in this array.
  */
-bool Configuration::advanceTo(std::initializer_list<conftoken_t> args) {
+bool ConfigurationScript::advanceTo(std::initializer_list<conftoken_t> args) {
 	do {
 		ConfigToken *tkn = *(this->tknstream+1);
 
@@ -50,19 +51,19 @@ bool Configuration::advanceTo(std::initializer_list<conftoken_t> args) {
 /**
  * Returns the current character position.
  */
-size_t Configuration::currcharpos() {
+size_t ConfigurationScript::currcharpos() {
     return (token()->GetCharpos());
 }
 /**
  * Returns the name of the current file.
  */
-string Configuration::currfile() {
+string ConfigurationScript::currfile() {
     return (token()->GetFilename());
 }
 /**
  * Returns the current line number.
  */
-size_t Configuration::currline() {
+size_t ConfigurationScript::currline() {
     return (token()->GetLine());
 }
 
@@ -72,7 +73,7 @@ size_t Configuration::currline() {
  *
  * type: Expected type of the next token.
  */
-void Configuration::expect(conftoken_t type) {
+void ConfigurationScript::expect(conftoken_t type) {
 	if (!advance() || tokent() != type) {
 		const string tps  = ttos(type);
 		const string toks = ttos(tokent());
@@ -82,14 +83,14 @@ void Configuration::expect(conftoken_t type) {
 /**
  * Return the current token in the stream
  */
-ConfigToken *Configuration::token() {
+ConfigToken *ConfigurationScript::token() {
 	ConfigToken *tkn = *(this->tknstream);
 	return tkn;
 }
 /**
  * Return the type of the current token
  */
-conftoken_t Configuration::tokent() {
+conftoken_t ConfigurationScript::tokent() {
 	ConfigToken *tkn = *(this->tknstream);
 	return tkn->GetType();
 }
@@ -97,7 +98,7 @@ conftoken_t Configuration::tokent() {
 /**
  * Return the type of the next token
  */
-conftoken_t Configuration::tokent_n() {
+conftoken_t ConfigurationScript::tokent_n() {
 	// If EOF has been reached, next token is EOF
 	if (tokent() == CTKN_EOF) return CTKN_EOF;
 
@@ -109,7 +110,7 @@ conftoken_t Configuration::tokent_n() {
  *
  * type: The token-type to translate to a string.
  */
-const char *Configuration::ttos(conftoken_t type) {
+const char *ConfigurationScript::ttos(conftoken_t type) {
 	switch (type) {
 		case CTKN_NAME: return "name";
 		case CTKN_VALUE: return "value";
@@ -129,7 +130,7 @@ const char *Configuration::ttos(conftoken_t type) {
 /**
  * Convert the stream of tokens to a 'ConfigBlock'.
  */
-ConfigBlock Configuration::Interpret(vector<ConfigToken*>& tkns) {
+ConfigBlock ConfigurationScript::Interpret(vector<ConfigToken*>& tkns) {
 	ConfigBlock rootblock = ConfigBlock(0, "<root>");
 	ConfigBlock *blck;
 	ConfigToken *tkn;
