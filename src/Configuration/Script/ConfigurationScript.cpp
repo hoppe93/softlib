@@ -21,13 +21,13 @@ using namespace std;
  */
 void ConfigurationScript::FromFile(const string& filename) {
 	if (!this->filename.empty())
-		throw SOFTLibException("A configuration file has already been opened with this ConfigurationScript object.");
+		throw ConfigurationException("A configuration file has already been opened with this ConfigurationScript object.");
 
 	ifstream cfile(filename);
 	stringstream buffer;
 
 	if (!cfile.is_open())
-		throw SOFTLibException("Unable to open configuration file: " + filename);
+		throw ConfigurationException("Unable to open configuration file: " + filename);
 	else this->filename = filename;
 
 	buffer << cfile.rdbuf();
