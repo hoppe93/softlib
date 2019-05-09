@@ -6,6 +6,7 @@
 
 #include <string>
 #include <softlib/Configuration.h>
+#include <softlib/Configuration/ConfigurationScript.h>
 
 using namespace std;
 

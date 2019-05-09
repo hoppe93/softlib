@@ -4,7 +4,7 @@
 #include <cmath>
 #include <limits>
 
-#include <softlib/Configuration.h>
+#include <softlib/Configuration/ConfigurationScript.h>
 #include <softlib/SOFTLibException.h>
 
 #include "configuration_test.h"
@@ -54,7 +54,7 @@ bool Test_Configuration::Run() {
 	bool success = true;
 
     for (unsigned int i = 0; i < Test_Configuration_NCONFIGS && success; i++) {
-        Configuration *cnf = new Configuration();
+        ConfigurationScript *cnf = new ConfigurationScript();
         cnf->RegisterBlockType("@Block");
 
         try {
