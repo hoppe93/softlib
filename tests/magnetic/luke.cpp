@@ -155,10 +155,11 @@ bool Test_MagneticFieldLUKE::Run() {
 	slibreal_t
 		B0       = magnetic_field_test_data_B0,
 		Rm       = magnetic_field_test_data_Rm,
+		zm       = magnetic_field_test_data_zm,
 		rminor   = magnetic_field_test_data_rminor,
 		qa_const = magnetic_field_test_data_qa_const;
 	
-	MagneticFieldAnalytical2D *mfa = new MagneticFieldAnalytical2D(B0, Rm, rminor, MFAFS_CW, MFAFS_CCW, MFASF_CONSTANT, qa_const, 0.0);
+	MagneticFieldAnalytical2D *mfa = new MagneticFieldAnalytical2D(B0, Rm, zm, rminor, MFAFS_CW, MFAFS_CCW, MFASF_CONSTANT, qa_const, 0.0);
 	GenerateLUKEMF(mfa, Rm, rminor, NR, NZ, NTHETA, NWALL);
 	bool success = true;
 

@@ -1,13 +1,13 @@
-function [B,Babs,gradB,curlB] = magnetic_field(x0,B0,Rm,sigmaB,sigmaI,q,rDqDr)
+function [B,Babs,gradB,curlB] = magnetic_field(x0,B0,Rm,zm,sigmaB,sigmaI,q,rDqDr)
 
     x = x0(1);
     y = x0(2);
     z = x0(3);
     
     R = hypot(x, y);
-    r = hypot(z, Rm-R);
+    r = hypot(z-zm, Rm-R);
     
-    sintheta = z ./ r;
+    sintheta = (z-zm) ./ r;
     costheta = (Rm-R) ./ r;
     sinphi = y ./ R;
     cosphi = x ./ R;

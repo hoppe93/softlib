@@ -9,6 +9,7 @@
 const unsigned int MAGNETIC_FIELD_TEST_NPOINTS=25;
 const slibreal_t magnetic_field_test_data_B0      =5,
                  magnetic_field_test_data_Rm      =0.68,
+                 magnetic_field_test_data_zm      =0,
                  magnetic_field_test_data_rminor  =0.22,
                  magnetic_field_test_data_qa_const=0.5,
                  magnetic_field_test_data_qa_lin  =2,

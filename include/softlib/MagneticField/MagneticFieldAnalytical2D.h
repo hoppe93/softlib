@@ -31,15 +31,16 @@ class MagneticFieldAnalytical2D : public MagneticField2D {
 				   safety_factor_param2;
 		enum MFASafetyFactorType safety_factor_type;
 
-		slibreal_t B0, Rm, rminor, sigmaB, sigmaI, **jacobian;
+		slibreal_t B0, Rm, rminor, sigmaB, sigmaI, **jacobian,
+            maxis_z=0;
 	public:
-		MagneticFieldAnalytical2D(slibreal_t, slibreal_t, slibreal_t, enum MFAFieldSign, enum MFAFieldSign, enum MFASafetyFactorType, slibreal_t, slibreal_t);
-		MagneticFieldAnalytical2D(slibreal_t, slibreal_t, slibreal_t, enum MFAFieldSign, enum MFAFieldSign, enum MFASafetyFactorType, slibreal_t, slibreal_t, const std::string&, const std::string&);
+		MagneticFieldAnalytical2D(slibreal_t, slibreal_t, slibreal_t, slibreal_t, enum MFAFieldSign, enum MFAFieldSign, enum MFASafetyFactorType, slibreal_t, slibreal_t);
+		MagneticFieldAnalytical2D(slibreal_t, slibreal_t, slibreal_t, slibreal_t, enum MFAFieldSign, enum MFAFieldSign, enum MFASafetyFactorType, slibreal_t, slibreal_t, const std::string&, const std::string&);
 		virtual ~MagneticFieldAnalytical2D() {}
 
         MagneticFieldAnalytical2D *Clone();
 
-        void ConstructDomain(const slibreal_t, const slibreal_t);
+        void ConstructDomain(const slibreal_t, const slibreal_t, const slibreal_t);
 		slibreal_t *Eval(slibreal_t*);
 		slibreal_t *Eval(slibreal_t, slibreal_t, slibreal_t);
 		struct magnetic_field_data& EvalDerivatives(slibreal_t*);

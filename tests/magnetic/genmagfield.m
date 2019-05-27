@@ -2,6 +2,7 @@ clc; clear;
 
 npoints = 25;
 Rm = 0.68;
+zm = 0;
 B0 = 5;
 rminor = 0.22;
 
@@ -41,12 +42,12 @@ for i=1:npoints
     pola = 2*pi * rand;
     tora = 2*pi * rand;
     
-    x = [(Rm-minr*cos(pola))*cos(tora), (Rm-minr*cos(pola))*sin(tora), minr*sin(pola)];
+    x = [(Rm-minr*cos(pola))*cos(tora), (Rm-minr*cos(pola))*sin(tora), zm+minr*sin(pola)];
     
-    [Bc, cBabs, gradBc, curlBc] = magnetic_field(x, B0, Rm, -1, +1, qc(minr/rminor), qpc(minr/rminor));
-    [Bl, lBabs, gradBl, curlBl] = magnetic_field(x, B0, Rm, -1, +1, ql(minr/rminor), qpl(minr/rminor));
-    [Bq, qBabs, gradBq, curlBq] = magnetic_field(x, B0, Rm, -1, +1, qq(minr/rminor), qpq(minr/rminor));
-    [Be, eBabs, gradBe, curlBe] = magnetic_field(x, B0, Rm, -1, +1, qe(minr/rminor), qpe(minr/rminor));
+    [Bc, cBabs, gradBc, curlBc] = magnetic_field(x, B0, Rm, zm, -1, +1, qc(minr/rminor), qpc(minr/rminor));
+    [Bl, lBabs, gradBl, curlBl] = magnetic_field(x, B0, Rm, zm, -1, +1, ql(minr/rminor), qpl(minr/rminor));
+    [Bq, qBabs, gradBq, curlBq] = magnetic_field(x, B0, Rm, zm, -1, +1, qq(minr/rminor), qpq(minr/rminor));
+    [Be, eBabs, gradBe, curlBe] = magnetic_field(x, B0, Rm, zm, -1, +1, qe(minr/rminor), qpe(minr/rminor));
     
     c = [x, Bc', gradBc', curlBc'];
     l = [x, Bl', gradBl', curlBl'];
@@ -100,6 +101,7 @@ fwrite(fid, ['#define MAGNETIC_FIELD_TEST_GUARANTEED_PRECISION (max(100*',num2st
 fwrite(fid, ['const unsigned int MAGNETIC_FIELD_TEST_NPOINTS=',num2str(npoints),';',10]);
 fwrite(fid, ['const slibreal_t magnetic_field_test_data_B0      =',ns(B0),',',10]);
 fwrite(fid, ['                 magnetic_field_test_data_Rm      =',ns(Rm),',',10]);
+fwrite(fid, ['                 magnetic_field_test_data_zm      =',ns(zm),',',10]);
 fwrite(fid, ['                 magnetic_field_test_data_rminor  =',ns(rminor),',',10]);
 fwrite(fid, ['                 magnetic_field_test_data_qa_const=',ns(a1),',',10]);
 fwrite(fid, ['                 magnetic_field_test_data_qa_lin  =',ns(a2),',',10]);
@@ -145,23 +147,23 @@ fclose(fid);
 nr = 100;
 nz = 100;
 r = linspace(-rminor, rminor, nr) + Rm;
-z = linspace(-rminor, rminor, nz);
+z = linspace(-rminor, rminor, nz) + zm;
 name = 'Circular magnetic field - for benchmarking SOFT';
-desc = ['Circular magnetic field with B0 = ',num2str(B0,2),', Rm = ',num2str(Rm,2),', q = ',num2str(a1,2)];
+desc = ['Circular magnetic field with B0 = ',num2str(B0,2),', Rm = ',num2str(Rm,2),', zm = ',num2str(zm,2),', q = ',num2str(a1,2)];
 
 % Generate wall
 t = linspace(0, 2*pi);
-wall = [Rm+rminor*cos(t); rminor*sin(t)];
+wall = [Rm+rminor*cos(t); zm+rminor*sin(t)];
 
 Br = zeros(nr, nz);
 Bphi = zeros(nr, nz);
 Bz = zeros(nr, nz);
-maxis = [Rm 0];
+maxis = [Rm zm];
 
 for i=1:nr
     for j=1:nz
         minr = r(i) - Rm;
-        B = magnetic_field([r(i), 0, z(j)], B0, Rm, -1, +1, qc(minr/rminor), qpc(minr/rminor));
+        B = magnetic_field([r(i), 0, z(j)], B0, Rm, zm, -1, +1, qc(minr/rminor), qpc(minr/rminor));
         
         Br(i,j)   = B(1);
         Bphi(i,j) = B(2);
