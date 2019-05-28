@@ -25,6 +25,12 @@ slibreal_t MagneticFieldAnalytical2D::__GetSafetyFactor(slibreal_t r) {
 			return safety_factor_param1*rn*rn + safety_factor_param2;
 		case MFASF_EXPONENTIAL:
 			return exp(rn * safety_factor_param1) + safety_factor_param2;
+        case MFASF_CURRENT:
+            if (safety_factor_param2 == std::numeric_limits<slibreal_t>::infinity())
+                return safety_factor_param1;
+            else
+                return safety_factor_param1 / (1 - 2.0/(safety_factor_param2+2.0) *
+                    pow(rn, safety_factor_param2));
 		default: return 1.0;
 	}
 }
@@ -46,6 +52,13 @@ slibreal_t MagneticFieldAnalytical2D::__GetrDqDr(slibreal_t r) {
 			return 2*safety_factor_param1 * rn * rn;
 		case MFASF_EXPONENTIAL:
 			return exp(rn * safety_factor_param1) * safety_factor_param1 * rn;
+        case MFASF_CURRENT:
+            if (safety_factor_param2 == std::numeric_limits<slibreal_t>::infinity())
+                return 0.0;
+            else
+                return 2.0*safety_factor_param2/(safety_factor_param2+2.0) *
+                    safety_factor_param1/(1 - 2.0/(safety_factor_param2+2.0) *
+                    pow(rn, safety_factor_param2));
 		default: return 0;
 	}
 }
