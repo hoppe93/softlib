@@ -55,10 +55,15 @@ slibreal_t MagneticFieldAnalytical2D::__GetrDqDr(slibreal_t r) {
         case MFASF_CURRENT:
             if (safety_factor_param2 == std::numeric_limits<slibreal_t>::infinity())
                 return 0.0;
-            else
-                return 2.0*safety_factor_param2/(safety_factor_param2+2.0) *
-                    safety_factor_param1/(1 - 2.0/(safety_factor_param2+2.0) *
-                    pow(rn, safety_factor_param2));
+            else {
+                slibreal_t an = pow(rn, safety_factor_param2);
+                slibreal_t den = 1 - 2.0/(safety_factor_param2+2.0) * an;
+
+                slibreal_t qq = 2.0*safety_factor_param2/(safety_factor_param2+2.0) *
+                    safety_factor_param1 / (den*den) * an;
+                    
+                return qq;
+            }
 		default: return 0;
 	}
 }

@@ -14,7 +14,10 @@ const slibreal_t magnetic_field_test_data_B0      =5,
                  magnetic_field_test_data_qa_const=0.5,
                  magnetic_field_test_data_qa_lin  =2,
                  magnetic_field_test_data_qa_quad =2,
-                 magnetic_field_test_data_qa_exp  =0.693147180559945;
+                 magnetic_field_test_data_qa_exp  =0.693147180559945,
+                 magnetic_field_test_data_qa1_curr=0.5,
+                 magnetic_field_test_data_qa2_curr=2;
+extern const slibreal_t magnetic_field_test_data_curr[25][12];
 extern const slibreal_t magnetic_field_test_data_const[25][12];
 extern const slibreal_t magnetic_field_test_data_linear[25][12];
 extern const slibreal_t magnetic_field_test_data_quadratic[25][12];

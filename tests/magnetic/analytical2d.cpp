@@ -33,13 +33,16 @@ bool Test_MagneticFieldAnalytical2D::Run() {
 		Rm       = magnetic_field_test_data_Rm,
         zm       = magnetic_field_test_data_zm,
 		rminor   = magnetic_field_test_data_rminor,
+        qa1_curr = magnetic_field_test_data_qa1_curr,
+        qa2_curr = magnetic_field_test_data_qa2_curr,
 		qa_const = magnetic_field_test_data_qa_const,
 		qa_lin   = magnetic_field_test_data_qa_lin,
 		qa_quad  = magnetic_field_test_data_qa_quad,
 		qa_exp   = magnetic_field_test_data_qa_exp;
 
-	MagneticFieldAnalytical2D *mf_const, *mf_lin, *mf_quad, *mf_exp;
+	MagneticFieldAnalytical2D *mf_curr, *mf_const, *mf_lin, *mf_quad, *mf_exp;
 
+    mf_curr  = new MagneticFieldAnalytical2D(B0, Rm, zm, rminor, MFAFS_CW, MFAFS_CCW, MFASF_CURRENT, qa1_curr, qa2_curr);
 	mf_const = new MagneticFieldAnalytical2D(B0, Rm, zm, rminor, MFAFS_CW, MFAFS_CCW, MFASF_CONSTANT, qa_const, 0.0);
 	mf_lin   = new MagneticFieldAnalytical2D(B0, Rm, zm, rminor, MFAFS_CW, MFAFS_CCW, MFASF_LINEAR, qa_lin, 1.0);
 	mf_quad  = new MagneticFieldAnalytical2D(B0, Rm, zm, rminor, MFAFS_CW, MFAFS_CCW, MFASF_QUADRATIC, qa_quad, 1.0);
@@ -47,6 +50,7 @@ bool Test_MagneticFieldAnalytical2D::Run() {
 
 	// Test list of values
 	try {
+		success &= ComparePoints(magnetic_field_test_data_curr, mf_curr, B0, "current", true);
 		success &= ComparePoints(magnetic_field_test_data_const, mf_const, B0, "constant", true);
 		success &= ComparePoints(magnetic_field_test_data_linear, mf_lin, B0, "linear", true);
 		success &= ComparePoints(magnetic_field_test_data_quadratic, mf_quad, B0, "quadratic", true);
@@ -63,6 +67,7 @@ bool Test_MagneticFieldAnalytical2D::Run() {
 
 	// Test derivatives
 	try {
+		success &= CompareDerivatives(magnetic_field_test_data_curr, mf_curr, B0, "current");
 		success &= CompareDerivatives(magnetic_field_test_data_const, mf_const, B0, "constant");
 		success &= CompareDerivatives(magnetic_field_test_data_linear, mf_lin, B0, "linear");
 		success &= CompareDerivatives(magnetic_field_test_data_quadratic, mf_quad, B0, "quadratic");
@@ -79,6 +84,7 @@ bool Test_MagneticFieldAnalytical2D::Run() {
 
     // Test conversion to numeric magnetic field
     try {
+        success &= TestConversion(mf_curr, "current");
         success &= TestConversion(mf_const, "constant");
         success &= TestConversion(mf_lin, "linear");
         success &= TestConversion(mf_quad, "quadratic");
@@ -94,10 +100,11 @@ bool Test_MagneticFieldAnalytical2D::Run() {
         return false;
 
     // Test Jacobian 1
-    success &= TestJacobian1(mf_const);
-    success &= TestJacobian1(mf_lin);
-    success &= TestJacobian1(mf_quad);
-    success &= TestJacobian1(mf_exp);
+    success &= TestJacobian1(mf_curr, "current");
+    success &= TestJacobian1(mf_const, "constant");
+    success &= TestJacobian1(mf_lin, "linear");
+    success &= TestJacobian1(mf_quad, "quadratic");
+    success &= TestJacobian1(mf_exp, "exponential");
 
     if (success)
         this->PrintOK("Magnetic field Jacobian evaluation #1.");
@@ -105,16 +112,18 @@ bool Test_MagneticFieldAnalytical2D::Run() {
         return false;
 
     // Test Jacobian 2 (more thorough)
-    success &= TestJacobian2(mf_const);
-    success &= TestJacobian2(mf_lin);
-    success &= TestJacobian2(mf_quad);
-    success &= TestJacobian2(mf_exp);
+    success &= TestJacobian2(mf_curr, "current");
+    success &= TestJacobian2(mf_const, "constant");
+    success &= TestJacobian2(mf_lin, "linear");
+    success &= TestJacobian2(mf_quad, "quadratic");
+    success &= TestJacobian2(mf_exp, "exponential");
 
     if (success)
         this->PrintOK("Magnetic field Jacobian evaluation #2.");
     else
         return false;
 
+    delete mf_curr;
     delete mf_const;
     delete mf_lin;
     delete mf_quad;
@@ -180,9 +189,10 @@ bool Test_MagneticFieldAnalytical2D::TestConversion(MagneticFieldAnalytical2D *m
  * curl of B is evaluated and tested separately in the analytical
  * field, it can be compared to.
  *
- * mf: Magnetic field object to test.
+ * mf:   Magnetic field object to test.
+ * name: Name of magnetic field to test.
  */
-bool Test_MagneticFieldAnalytical2D::TestJacobian1(MagneticFieldAnalytical2D *mf) {
+bool Test_MagneticFieldAnalytical2D::TestJacobian1(MagneticFieldAnalytical2D *mf, const string &name) {
     unsigned int i;
     slibreal_t r, p, z, Rmin, Rmax, Zmin, Zmax, Delta;
 
@@ -201,7 +211,7 @@ bool Test_MagneticFieldAnalytical2D::TestJacobian1(MagneticFieldAnalytical2D *mf
         // Divergence of B (should vanish)
         Delta = fabs(mfd.J[0][0] + mfd.J[1][1] + mfd.J[2][2]);
         if (Delta > JAC1TOL) {
-            this->PrintError("%u: Jacobian trace does not vanish. Delta = %e.", i, Delta);
+            this->PrintError("%u: Jacobian trace does not vanish in '%s'. Delta = %e.", i, name.c_str(), Delta);
             return false;
         }
 
@@ -212,7 +222,7 @@ bool Test_MagneticFieldAnalytical2D::TestJacobian1(MagneticFieldAnalytical2D *mf
             Delta = fabs(((mfd.J[2][1]-mfd.J[1][2]) - mfd.curlB[0]) / mfd.curlB[0]);
 
         if (Delta > JAC1TOL) {
-            this->PrintError("%u: x-component of curl B calculated from Jacobian is wrong. Delta = %e.", i, Delta);
+            this->PrintError("%u: x-component of curl B calculated from '%s' Jacobian is wrong. Delta = %e.", i, name.c_str(), Delta);
             return false;
         }
 
@@ -223,7 +233,7 @@ bool Test_MagneticFieldAnalytical2D::TestJacobian1(MagneticFieldAnalytical2D *mf
             Delta = fabs(((mfd.J[0][2]-mfd.J[2][0]) - mfd.curlB[1]) / mfd.curlB[1]);
 
         if (Delta > JAC1TOL) {
-            this->PrintError("%u: y-component of curl B calculated from Jacobian is wrong. Delta = %e.", i, Delta);
+            this->PrintError("%u: y-component of curl B calculated from '%s' Jacobian is wrong. Delta = %e.", i, name.c_str(), Delta);
             return false;
         }
 
@@ -234,7 +244,7 @@ bool Test_MagneticFieldAnalytical2D::TestJacobian1(MagneticFieldAnalytical2D *mf
             Delta = fabs(((mfd.J[1][0]-mfd.J[0][1]) - mfd.curlB[2]) / mfd.curlB[2]);
 
         if (Delta > JAC1TOL) {
-            this->PrintError("%u: z-component of curl B calculated from Jacobian is wrong. Delta = %e.", i, Delta);
+            this->PrintError("%u: z-component of curl B calculated from '%s' Jacobian is wrong. Delta = %e.", i, name.c_str(), Delta);
             return false;
         }
     }
@@ -250,9 +260,10 @@ bool Test_MagneticFieldAnalytical2D::TestJacobian1(MagneticFieldAnalytical2D *mf
  * derivatives, and so this test can detect algebraic errors in
  * the analytical magnetic field.
  *
- * mf: Magnetic field object to test.
+ * mf:   Magnetic field object to test.
+ * name: Name of magnetic field to test.
  */
-bool Test_MagneticFieldAnalytical2D::TestJacobian2(MagneticFieldAnalytical2D *mf) {
+bool Test_MagneticFieldAnalytical2D::TestJacobian2(MagneticFieldAnalytical2D *mf, const string &name) {
     slibreal_t r, p, z, Delta,
         Rmin, Rmax, Zmin, Zmax;
     MagneticFieldNumeric2D *mfn;
@@ -264,6 +275,8 @@ bool Test_MagneticFieldAnalytical2D::TestJacobian2(MagneticFieldAnalytical2D *mf
     Rmin = mf->GetRMajor() - mf->GetRMinor();
     Zmax = mf->GetRMinor();
     Zmin =-mf->GetRMinor();
+
+    InitRand();
 
     /* Do the testing */
     struct magnetic_field_data a, n;
@@ -278,8 +291,8 @@ bool Test_MagneticFieldAnalytical2D::TestJacobian2(MagneticFieldAnalytical2D *mf
         Delta = fabs((a.Babs-n.Babs)/a.Babs);
         if (Delta > CONVTOL) {
             this->PrintError(
-                "Magnetic field absolute value did not match numeric equivalent. Delta = %e.",
-                Delta
+                "Magnetic field '%s' absolute value did not match numeric equivalent. Delta = %e.",
+                name.c_str(), Delta
             );
 
             delete mfn;
@@ -295,8 +308,8 @@ bool Test_MagneticFieldAnalytical2D::TestJacobian2(MagneticFieldAnalytical2D *mf
 
                 if (Delta > JAC2TOL) {
                     this->PrintError(
-                        "%u: Jacobian (%u, %u) component did not match numeric equivalent. Delta = %e.",
-                        i, j, k, Delta
+                        "%u: Jacobian (%u, %u) component for '%s' did not match numeric equivalent. Delta = %e.",
+                        i, j, k, name.c_str(), Delta
                     );
 
                     delete mfn;

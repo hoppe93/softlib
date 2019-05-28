@@ -12,14 +12,20 @@ a2 = 2;
 a3 = 2;
 a4 = log(2);
 
+% For qj
+aj1 = 0.5;
+aj2 = 2;
+
 % q-profiles
 qc = @(r) a1;
+qj = @(r) aj1 ./ (1 - 2/(aj2+2)*r.^2);
 ql = @(r) a2*r + 1;
 qq = @(r) a3*r.^2 + 1;
 qe = @(r) exp(a4*r);
 
 % r-derivatives of q-profiles (times r)
 qpc= @(r) 0;
+qpj= @(r) 2*aj2/(aj2+2) * aj1./(1 - 2/(aj2+2)*r.^aj2).^2 .* r.^aj2;
 qpl= @(r) a2*r;
 qpq= @(r) 2*a3*r.^2;
 qpe= @(r) r.*exp(r*a4) * a4;
@@ -28,6 +34,7 @@ qpe= @(r) r.*exp(r*a4) * a4;
 
 % Buffers
 sc = [];
+sj = [];
 sl = [];
 sq = [];
 se = [];
@@ -45,11 +52,13 @@ for i=1:npoints
     x = [(Rm-minr*cos(pola))*cos(tora), (Rm-minr*cos(pola))*sin(tora), zm+minr*sin(pola)];
     
     [Bc, cBabs, gradBc, curlBc] = magnetic_field(x, B0, Rm, zm, -1, +1, qc(minr/rminor), qpc(minr/rminor));
+    [Bj, jBabs, gradBj, curlBj] = magnetic_field(x, B0, Rm, zm, -1, +1, qj(minr/rminor), qpj(minr/rminor));
     [Bl, lBabs, gradBl, curlBl] = magnetic_field(x, B0, Rm, zm, -1, +1, ql(minr/rminor), qpl(minr/rminor));
     [Bq, qBabs, gradBq, curlBq] = magnetic_field(x, B0, Rm, zm, -1, +1, qq(minr/rminor), qpq(minr/rminor));
     [Be, eBabs, gradBe, curlBe] = magnetic_field(x, B0, Rm, zm, -1, +1, qe(minr/rminor), qpe(minr/rminor));
     
     c = [x, Bc', gradBc', curlBc'];
+    J = [x, Bj', gradBj', curlBj'];
     l = [x, Bl', gradBl', curlBl'];
     q = [x, Bq', gradBq', curlBq'];
     e = [x, Be', gradBe', curlBe'];
@@ -59,6 +68,12 @@ for i=1:npoints
         sc = [sc,ns(c(j)),','];
     end
     sc(end) = '}';
+    
+    sj = [sj, '\t{'];
+    for j=1:numel(J)
+        sj = [sj,ns(J(j)),','];
+    end
+    sj(end) = '}';
     
     sl = [sl, '\t{'];
     for j=1:numel(l)
@@ -80,11 +95,13 @@ for i=1:npoints
     
     if i < npoints
         sc = [sc,',\n'];
+        sj = [sj,',\n'];
         sl = [sl,',\n'];
         sq = [sq,',\n'];
         se = [se,',\n'];
     else
         sc = [sc,'\n'];
+        sj = [sj,'\n'];
         sl = [sl,'\n'];
         sq = [sq,'\n'];
         se = [se,'\n'];
@@ -106,7 +123,10 @@ fwrite(fid, ['                 magnetic_field_test_data_rminor  =',ns(rminor),',
 fwrite(fid, ['                 magnetic_field_test_data_qa_const=',ns(a1),',',10]);
 fwrite(fid, ['                 magnetic_field_test_data_qa_lin  =',ns(a2),',',10]);
 fwrite(fid, ['                 magnetic_field_test_data_qa_quad =',ns(a3),',',10]);
-fwrite(fid, ['                 magnetic_field_test_data_qa_exp  =',ns(a4),';',10]);
+fwrite(fid, ['                 magnetic_field_test_data_qa_exp  =',ns(a4),',',10]);
+fwrite(fid, ['                 magnetic_field_test_data_qa1_curr=',ns(aj1),',',10]);
+fwrite(fid, ['                 magnetic_field_test_data_qa2_curr=',ns(aj2),';',10]);
+fwrite(fid, ['extern const slibreal_t magnetic_field_test_data_curr[',num2str(npoints),'][12];',10]);
 fwrite(fid, ['extern const slibreal_t magnetic_field_test_data_const[',num2str(npoints),'][12];',10]);
 fwrite(fid, ['extern const slibreal_t magnetic_field_test_data_linear[',num2str(npoints),'][12];',10]);
 fwrite(fid, ['extern const slibreal_t magnetic_field_test_data_quadratic[',num2str(npoints),'][12];',10]);
@@ -123,6 +143,10 @@ fwrite(fid, ['#include <softlib/config.h>',10,'#include "magfield_points.h"',10,
 %fwrite(fid, ['const unsigned int MAGNETIC_FIELD_TEST_NPOINTS=',num2str(npoints),';',10,10]);
 
 fwrite(fid, ['/* Format = X, B(X), grad|B(X)|, curl B(X) */',10,10]);
+
+fwrite(fid, ['const slibreal_t magnetic_field_test_data_curr[',num2str(npoints),'][12] = {',10]);
+fprintf(fid, sj);
+fwrite(fid, ['};',10,10]);
 
 fwrite(fid, ['const slibreal_t magnetic_field_test_data_const[',num2str(npoints),'][12] = {',10]);
 fprintf(fid, sc);

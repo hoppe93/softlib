@@ -19,8 +19,8 @@ class Test_MagneticFieldAnalytical2D : public Test_MagneticField {
 		Test_MagneticFieldAnalytical2D(const string&);
 		bool Run();
         bool TestConversion(MagneticFieldAnalytical2D*, const string&);
-        bool TestJacobian1(MagneticFieldAnalytical2D*);
-        bool TestJacobian2(MagneticFieldAnalytical2D*);
+        bool TestJacobian1(MagneticFieldAnalytical2D*, const string&);
+        bool TestJacobian2(MagneticFieldAnalytical2D*, const string&);
 };
 
 #endif/*_MAGNETIC_FIELD_ANALYTICAL2D_TEST_H*/
