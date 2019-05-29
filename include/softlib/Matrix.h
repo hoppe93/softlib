@@ -4,6 +4,7 @@
 //#define MATRIX_BOUNDS_CHECK
 
 #include <softlib/config.h>
+#include <softlib/Vector.h>
 
 template<unsigned int M, unsigned int N, class T = slibreal_t>
 class Matrix {
@@ -13,27 +14,27 @@ class Matrix {
         T elems[M*N];
 
     public:
-        Matrix<M,N>();
-        Matrix<M,N>(const T*);
-        Matrix<M,N>(const T**);
-        Matrix<M,N>(const Matrix<M,N>&);
-        Matrix<M,N>(const Vector<M,T>&, const Vector<N,T>&);
-        ~Matrix<M,N>();
+        Matrix<M,N,T>();
+        Matrix<M,N,T>(const T*);
+        Matrix<M,N,T>(const T**);
+        Matrix<M,N,T>(const Matrix<M,N,T>&);
+        Matrix<M,N,T>(const Vector<M,T>&, const Vector<N,T>&);
+        ~Matrix<M,N,T>();
 
-        T& operator[](const unsigned int);
-        const T& operator[](const unsigned int) const;
-        T& operator[](const unsigned int, const unsigned int);
-        const T& operator[](const unsigned int, const unsigned int) const;
+        T& operator()(const unsigned int);
+        const T& operator()(const unsigned int) const;
+        T& operator()(const unsigned int, const unsigned int);
+        const T& operator()(const unsigned int, const unsigned int) const;
 
         /* Arithmetic */
-        Matrix<M,N>& operator=(const Matrix<M,N>&);
-        Matrix<M,N>& operator+=(const Matrix<M,N>&);
-        Matrix<M,N>& operator+=(const T);
-        Matrix<M,N>& operator-=(const Matrix<M,N>&);
-        Matrix<M,N>& operator-=(const T);
-        Matrix<M,N>& operator*=(const Matrix<N,M>&);
-        Matrix<M,N>& operator*=(const T);
-        Matrix<M,N>& operator-();
+        Matrix<M,N,T>& operator=(const Matrix<M,N,T>&);
+        Matrix<M,N,T>& operator+=(const Matrix<M,N,T>&);
+        Matrix<M,N,T>& operator+=(const T);
+        Matrix<M,N,T>& operator-=(const Matrix<M,N,T>&);
+        Matrix<M,N,T>& operator-=(const T);
+        Matrix<M,N,T>& operator*=(const Matrix<N,M,T>&);
+        Matrix<M,N,T>& operator*=(const T);
+        Matrix<M,N,T>& operator-();
 
         unsigned int Rows() const;
         unsigned int Cols() const;
@@ -42,17 +43,17 @@ class Matrix {
 /**********************
  * OPERATOR OVERLOADS *
  **********************/
-template<unsigned int M, unsigned int N> Matrix<M,N> operator+(const Matrix<M,N>&, const Matrix<M,N>&);
-template<unsigned int M, unsigned int N> Matrix<M,N> operator+(const Matrix<M,N>&, const T);
-template<unsigned int M, unsigned int N> Matrix<M,N> operator+(const T,            const Matrix<M,N>&);
-template<unsigned int M, unsigned int N> Matrix<M,N> operator-(const Matrix<M,N>&, const Matrix<M,N>&);
-template<unsigned int M, unsigned int N> Matrix<M,N> operator-(const Matrix<M,N>&, const T);
-template<unsigned int M, unsigned int N> Matrix<M,N> operator-(const T,            const Matrix<M,N>&);
-template<unsigned int M, unsigned int N, unsigned int K> Matrix<M,K> operator*(const Matrix<M,N>&, const Matrix<N,K>&);
-template<unsigned int M, unsigned int N> Matrix<M,N> operator*(const Matrix<M,N>&, const T);
-template<unsigned int M, unsigned int N> Matrix<M,N> operator*(const T,            const Matrix<M,N>&);
-template<unsigned int M, unsigned int N> Vector<M,T>   operator*(const Matrix<M,N>&, const Vector<N,T>&);
-template<unsigned int M, unsigned int N> Vector<N,T>   operator*(const Vector<M,T>&,   const Matrix<M,N>&);
+template<unsigned int M, unsigned int N, class T> Matrix<M,N,T> operator+(const Matrix<M,N,T>&, const Matrix<M,N,T>&);
+template<unsigned int M, unsigned int N, class T> Matrix<M,N,T> operator+(const Matrix<M,N,T>&, const T);
+template<unsigned int M, unsigned int N, class T> Matrix<M,N,T> operator+(const T,              const Matrix<M,N,T>&);
+template<unsigned int M, unsigned int N, class T> Matrix<M,N,T> operator-(const Matrix<M,N,T>&, const Matrix<M,N,T>&);
+template<unsigned int M, unsigned int N, class T> Matrix<M,N,T> operator-(const Matrix<M,N,T>&, const T);
+template<unsigned int M, unsigned int N, class T> Matrix<M,N,T> operator-(const T,              const Matrix<M,N,T>&);
+template<unsigned int M, unsigned int N, unsigned int K, class T> Matrix<M,K,T> operator*(const Matrix<M,N,T>&, const Matrix<N,K,T>&);
+template<unsigned int M, unsigned int N, class T> Matrix<M,N,T> operator*(const Matrix<M,N,T>&, const T);
+template<unsigned int M, unsigned int N, class T> Matrix<M,N,T> operator*(const T,              const Matrix<M,N,T>&);
+template<unsigned int M, unsigned int N, class T> Vector<M,T>   operator*(const Matrix<M,N,T>&, const Vector<N,T>&);
+template<unsigned int M, unsigned int N, class T> Vector<N,T>   operator*(const Vector<M,T>&,   const Matrix<M,N,T>&);
 
 #include <softlib/General/Matrix.tcc>
 

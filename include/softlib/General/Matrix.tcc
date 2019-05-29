@@ -11,19 +11,18 @@
  */
 template<unsigned int M, unsigned int N, class T>
 Matrix<M,N,T>::Matrix() {
-    unsigned int l = M*N;
     for (unsigned int i = 0; i < M*N; i++)
         elems[i] = 0.0;
 }
 
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T>::Matrix(const slibreal_t *mat) {
+Matrix<M,N,T>::Matrix(const T *mat) {
     for (unsigned int i = 0; i < M*N; i++)
         elems[i] = mat[i];
 }
 
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T>::Matrix(const slibreal_t **mat) {
+Matrix<M,N,T>::Matrix(const T **mat) {
     for (unsigned int i = 0; i < M; i++)
         for (unsigned int j = 0; j < N; j++)
             elems[i*N + j] = mat[i][j];
@@ -32,8 +31,14 @@ Matrix<M,N,T>::Matrix(const slibreal_t **mat) {
 template<unsigned int M, unsigned int N, class T>
 Matrix<M,N,T>::Matrix(const Matrix<M,N,T>& mat) {
     for (unsigned int i = 0; i < M*N; i++)
-        elems[i] = mat[i];
+        elems[i] = mat(i);
 }
+
+/**
+ * Destructor.
+ */
+template<unsigned int M, unsigned int N, class T>
+Matrix<M,N,T>::~Matrix() {}
 
 /**
  * Construct the matrix from the two vectors
@@ -54,7 +59,7 @@ Matrix<M,N,T>::Matrix(const Vector<M,T>& a, const Vector<N,T>& b) {
  * Access a given element of the matrix.
  */
 template<unsigned int M, unsigned int N, class T>
-slibreal_t& Matrix<M,N,T>::Matrix(const unsigned int i) {
+T& Matrix<M,N,T>::operator()(const unsigned int i) {
 #   ifdef MATRIX_BOUNDS_CHECK
     if (i < 0 || i >= M*N)
         throw SOFTLibException("Matrix linear index is out of bounds: %d.\n", i);
@@ -62,7 +67,7 @@ slibreal_t& Matrix<M,N,T>::Matrix(const unsigned int i) {
     return elems[i];
 }
 template<unsigned int M, unsigned int N, class T>
-const slibreal_t& Matrix<M,N,T>::Matrix(const unsigned int i) const {
+const T& Matrix<M,N,T>::operator()(const unsigned int i) const {
 #   ifdef MATRIX_BOUNDS_CHECK
     if (i < 0 || i >= M*N)
         throw SOFTLibException("Matrix linear index is out of bounds: %d.\n", i);
@@ -71,7 +76,7 @@ const slibreal_t& Matrix<M,N,T>::Matrix(const unsigned int i) const {
 }
 
 template<unsigned int M, unsigned int N, class T>
-slibreal_t& Matrix<M,N,T>::Matrix(const unsigned int i, const unsigned int j) {
+T& Matrix<M,N,T>::operator()(const unsigned int i, const unsigned int j) {
 #   ifdef MATRIX_BOUNDS_CHECK
     if (i < 0 || i >= M)
         throw SOFTLibException("Matrix row index is out of bounds: %d.\n", i);
@@ -83,7 +88,7 @@ slibreal_t& Matrix<M,N,T>::Matrix(const unsigned int i, const unsigned int j) {
 }
 
 template<unsigned int M, unsigned int N, class T>
-const slibreal_t& Matrix<M,N,T>::Matrix(const unsigned int i, const unsigned int j) const {
+const T& Matrix<M,N,T>::operator()(const unsigned int i, const unsigned int j) const {
 #   ifdef MATRIX_BOUNDS_CHECK
     if (i < 0 || i >= M)
         throw SOFTLibException("Matrix row index is out of bounds: %d.\n", i);
@@ -99,14 +104,14 @@ const slibreal_t& Matrix<M,N,T>::Matrix(const unsigned int i, const unsigned int
  * (i.e. elements along first dimension).
  */
 template<unsigned int M, unsigned int N, class T>
-unsigned int Rows() const { return M; }
+unsigned int Matrix<M,N,T>::Rows() const { return M; }
 
 /**
  * Returns the number of columns in this matrix
  * (i.e. elements along second dimension).
  */
 template<unsigned int M, unsigned int N, class T>
-unsigned int Cols() const { return N; }
+unsigned int Matrix<M,N,T>::Cols() const { return N; }
 
 /*************************
  * ARITHMETIC OPERATIONS *
@@ -144,7 +149,7 @@ Matrix<M,N,T>& Matrix<M,N,T>::operator+=(const Matrix<M,N,T>& mat) {
  * s: Scalar to add to every element.
  */
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T>& Matrix<M,N,T>::operator+=(const slibreal_t s) {
+Matrix<M,N,T>& Matrix<M,N,T>::operator+=(const T s) {
     for (unsigned int i = 0; i < M*N; i++)
         elems[i] += s;
 
@@ -159,7 +164,7 @@ Matrix<M,N,T>& Matrix<M,N,T>::operator+=(const slibreal_t s) {
 template<unsigned int M, unsigned int N, class T>
 Matrix<M,N,T>& Matrix<M,N,T>::operator-=(const Matrix<M,N,T>& mat) {
     for (unsigned int i = 0; i < M*N; i++)
-        elems[i] -= mat[i];
+        elems[i] -= mat(i);
     
     return *this;
 }
@@ -172,7 +177,7 @@ Matrix<M,N,T>& Matrix<M,N,T>::operator-=(const Matrix<M,N,T>& mat) {
  *    this matrix.
  */
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T>& Matrix<M,N,T>::operator-=(const slibreal_t s) {
+Matrix<M,N,T>& Matrix<M,N,T>::operator-=(const T s) {
     for (unsigned int i = 0; i < M*N; i++)
         elems[i] -= s;
 
@@ -186,12 +191,12 @@ Matrix<M,N,T>& Matrix<M,N,T>::operator-=(const slibreal_t s) {
  * mat: Matrix to multiply with.
  */
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T>& Matrix<M,N,T>::operator*=(const Matrix<N,M>& mat) {
+Matrix<M,N,T>& Matrix<M,N,T>::operator*=(const Matrix<N,M,T>& mat) {
     for (unsigned int i = 0; i < M; i++) {
         for (unsigned int j = 0; j < M; j++) {
-            slibreal_t sum = 0;
+            T sum = 0;
             for (unsigned k = 0; k < N; k++)
-                sum += elems[i*N+k] * mat[k,j];
+                sum += elems[i*N+k] * mat(k,j);
 
             elems[i*N+j] = sum;
         }
@@ -206,7 +211,7 @@ Matrix<M,N,T>& Matrix<M,N,T>::operator*=(const Matrix<N,M>& mat) {
  * s: Scalar to multiply every element of this matrix with.
  */
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T>& Matrix<M,N,T>::operator*=(const slibreal_t s) {
+Matrix<M,N,T>& Matrix<M,N,T>::operator*=(const T s) {
     for (unsigned int i = 0; i < M*N; i++)
         elems[i] *= s;
 
@@ -242,13 +247,13 @@ Matrix<M,N,T> operator+(const Matrix<M,N,T>& lhs, const Matrix<M,N,T>& rhs) {
  * Add a scalar and a matrix.
  */
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T> operator+(const Matrix<M,N,T>& lhs, const slibreal_t rhs) {
+Matrix<M,N,T> operator+(const Matrix<M,N,T>& lhs, const T rhs) {
     Matrix<M,N,T> C(lhs);
     C += rhs;
     return C;
 }
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T> operator+(const slibreal_t lhs, const Matrix<M,N,T>& rhs) {
+Matrix<M,N,T> operator+(const T lhs, const Matrix<M,N,T>& rhs) {
     Matrix<M,N,T> C(rhs);
     C += lhs;
     return C;
@@ -268,13 +273,13 @@ Matrix<M,N,T> operator-(const Matrix<M,N,T>& lhs, const Matrix<M,N,T>& rhs) {
  * Subtract a scalar from the matrix.
  */
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T> operator-(const Matrix<M,N,T>& lhs, const slibreal_t rhs) {
+Matrix<M,N,T> operator-(const Matrix<M,N,T>& lhs, const T rhs) {
     Matrix<M,N,T> C(lhs);
     C -= rhs;
     return C;
 }
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T> operator-(const slibreal_t lhs, const Matrix<M,N,T>& rhs) {
+Matrix<M,N,T> operator-(const T lhs, const Matrix<M,N,T>& rhs) {
     Matrix<M,N,T> C(rhs);
     C -= lhs;
     return C;
@@ -284,16 +289,16 @@ Matrix<M,N,T> operator-(const slibreal_t lhs, const Matrix<M,N,T>& rhs) {
  * Multiply the two matrices together.
  */
 template<unsigned int M, unsigned int N, unsigned int K, class T>
-Matrix<M,K> operator*(const Matrix<M,N,T>& l, const Matrix<N,K>& r) {
-    Matrix<M,K> C;
+Matrix<M,K,T> operator*(const Matrix<M,N,T>& l, const Matrix<N,K,T>& r) {
+    Matrix<M,K,T> C;
 
     for (unsigned int i = 0; i < M; i++) {
         for (unsigned int j = 0; j < K; j++) {
-            slibreal_t sum = 0;
+            T sum = 0;
             for (unsigned int k = 0; k < N; k++)
-                sum += l[i,k] * r[k,j];
+                sum += l(i,k) * r(k,j);
 
-            C[i,j] = sum;
+            C(i,j) = sum;
         }
     }
 
@@ -304,13 +309,13 @@ Matrix<M,K> operator*(const Matrix<M,N,T>& l, const Matrix<N,K>& r) {
  * Multiply the given matrix with the given scalar.
  */
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T> operator*(const Matrix<M,N,T>& l, const slibreal_t r) {
+Matrix<M,N,T> operator*(const Matrix<M,N,T>& l, const T r) {
     Matrix<M,N,T> C(l);
     C += r;
     return C;
 }
 template<unsigned int M, unsigned int N, class T>
-Matrix<M,N,T> operator*(const slibreal_t l, const Matrix<M,N,T>& r) {
+Matrix<M,N,T> operator*(const T l, const Matrix<M,N,T>& r) {
     Matrix<M,N,T> C(r);
     C += l;
     return C;
@@ -325,9 +330,9 @@ Vector<M,T> operator*(const Matrix<M,N,T>& l, const Vector<N,T>& r) {
     Vector<M,T> vec;
 
     for (unsigned int i = 0; i < M; i++) {
-        slibreal_t sum = 0;
+        T sum = 0;
         for (unsigned int j = 0; j < N; j++)
-            sum += l[i,j] * r[j];
+            sum += l(i,j) * r[j];
 
         vec[i] = sum;
     }
@@ -340,13 +345,13 @@ Vector<M,T> operator*(const Matrix<M,N,T>& l, const Vector<N,T>& r) {
  * (from the left).
  */
 template<unsigned int M, unsigned int N, class T>
-Vector<N,T> operator*(const Vector<M,T>& l, const Matrix<M,N,T>& ) {
+Vector<N,T> operator*(const Vector<M,T>& l, const Matrix<M,N,T>& r) {
     Vector<N,T> vec;
 
     for (unsigned int i = 0; i < N; i++) {
-        slibreal_t sum = 0;
+        T sum = 0;
         for (unsigned int j = 0; j < M; j++)
-            sum += l[j,i] * r[j];
+            sum += l(j,i) * r[j];
 
         vec[i] = sum;
     }
