@@ -47,6 +47,52 @@ public:
 	void SetNext(ConfigToken *ct) { this->next = ct; }
 };
 
+class SettingScript : public Setting {
+	std::vector<std::string> values;
+
+public:
+    SettingScript(const Setting*);
+	SettingScript(const std::string&, const std::string&);
+    SettingScript(const std::string&, const std::vector<std::string>&);
+	~SettingScript();
+
+	SettingScript *AppendValue(const std::string&);
+	virtual void OverwriteValues(const Setting*) override;
+
+    virtual Setting *Copy() override;
+	virtual size_t GetNumberOfValues() override;
+
+    // Get value(s)
+	virtual bool GetBool(unsigned int index=0) override;
+    virtual int64_t GetInteger(unsigned int index=0) override;
+    virtual int32_t GetInteger32(unsigned int index=0) override;
+    virtual uint32_t GetUnsignedInteger32(unsigned int index=0) override;
+    virtual int64_t GetInteger64(unsigned int index=0) override;
+    virtual uint64_t GetUnsignedInteger64(unsigned int index=0) override;
+	virtual slibreal_t GetScalar(unsigned int index=0) override;
+	virtual std::string& GetString(unsigned int index=0) override;
+	virtual std::vector<slibreal_t> GetNumericVector() override;
+	virtual const std::vector<std::string> GetTextVector() const override;
+
+    // Check value type
+	virtual bool IsBool() const override;
+	virtual bool IsBool(unsigned int) const override;
+    virtual bool IsInteger() const override;
+    virtual bool IsInteger(unsigned int) const override;
+    virtual bool IsInteger32() const override;
+    virtual bool IsInteger32(unsigned int) const override;
+    virtual bool IsInteger64() const override;
+    virtual bool IsInteger64(unsigned int) const override;
+    virtual bool IsUnsignedInteger32() const override;
+    virtual bool IsUnsignedInteger32(unsigned int) const override;
+    virtual bool IsUnsignedInteger64() const override;
+    virtual bool IsUnsignedInteger64(unsigned int) const override;
+	virtual bool IsScalar() const override;
+	virtual bool IsScalar(unsigned int) const override;
+	virtual bool IsNumericVector() const override;
+    virtual bool IsNumericVector(unsigned int) const override;
+};
+
 class ConfigurationScript : public Configuration {
 public:
     ConfigurationScript() : Configuration() {}
@@ -78,7 +124,7 @@ private:
 
 	/* Interpreter properties/methods */
 	std::vector<ConfigToken*>::iterator tknstream;
-	ConfigBlock Interpret(std::vector<ConfigToken*>&);
+	ConfigBlock *Interpret(std::vector<ConfigToken*>&);
 
 	bool advance();
 	bool advanceTo(std::initializer_list<conftoken_t>);

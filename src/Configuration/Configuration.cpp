@@ -1,5 +1,5 @@
 /**
- * Implementation of the 'Settings' class, for
+ * Implementation of the 'Configuration' class, for
  * loading settings from a configuration file.
  */
 

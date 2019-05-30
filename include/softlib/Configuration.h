@@ -15,54 +15,58 @@ typedef size_t confblock_t;
  ************************************************/
 /* Class representing an individual setting */
 class Setting {
+protected:
 	std::string name;
-	std::vector<std::string> values;
     bool touched=false;
 
 public:
-    Setting(const Setting&);
-	Setting(const std::string&, const std::string&);
-    Setting(const std::string&, const std::vector<std::string>&);
-	~Setting();
+    Setting() {}
+    Setting(const Setting*);
+	/*Setting(const std::string&, const std::string&);
+    Setting(const std::string&, const std::vector<std::string>&);*/
+	virtual ~Setting();
 
-	Setting& AppendValue(const std::string&);
-	size_t GetNumberOfValues();
 	bool HasName(const std::string&) const;
-	void OverwriteValues(const std::vector<std::string>&);
+	const std::string& GetName() const;
+
+    virtual Setting *Copy() = 0;
+    virtual void OverwriteValues(const Setting*) = 0;
+    virtual size_t GetNumberOfValues() = 0;
 
     // Get value(s)
-	bool GetBool(unsigned int index=0);
-    int64_t GetInteger(unsigned int index=0);
-    int32_t GetInteger32(unsigned int index=0);
-    uint32_t GetUnsignedInteger32(unsigned int index=0);
-    int64_t GetInteger64(unsigned int index=0);
-    uint64_t GetUnsignedInteger64(unsigned int index=0);
-	const std::string& GetName() const;
-	slibreal_t GetScalar(unsigned int index=0);
-	std::string& GetString(unsigned int index=0);
-	std::vector<slibreal_t> GetNumericVector();
-	const std::vector<std::string> GetTextVector() const;
+	virtual bool GetBool(unsigned int index=0) = 0;
+    virtual int64_t GetInteger(unsigned int index=0) = 0;
+    virtual int32_t GetInteger32(unsigned int index=0) = 0;
+    virtual uint32_t GetUnsignedInteger32(unsigned int index=0) = 0;
+    virtual int64_t GetInteger64(unsigned int index=0) = 0;
+    virtual uint64_t GetUnsignedInteger64(unsigned int index=0) = 0;
+	virtual slibreal_t GetScalar(unsigned int index=0) = 0;
+	virtual std::string& GetString(unsigned int index=0) = 0;
+	virtual std::vector<slibreal_t> GetNumericVector() = 0;
+	virtual const std::vector<std::string> GetTextVector() const = 0;
 
     // Check value type
-	bool IsBool() const;
-	bool IsBool(unsigned int) const;
-    bool IsInteger() const;
-    bool IsInteger(unsigned int) const;
-    bool IsInteger32() const;
-    bool IsInteger32(unsigned int) const;
-    bool IsInteger64() const;
-    bool IsInteger64(unsigned int) const;
-    bool IsUnsignedInteger32() const;
-    bool IsUnsignedInteger32(unsigned int) const;
-    bool IsUnsignedInteger64() const;
-    bool IsUnsignedInteger64(unsigned int) const;
-	bool IsScalar() const;
-	bool IsScalar(unsigned int) const;
-	bool IsNumericVector() const;
-    bool IsNumericVector(unsigned int) const;
+	virtual bool IsBool() const = 0;
+	virtual bool IsBool(unsigned int) const = 0;
+    virtual bool IsInteger() const = 0;
+    virtual bool IsInteger(unsigned int) const = 0;
+    virtual bool IsInteger32() const = 0;
+    virtual bool IsInteger32(unsigned int) const = 0;
+    virtual bool IsInteger64() const = 0;
+    virtual bool IsInteger64(unsigned int) const = 0;
+    virtual bool IsUnsignedInteger32() const = 0;
+    virtual bool IsUnsignedInteger32(unsigned int) const = 0;
+    virtual bool IsUnsignedInteger64() const = 0;
+    virtual bool IsUnsignedInteger64(unsigned int) const = 0;
+	virtual bool IsScalar() const = 0;
+	virtual bool IsScalar(unsigned int) const = 0;
+	virtual bool IsNumericVector() const = 0;
+    virtual bool IsNumericVector(unsigned int) const = 0;
 
     void Touch();
     bool Touched() const;
+
+    static bool StringToBool(const std::string&);
 };
 
 /* Class representing a settings block */
@@ -71,8 +75,8 @@ class ConfigBlock {
 	std::string name;
     std::string secondary_type;
 	ConfigBlock *parent;
-	std::vector<ConfigBlock> subblocks;
-	std::vector<Setting> settings;
+	std::vector<ConfigBlock*> subblocks;
+	std::vector<Setting*> settings;
 
 public:
 	ConfigBlock();
@@ -80,12 +84,12 @@ public:
 	ConfigBlock(confblock_t, const std::string&, const std::string& stype="", ConfigBlock *parent=nullptr);
 	~ConfigBlock();
 
-	Setting& AddSetting(const std::string&, const std::string&);
-    Setting& AddSetting(const std::string&, const std::vector<std::string>&);
-	Setting& AddSetting(const Setting&);
+	/*Setting& AddSetting(const std::string&, const std::string&);
+    Setting& AddSetting(const std::string&, const std::vector<std::string>&);*/
+	Setting *AddSetting(Setting*);
 	ConfigBlock *AddSubBlock(confblock_t, const std::string&, const std::string& stype="");
 	ConfigBlock *AddSubBlock(ConfigBlock&);
-	std::vector<Setting> GetAllSettings() const;
+	std::vector<Setting*> GetAllSettings() const;
 	std::vector<ConfigBlock> GetAllSubBlocks() const;
 	std::vector<ConfigBlock> GetAllSubBlocksOfType(confblock_t) const;
 	ConfigBlock *GetConfigBlock(confblock_t, const std::string&);
@@ -105,9 +109,8 @@ public:
 	ConfigBlock *GetParent() const;
 	bool HasParent() const;
 	std::vector<std::string> *Merge(ConfigBlock&, bool allowNew=false);
-	void MergeSetting(Setting&);
+	void MergeSetting(Setting*);
 	void SetParent(ConfigBlock&);
-    Setting *ReplaceSetting(const Setting&);
 
 	bool operator==(const ConfigBlock& rhs) const;
 	std::string& operator[](const std::string&);

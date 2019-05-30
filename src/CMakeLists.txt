@@ -38,6 +38,7 @@ set(core
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/ConfigurationScript.cpp"
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/Interpreter.cpp"
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/Lexer.cpp"
+	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/SettingScript.cpp"
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Setting.cpp"
 	"${PROJECT_SOURCE_DIR}/src/General/SOFTLibException.cpp"
 	"${PROJECT_SOURCE_DIR}/src/General/ProgressTracker.cpp"
