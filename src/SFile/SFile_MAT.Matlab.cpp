@@ -68,6 +68,29 @@ bool SFile_MAT::HasVariable(const string& name) {
     return exists;
 }
 
+/**
+ * Returns the type of the given variable.
+ *
+ * name: Name of variable to check type of.
+ * hint: Hint at what data type the user truly desires.
+ *       Ignored for Matlab files.
+ */
+enum SFile::sfile_data_type SFile_MAT::GetDataType(const string& name, enum SFile::sfile_data_type) {
+    mxArray *arr = matGetVariable(mfp, name.c_str());
+    bool exists = (arr != NULL);
+
+    if (!exists)
+        return SFILE_DATA_UNDEFINED;
+
+    if (mxIsDouble(arr)) return SFILE_DATA_DOUBLE;
+    else if (mxIsInt32(arr)) return SFILE_DATA_INT32;
+    else if (mxIsInt64(arr)) return SFILE_DATA_INT64;
+    else if (mxIsUint32(arr)) return SFILE_DATA_UINT32;
+    else if (mxIsUint64(arr)) return SFILE_DATA_UINT64;
+    else if (mxIsChar(arr)) return SFILE_DATA_STRING;
+    else return SFILE_DATA_UNDEFINED;
+}
+
 /******************************
  ************ INPUT ***********
  ******************************/

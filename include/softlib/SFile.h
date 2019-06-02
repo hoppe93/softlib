@@ -26,10 +26,35 @@ class SFile {
     private:
         template<typename T>
         T __GetSingle(const std::string&, T**(SFile::*)(const std::string&, sfilesize_t*), SFile*);
+
+        template<typename Tout, typename Tin>
+        Tout **__Get2DAs(const std::string&, sfilesize_t*, Tin**(SFile::*)(const std::string&, sfilesize_t*), SFile*);
+
+        template<typename Tout, typename Tin>
+        Tout *__Get1DAs(const std::string&, sfilesize_t*, Tin*(SFile::*)(const std::string&, sfilesize_t*), SFile*);
+
+        template<typename T>
+        T **__Get2DAsType(const std::string&, sfilesize_t*);
+
+        template<typename T>
+        T *__Get1DAsType(const std::string&, sfilesize_t*);
+
+        template<typename T>
+        T __GetScalarAsType(const std::string&);
 	public:
 		std::string filename;
 		enum sfile_mode mode;
 		enum sfile_type filetype;
+
+        enum sfile_data_type {
+            SFILE_DATA_UNDEFINED,
+            SFILE_DATA_DOUBLE,
+            SFILE_DATA_INT32,
+            SFILE_DATA_INT64,
+            SFILE_DATA_UINT32,
+            SFILE_DATA_UINT64,
+            SFILE_DATA_STRING
+        };
 
 		static SFile *Create(const std::string&, enum sfile_mode);
 		static SFile *Create(const std::string&, enum sfile_mode, enum sfile_type);
@@ -44,6 +69,7 @@ class SFile {
 		virtual void CreateStruct(const std::string&) = 0;
 		virtual double GetAttributeScalar(const std::string&, const std::string&) = 0;
 		virtual std::string GetAttributeString(const std::string&, const std::string&) = 0;
+        virtual enum sfile_data_type GetDataType(const std::string&, enum sfile_data_type hint=SFILE_DATA_UNDEFINED) = 0;
 		virtual double *GetMultiArray_linear(const std::string&, const sfilesize_t, sfilesize_t&, sfilesize_t*) = 0;
 		virtual std::string GetString(const std::string&) = 0;
 		virtual void Open(const std::string&, enum sfile_mode) = 0;
@@ -78,6 +104,10 @@ class SFile {
         virtual void WriteUInt64List(const std::string&, uint64_t*, sfilesize_t) = 0;
 
 		// Functions implemented in the base class
+        int64_t **GetIntArray(const std::string&, sfilesize_t*);
+        int64_t *GetIntList(const std::string&, sfilesize_t*);
+        int64_t GetInt(const std::string&);
+
 		double *GetList(const std::string&, sfilesize_t*);
         int32_t GetInt32(const std::string&);
         int64_t GetInt64(const std::string&);

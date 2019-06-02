@@ -115,15 +115,6 @@ bool sfile_test(SFile *sf, const string& testname, const bool multisupp, const b
 	// Construct the array
 	sfilesize_t array_rows=3, array_cols=4;
     double **array = sfile_construct_array<double>(array_rows, array_cols);
-	/*double **array = new double*[array_rows];
-
-	array[0] = new double[array_cols*array_rows];
-	for (i = 1; i < array_rows; i++)
-		array[i] = array[i-1] + array_cols;
-
-	for (i = 0; i < array_rows; i++)
-		for (j = 0; j < array_cols; j++)
-			array[i][j] = (double)(i*array_cols + j);*/
 	
 	// Construct the multi-dimensional array
 	sfilesize_t mularr_ni=3, mularr_nj=4, mularr_nk=5;
@@ -151,22 +142,10 @@ bool sfile_test(SFile *sf, const string& testname, const bool multisupp, const b
     // Construct the 1D integer array
     sfilesize_t int64list_n = 5;
     int64_t *int64list = sfile_construct_list<int64_t>(int64list_n);
-    /*int64_t *intarr = new int64_t[intarr_n];
-    for (i = 0; i < intarr_n; i++)
-        intarr[i] = i;*/
 
     // Construct the 2D integer array
     sfilesize_t int64arr_rows=4, int64arr_cols=3;
     int64_t **int64arr = sfile_construct_array<int64_t>(int64arr_rows, int64arr_cols);
-    /*int64_t **intarr2D = new int64_t*[intarr2D_rows];
-    intarr2D[0] = new int64_t[intarr2D_rows*intarr2D_cols];
-
-    for (i = 1; i < intarr2D_rows; i++)
-        intarr2D[i] = intarr2D[i-1] + intarr2D_cols;
-
-    for (i = 0; i < intarr2D_rows; i++)
-        for (j = 0; j < intarr2D_cols; i++)
-            intarr2D[i][j] = (int64_t)(i*intarr2D_cols + j);*/
 
 	// Construct the scalar
 	double att_scalar = 3.14159;
@@ -229,14 +208,14 @@ bool sfile_test(SFile *sf, const string& testname, const bool multisupp, const b
 	delete [] arrbuf;
 
     // Read int64 list
-    int64_t *int64bufl = sf->GetInt64_1D("int64list", &lenbuf1);
+    int64_t *int64bufl = sf->GetIntList("int64list", &lenbuf1);
     if (!sfile_compareLists(int64bufl, int64list, lenbuf1, int64list_n))
         throw SOFTLibException("Reading/writing int64 lists did not work.");
 
     delete [] int64bufl;
 
     // Read int64 array
-    int64_t **int64buf = sf->GetInt64_2D("int64arr", lenbuf2);
+    int64_t **int64buf = sf->GetIntArray("int64arr", lenbuf2);
     tlen[0] = int64arr_rows; tlen[1] = int64arr_cols;
     if (!sfile_compareArray(int64buf, int64arr, lenbuf2, tlen))
         throw SOFTLibException("Reading/writing int64 arrays did not work.");

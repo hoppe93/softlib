@@ -75,6 +75,41 @@ bool SFile_HDF5::HasVariable(const string& s) {
     }
 }
 
+/**
+ * Returns the type of the given variable.
+ *
+ * name: Name of variable to check type of.
+ * hint: Hint at what data type the user truly desires.
+ *       For HDF5, we ignore this parameter, since
+ *       HDF5 types are strong (and data cannot be
+ *       as easily cast as in, e.g. SDT).
+ */
+enum SFile::sfile_data_type SFile_HDF5::GetDataType(const string& name, enum sfile_data_type) {
+    try {
+        DataSet dset = file->openDataSet(name);
+        DataType type = dset.getDataType();
+
+        if (type == PredType::STD_I32LE)
+            return SFILE_DATA_INT32;
+        else if (type == PredType::STD_I64LE)
+            return SFILE_DATA_INT64;
+        else if (type == PredType::STD_U32LE)
+            return SFILE_DATA_UINT32;
+        else if (type == PredType::STD_U64LE)
+            return SFILE_DATA_UINT64;
+        else if (type == PredType::IEEE_F64LE)
+            return SFILE_DATA_DOUBLE;
+        else if (type == PredType::C_S1)
+            return SFILE_DATA_STRING;
+        else if (type == PredType::STD_U16LE)
+            return SFILE_DATA_STRING;
+        else
+            return SFILE_DATA_UNDEFINED;
+    } catch (FileIException &ex) {
+        return SFILE_DATA_UNDEFINED;
+    }
+}
+
 /*******************************
  ************ INPUT ************
  *******************************/
@@ -155,9 +190,9 @@ string SFile_HDF5::GetString(const string& name) {
  * NULL is returned.
  */
 template<typename T>
-T **SFile_HDF5_GetArray2D(SFile_HDF5 *sf, const string& name, sfilesize_t *dims, PredType p) {
-    if (!sf->HasVariable(name))
-        throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), sf->filename.c_str());
+T **SFile_HDF5::GetArray2D(const string& name, sfilesize_t *dims, PredType p) {
+    if (!HasVariable(name))
+        throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
 
 	if (dims == nullptr)
 		throw SFileException("Null-pointer given for storing length of vector.");
@@ -166,7 +201,7 @@ T **SFile_HDF5_GetArray2D(SFile_HDF5 *sf, const string& name, sfilesize_t *dims,
 	sfilesize_t ndims;
 	unsigned int i;
 
-	DataSet dset = sf->__GetFile()->openDataSet(name);
+	DataSet dset = this->file->openDataSet(name);
 	DataSpace dspace = dset.getSpace();
 
 	ndims = dspace.getSimpleExtentDims(dims);
@@ -188,77 +223,20 @@ T **SFile_HDF5_GetArray2D(SFile_HDF5 *sf, const string& name, sfilesize_t *dims,
 	return pointers;
 }
 double **SFile_HDF5::GetDoubles(const string& name, sfilesize_t *dims) {
-    return SFile_HDF5_GetArray2D<double>(this, name, dims, PredType::IEEE_F64LE);
+    return SFile_HDF5::GetArray2D<double>(name, dims, PredType::IEEE_F64LE);
 }
 int32_t **SFile_HDF5::GetInt32_2D(const string& name, sfilesize_t *dims) {
-    return SFile_HDF5_GetArray2D<int32_t>(this, name, dims, PredType::STD_I32LE);
+    return SFile_HDF5::GetArray2D<int32_t>(name, dims, PredType::STD_I32LE);
 }
 int64_t **SFile_HDF5::GetInt64_2D(const string& name, sfilesize_t *dims) {
-    return SFile_HDF5_GetArray2D<int64_t>(this, name, dims, PredType::STD_I64LE);
+    return SFile_HDF5::GetArray2D<int64_t>(name, dims, PredType::STD_I64LE);
 }
 uint32_t **SFile_HDF5::GetUInt32_2D(const string& name, sfilesize_t *dims) {
-    return SFile_HDF5_GetArray2D<uint32_t>(this, name, dims, PredType::STD_U32LE);
+    return SFile_HDF5::GetArray2D<uint32_t>(name, dims, PredType::STD_U32LE);
 }
 uint64_t **SFile_HDF5::GetUInt64_2D(const string& name, sfilesize_t *dims) {
-    return SFile_HDF5_GetArray2D<uint64_t>(this, name, dims, PredType::STD_U64LE);
+    return SFile_HDF5::GetArray2D<uint64_t>(name, dims, PredType::STD_U64LE);
 }
-
-/*double **SFile_HDF5::GetDoubles(const string& name, sfilesize_t *dims) {
-    if (!HasVariable(name))
-        throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
-
-	if (dims == nullptr)
-		throw SFileException("Null-pointer given for storing length of vector.");
-
-	double *data, **pointers;
-	sfilesize_t ndims;
-	unsigned int i;
-
-	DataSet dset = file->openDataSet(name);
-	DataSpace dspace = dset.getSpace();
-
-	ndims = dspace.getSimpleExtentDims(dims);
-	
-	if (ndims == 1) {
-		data = new double[dims[0]];
-		pointers = new double*;
-		pointers[0] = data;
-	} else {
-		data = new double[dims[0]*dims[1]];
-		pointers = new double*[dims[0]];
-		for (i = 0; i < dims[0]; i++) {
-			pointers[i] = data + (i*dims[1]);
-		}
-	}
-
-	dset.read(data, PredType::IEEE_F64LE, dspace);
-
-	return pointers;
-}*/
-/*double *SFile_HDF5::GetDoubles1D(const string& name, sfilesize_t *dims) {
-    if (!HasVariable(name))
-        throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
-	
-	if (dims == nullptr)
-		throw SFileException("Null-pointer given for storing length of vector.");
-
-	double *data;
-	sfilesize_t ndims;
-
-	DataSet dset = file->openDataSet(name);
-	DataSpace dspace = dset.getSpace();
-
-	ndims = dspace.getSimpleExtentDims(dims);
-	
-	if (ndims == 1)
-		data = new double[dims[0]];
-	else
-		data = new double[dims[0]*dims[1]];
-
-	dset.read(data, PredType::IEEE_F64LE, dspace);
-
-	return data;
-}*/
 
 /**
  * Reads an array of numbers from the dataset

@@ -40,6 +40,7 @@ class SFile_SDT : public SFile {
         virtual bool HasVariable(const std::string&) override;
         virtual double GetAttributeScalar(const std::string&, const std::string&) override;
         virtual std::string GetAttributeString(const std::string&, const std::string&) override;
+        virtual enum sfile_data_type GetDataType(const std::string&, enum sfile_data_type hint=SFILE_DATA_UNDEFINED) override;
 		virtual double *GetMultiArray_linear(const std::string&, const sfilesize_t, sfilesize_t&, sfilesize_t*) override;
 		virtual std::string GetString(const std::string&) override;
 		virtual void Open(const std::string&, enum sfile_mode) override;

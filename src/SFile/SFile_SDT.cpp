@@ -86,6 +86,26 @@ bool SFile_SDT::HasVariable(const string& name) {
 }
 
 /**
+ * Returns the type of the given variable.
+ *
+ * name: Name of variable to check type of.
+ * hint: Hint at what data type the user truly desires.
+ *       If the variable is numeric, and the hint is for
+ *       a numeric type, SDT always returns the hint.
+ */
+enum SFile::sfile_data_type SFile_SDT::GetDataType(const string& name, enum SFile::sfile_data_type hint) {
+    if (matrices.find(name) != matrices.end()) {
+        if (hint != SFILE_DATA_STRING && hint != SFILE_DATA_UNDEFINED)
+            return hint;
+        else
+            return SFILE_DATA_DOUBLE;
+    } else if (strings.find(name) != strings.end())
+        return SFILE_DATA_STRING;
+    else
+        return SFILE_DATA_UNDEFINED;
+}
+
+/**
  * HDF5 compatibility function which combines the
  * name of a dataset with the name of a variable to emulate
  * HDF5 dataset attributes.
