@@ -6,6 +6,7 @@
 #include <cstring>
 #include <string>
 #include <mat.h>
+#include <matrix.h>
 #include <softlib/SFile.h>
 #include <softlib/SFile_MAT.Matlab.h>
 #include <softlib/SFileException.h>
@@ -145,7 +146,7 @@ double **SFile_MAT::GetDoubles(const string& name, sfilesize_t *dims) {
 	mxDestroyArray(arr);
 	return data;
 }
-double *SFile_MAT::GetDoubles1D(const string& name, sfilesize_t *dims) {
+/*double *SFile_MAT::GetDoubles1D(const string& name, sfilesize_t *dims) {
 	size_t rows, cols;
 	mxArray *arr = matGetVariable(mfp, name.c_str());
 
@@ -167,6 +168,108 @@ double *SFile_MAT::GetDoubles1D(const string& name, sfilesize_t *dims) {
 
 	double *data = mxGetPr(arr);
 	return data;
+}*/
+mxArray *SFile_MAT::__GetArray(const string& name, sfilesize_t *dims) {
+	size_t rows, cols;
+	mxArray *arr = matGetVariable(mfp, name.c_str());
+
+	if (arr == NULL || mxIsEmpty(arr))
+		throw SFileException(filename+": The variable '"+name+"' does not exist in the file.");
+	if (!mxIsDouble(arr))
+		throw SFileException(filename+": The variable '"+name+"' is not a vector or matrix.");
+	
+    // NOTE: MATLAB does column major matrices,
+    // while we do row major. Therefore our 'rows'
+    // correspond to MATLAB's 'cols'.
+	rows = mxGetN(arr);
+	cols = mxGetM(arr);
+
+	if (dims != NULL) {
+		dims[0] = rows;
+		dims[1] = cols;
+	}
+
+    return arr;
+}
+double *SFile_MAT::GetDoubles1D(const string& name, sfilesize_t *dims) {
+    sfilesize_t d[2];
+    mxArray *arr = __GetArray(name, dims);
+    *dims = d[0]*d[1];
+    return mxGetDoubles(arr);
+}
+int32_t *SFile_MAT::GetInt32_1D(const string& name, sfilesize_t *dims) {
+    sfilesize_t d[2];
+    mxArray *arr = __GetArray(name, d);
+    *dims = d[0]*d[1];
+    return mxGetInt32s(arr);
+}
+int64_t *SFile_MAT::GetInt64_1D(const string& name, sfilesize_t *dims) {
+    sfilesize_t d[2];
+    mxArray *arr = __GetArray(name, dims);
+    *dims = d[0]*d[1];
+    return mxGetInt64s(arr);
+}
+uint32_t *SFile_MAT::GetUInt32_1D(const string& name, sfilesize_t *dims) {
+    sfilesize_t d[2];
+    mxArray *arr = __GetArray(name, dims);
+    *dims = d[0]*d[1];
+    return mxGetUInt32s(arr);
+}
+uint64_t *SFile_MAT::GetUInt64_1D(const string& name, sfilesize_t *dims) {
+    sfilesize_t d[2];
+    mxArray *arr = __GetArray(name, dims);
+    *dims = d[0]*d[1];
+    return mxGetUint64s(arr);
+}
+
+/**
+ * Reads an array of values from the MAT file.
+ * The dimensions of the array are returned in
+ * "dims".
+ *
+ * name: Name of variable to read
+ * dims: Array with two elements. Contains the
+ *  number of rows and columns in the returned
+ *  array on return.
+ *
+ * RETURNS a 1-D array (logically 2-D) which contains
+ * the data of the variable. If the named variable
+ * does not exist, or is not a 2-D matrix, NULL
+ * is returned.
+ */
+template<typename T>
+T **SFile_MAT_GetArray2D(SFile_MAT *sf, const string& name, sfilesize_t *dims) {
+    mArray *arr = sf->__GetArray(name, dims);
+
+    sfilesize_t rows = dims[0], cols = dims[1];
+
+    sfilesize_t len = rows*cols;
+	T **data = new T*[rows];
+    data[0] = new T[len];
+
+	for (sfilesize_t i = 1; i < rows; i++)
+		data[i] = data[i-1] + cols;
+
+    for (sfilesize_t i = 0; i < len; i++)
+        data[0][i] = tdata[i];
+
+	mxDestroyArray(arr);
+	return data;
+}
+double **SFile_MAT::GetDoubles(const string& name, sfilesize_t *dims) {
+    return SFile_MAT_GetArray2D<double>(this, const string& name, dims);
+}
+int32_t **SFile_MAT::GetInt32_2D(const string& name, sfilesize_t *dims) {
+    return SFile_MAT_GetArray2D<int32_t>(this, const string& name, dims);
+}
+int64_t **SFile_MAT::GetInt64_2D(const string& name, sfilesize_t *dims) {
+    return SFile_MAT_GetArray2D<int64_t>(this, const string& name, dims);
+}
+uint32_t **SFile_MAT::GetUInt32_2D(const string& name, sfilesize_t *dims) {
+    return SFile_MAT_GetArray2D<uint32_t>(this, const string& name, dims);
+}
+uint64_t **SFile_MAT::GetUInt64_2D(const string& name, sfilesize_t *dims) {
+    return SFile_MAT_GetArray2D<uint64_t>(this, const string& name, dims);
 }
 
 /**
@@ -271,31 +374,57 @@ void SFile_MAT::WriteString(const string& name, const string& str) {
 
 	if (status != 0) throw SFileException("Unable to write string '"+name+"' to MATLAB file.");
 }
-void SFile_MAT::WriteArray(const string& name, double **arr, sfilesize_t rows, sfilesize_t cols) {
-	int status;
-	sfilesize_t i, j;
-	double *t;
-	mxArray *ma;
 
-	ma = mxCreateDoubleMatrix(cols, rows, mxREAL);
+void SFile_MAT::WriteArray(const string& name, double **arr, sfilesize_t rows, sfilesize_t cols) {
+	mxArray *ma = mxCreateDoubleMatrix(cols, rows, mxREAL);
 	if (ma == NULL) throw SFileException("Unable to allocate MATLAB array for variable '%s'.", name.c_str());
 
-	t = mxGetPr(ma);
-	for (i = 0; i < rows; i++) {
-		for (j = 0; j < cols; j++) {
+	double *t = mxGetPr(ma);
+	for (sfilesize_t i = 0; i < rows; i++)
+		for (sfilesize_t j = 0; j < cols; j++)
 			t[i*cols + j] = arr[i][j];
-		}
-	}
 
-	status = matPutVariable(mfp, name.c_str(), ma);
+	int status = matPutVariable(mfp, name.c_str(), ma);
 	mxDestroyArray(ma);
 	if (status != 0) throw SFileException("Unable to write variable '%s' to MATLAB file.", name.c_str());
 }
+#define DEF_WRITEINTARRAY(NAME, TYPE, CTYPE, FTYPE) \
+    void SFile_MAT::NAME(const string& name, TYPE **arr, sfilesize_t rows, sfilesize_t cols) { \
+        mxArray *ma = mxCreateNumericMatrix(cols, rows, CTYPE, mxREAL); \
+        if (ma == NULL) throw SFileException("Unable to allocate MATLAB array for variable '%s'.", name.c_str()); \
+        \
+        TYPE *t = FTYPE(ma); \
+        for (sfilesize_t i = 0; i < rows; i++) \
+            for (sfilesize_t j = 0; j < cols; j++) \
+                t[i*cols + j] = arr[i][j]; \
+        \
+        int status = matPutVariable(mfp, name.c_str(), ma); \
+        mxDestroyArray(ma); \
+        if (status != 0) throw SFileException("Unable to write variable '%s' to MATLAB file.", name.c_str()); \
+    }
+
+DEF_WRITEINTARRAY(WriteInt32Array, int32_t, mxINT32_CLASS, mxGetInt32s)
+DEF_WRITEINTARRAY(WriteInt64Array, int64_t, mxINT64_CLASS, mxGetInt64s)
+DEF_WRITEINTARRAY(WriteUInt32Array, uint32_t, mxUINT32_CLASS, mxGetUint32s)
+DEF_WRITEINTARRAY(WriteUInt64Array, uint64_t, mxUINT64_CLASS, mxGetUint64s)
+
 void SFile_MAT::WriteImage(const string& name, double **image, sfilesize_t n) {
 	WriteArray(name, image, n, n);
 }
 void SFile_MAT::WriteList(const string& name, double *list, sfilesize_t n) {
 	WriteArray(name, &list, 1, n);
+}
+void SFile_MAT::WriteInt32List(const string& name, int32_t *list, sfilesize_t n) {
+    WriteInt32Array(name, &list, 1, n);
+}
+void SFile_MAT::WriteInt32List(const string& name, int64_t *list, sfilesize_t n) {
+    WriteInt64Array(name, &list, 1, n);
+}
+void SFile_MAT::WriteInt32List(const string& name, uint32_t *list, sfilesize_t n) {
+    WriteUInt32Array(name, &list, 1, n);
+}
+void SFile_MAT::WriteInt64List(const string& name, uint64_t *list, sfilesize_t n) {
+    WriteUInt64Array(name, &list, 1, n);
 }
 
 /**

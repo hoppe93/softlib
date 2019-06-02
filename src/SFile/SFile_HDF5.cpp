@@ -154,7 +154,56 @@ string SFile_HDF5::GetString(const string& name) {
  * the data of the dataset. If the named dataset does not exist,
  * NULL is returned.
  */
+template<typename T>
+T **SFile_HDF5_GetArray2D(SFile_HDF5 *sf, const string& name, sfilesize_t *dims, PredType p) {
+    if (!sf->HasVariable(name))
+        throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), sf->filename.c_str());
+
+	if (dims == nullptr)
+		throw SFileException("Null-pointer given for storing length of vector.");
+
+	T *data, **pointers;
+	sfilesize_t ndims;
+	unsigned int i;
+
+	DataSet dset = sf->__GetFile()->openDataSet(name);
+	DataSpace dspace = dset.getSpace();
+
+	ndims = dspace.getSimpleExtentDims(dims);
+	
+	if (ndims == 1) {
+		data = new T[dims[0]];
+		pointers = new T*;
+		pointers[0] = data;
+	} else {
+		data = new T[dims[0]*dims[1]];
+		pointers = new T*[dims[0]];
+		for (i = 0; i < dims[0]; i++) {
+			pointers[i] = data + (i*dims[1]);
+		}
+	}
+
+	dset.read(data, p, dspace);
+
+	return pointers;
+}
 double **SFile_HDF5::GetDoubles(const string& name, sfilesize_t *dims) {
+    return SFile_HDF5_GetArray2D<double>(this, name, dims, PredType::IEEE_F64LE);
+}
+int32_t **SFile_HDF5::GetInt32_2D(const string& name, sfilesize_t *dims) {
+    return SFile_HDF5_GetArray2D<int32_t>(this, name, dims, PredType::STD_I32LE);
+}
+int64_t **SFile_HDF5::GetInt64_2D(const string& name, sfilesize_t *dims) {
+    return SFile_HDF5_GetArray2D<int64_t>(this, name, dims, PredType::STD_I64LE);
+}
+uint32_t **SFile_HDF5::GetUInt32_2D(const string& name, sfilesize_t *dims) {
+    return SFile_HDF5_GetArray2D<uint32_t>(this, name, dims, PredType::STD_U32LE);
+}
+uint64_t **SFile_HDF5::GetUInt64_2D(const string& name, sfilesize_t *dims) {
+    return SFile_HDF5_GetArray2D<uint64_t>(this, name, dims, PredType::STD_U64LE);
+}
+
+/*double **SFile_HDF5::GetDoubles(const string& name, sfilesize_t *dims) {
     if (!HasVariable(name))
         throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
 
@@ -185,8 +234,8 @@ double **SFile_HDF5::GetDoubles(const string& name, sfilesize_t *dims) {
 	dset.read(data, PredType::IEEE_F64LE, dspace);
 
 	return pointers;
-}
-double *SFile_HDF5::GetDoubles1D(const string& name, sfilesize_t *dims) {
+}*/
+/*double *SFile_HDF5::GetDoubles1D(const string& name, sfilesize_t *dims) {
     if (!HasVariable(name))
         throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), filename.c_str());
 	
@@ -209,6 +258,63 @@ double *SFile_HDF5::GetDoubles1D(const string& name, sfilesize_t *dims) {
 	dset.read(data, PredType::IEEE_F64LE, dspace);
 
 	return data;
+}*/
+
+/**
+ * Reads an array of numbers from the dataset
+ * with name "name". The dimensions of the array are
+ * returned in "dims".
+ *
+ * name: Name of dataset to read
+ * dims: Array with two elements. Will contain dimensions of returned value on return.
+ *
+ * Returns a 1-D array (logically 1-D) which contains
+ * the data of the dataset. If the named dataset does not exist,
+ * nullptr is returned.
+ */
+template<typename T>
+T *SFile_HDF5_GetArray1D(SFile_HDF5 *sf, const string& name, sfilesize_t *dims, PredType p) {
+    sfilesize_t d[2];
+    if (!sf->HasVariable(name))
+        throw SFileException("A variable with the name '%s' does not exist in the file '%s'.", name.c_str(), sf->filename.c_str());
+	
+	if (dims == nullptr)
+		throw SFileException("Null-pointer given for storing length of vector.");
+
+	T *data;
+	sfilesize_t ndims;
+
+	DataSet dset = sf->__GetFile()->openDataSet(name);
+	DataSpace dspace = dset.getSpace();
+
+	ndims = dspace.getSimpleExtentDims(d);
+	
+	if (ndims == 1) {
+        *dims = d[0];
+		data = new T[d[0]];
+	} else {
+        *dims = d[0]*d[1];
+		data = new T[*dims];
+    }
+
+	dset.read(data, p, dspace);
+
+	return data;
+}
+double *SFile_HDF5::GetDoubles1D(const string& name, sfilesize_t *dims) {
+    return SFile_HDF5_GetArray1D<double>(this, name, dims, PredType::IEEE_F64LE);
+}
+int32_t *SFile_HDF5::GetInt32_1D(const string& name, sfilesize_t *dims) {
+    return SFile_HDF5_GetArray1D<int32_t>(this, name, dims, PredType::STD_I32LE);
+}
+int64_t *SFile_HDF5::GetInt64_1D(const string& name, sfilesize_t *dims) {
+    return SFile_HDF5_GetArray1D<int64_t>(this, name, dims, PredType::STD_I64LE);
+}
+uint32_t *SFile_HDF5::GetUInt32_1D(const string& name, sfilesize_t *dims) {
+    return SFile_HDF5_GetArray1D<uint32_t>(this, name, dims, PredType::STD_U32LE);
+}
+uint64_t *SFile_HDF5::GetUInt64_1D(const string& name, sfilesize_t *dims) {
+    return SFile_HDF5_GetArray1D<uint64_t>(this, name, dims, PredType::STD_U64LE);
 }
 
 /**
@@ -279,13 +385,34 @@ void SFile_HDF5::WriteString(const string& name, const string& str) {
  * rows: Number of rows of array
  * cols: Number of columns of data
  */
-void SFile_HDF5::WriteArray(const string& name, double **arr, sfilesize_t rows, sfilesize_t cols) {
+template<typename T>
+void SFile_HDF5::WriteNumArray(
+    const string& name, T **arr, sfilesize_t rows,
+    sfilesize_t cols, PredType op, PredType ip
+) {
 	hsize_t dims[] = {rows, cols};
 	DataSpace dspace(2, dims);
-	DataSet dset = file->createDataSet(name, PredType::IEEE_F64LE, dspace);
-	dset.write(arr[0], PredType::NATIVE_DOUBLE);
+	DataSet dset = file->createDataSet(name, op, dspace);
+	dset.write(arr[0], ip);
 	dset.close();
 }
+
+void SFile_HDF5::WriteArray(const string& name, double **arr, sfilesize_t rows, sfilesize_t cols) {
+    return SFile_HDF5::WriteNumArray<double>(name, arr, rows, cols, PredType::IEEE_F64LE, PredType::NATIVE_DOUBLE);
+}
+void SFile_HDF5::WriteInt32Array(const string& name, int32_t **arr, sfilesize_t rows, sfilesize_t cols) {
+    return SFile_HDF5::WriteNumArray<int32_t>(name, arr, rows, cols, PredType::STD_I32LE, PredType::NATIVE_INT32);
+}
+void SFile_HDF5::WriteInt64Array(const string& name, int64_t **arr, sfilesize_t rows, sfilesize_t cols) {
+    return SFile_HDF5::WriteNumArray<int64_t>(name, arr, rows, cols, PredType::STD_I64LE, PredType::NATIVE_INT64);
+}
+void SFile_HDF5::WriteUInt32Array(const string& name, uint32_t **arr, sfilesize_t rows, sfilesize_t cols) {
+    return SFile_HDF5::WriteNumArray<uint32_t>(name, arr, rows, cols, PredType::STD_U32LE, PredType::NATIVE_UINT32);
+}
+void SFile_HDF5::WriteUInt64Array(const string& name, uint64_t **arr, sfilesize_t rows, sfilesize_t cols) {
+    return SFile_HDF5::WriteNumArray<uint64_t>(name, arr, rows, cols, PredType::STD_U64LE, PredType::NATIVE_UINT64);
+}
+
 /**
  * Write an image to the HDF5 file. This
  * function is just a wrapper for
@@ -311,6 +438,18 @@ void SFile_HDF5::WriteImage(const string& name, double **image, sfilesize_t n) {
  */
 void SFile_HDF5::WriteList(const string& name, double *list, sfilesize_t n) {
 	WriteArray(name, &list, 1, n);
+}
+void SFile_HDF5::WriteInt32List(const string& name, int32_t *list, sfilesize_t n) {
+    WriteInt32Array(name, &list, 1, n);
+}
+void SFile_HDF5::WriteInt64List(const string& name, int64_t *list, sfilesize_t n) {
+    WriteInt64Array(name, &list, 1, n);
+}
+void SFile_HDF5::WriteUInt32List(const string& name, uint32_t *list, sfilesize_t n) {
+    WriteUInt32Array(name, &list, 1, n);
+}
+void SFile_HDF5::WriteUInt64List(const string& name, uint64_t *list, sfilesize_t n) {
+    WriteUInt64Array(name, &list, 1, n);
 }
 
 /**

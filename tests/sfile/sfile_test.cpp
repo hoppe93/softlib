@@ -12,14 +12,21 @@ using namespace std;
 /**
  * Check if two arrays are equal.
  */
-bool sfile_compareArray(double **arr1, double **arr2, sfilesize_t *size1, sfilesize_t *size2) {
+template<typename T>
+bool sfile_compareArray(T **arr1, T **arr2, sfilesize_t *size1, sfilesize_t *size2) {
 	if (size1[0] != size2[0] || size1[1] != size2[1]) return false;
 
 	sfilesize_t i, j;
 	for (i = 0; i < size1[0]; i++)
-		for (j = 0; j < size1[1]; j++)
-			if (fabs(arr1[i][j] - arr2[i][j]) > 5.0*(numeric_limits<double>::epsilon()))
-				return false;
+		for (j = 0; j < size1[1]; j++) {
+            if (typeid(T) == typeid(double)) {
+                if (fabs(arr1[i][j] - arr2[i][j]) > 5.0*(numeric_limits<double>::epsilon()))
+                    return false;
+            } else {
+                if (arr1[i][j] != arr2[i][j])
+                    return false;
+            }
+        }
 	
 	return true;
 }
@@ -27,7 +34,8 @@ bool sfile_compareArray(double **arr1, double **arr2, sfilesize_t *size1, sfiles
 /**
  * Check if two 3D arrays are equal.
  */
-bool sfile_compare3Array(double ***arr1, double ***arr2, sfilesize_t *size1, sfilesize_t *size2) {
+template<typename T>
+bool sfile_compare3Array(T ***arr1, T ***arr2, sfilesize_t *size1, sfilesize_t *size2) {
 	if (size1[0] != size2[0] ||
 		size1[1] != size2[1] ||
 		size1[2] != size2[2])
@@ -35,9 +43,15 @@ bool sfile_compare3Array(double ***arr1, double ***arr2, sfilesize_t *size1, sfi
 	
 	for (sfilesize_t i = 0; i < size1[0]; i++)
 		for (sfilesize_t j = 0; j < size1[1]; j++)
-			for (sfilesize_t k = 0; k < size1[2]; k++)
-				if (fabs(arr1[i][j][k] - arr2[i][j][k]) > 5.0*(numeric_limits<double>::epsilon()))
-					return false;
+			for (sfilesize_t k = 0; k < size1[2]; k++) {
+                if (typeid(T) == typeid(double)) {
+                    if (fabs(arr1[i][j][k] - arr2[i][j][k]) > 5.0*(numeric_limits<double>::epsilon()))
+                        return false;
+                } else {
+                    if (arr1[i][j][k] != arr2[i][j][k])
+                        return false;
+                }
+            }
 	
 	return true;
 }
@@ -45,16 +59,47 @@ bool sfile_compare3Array(double ***arr1, double ***arr2, sfilesize_t *size1, sfi
 /**
  * Check if two lists are equal.
  */
-bool sfile_compareLists(double *list1, double *list2, sfilesize_t l1, sfilesize_t l2) {
+template<typename T>
+bool sfile_compareLists(T *list1, T *list2, sfilesize_t l1, sfilesize_t l2) {
 	if (l1 != l2) return false;
 
 	sfilesize_t i;
-	for (i = 0; i < l1; i++)
-		if (fabs(list1[i] - list2[i]) > 5.0*(numeric_limits<double>::epsilon()))
-			return false;
+	for (i = 0; i < l1; i++) {
+        if (typeid(T) == typeid(double)) {
+            if (fabs(list1[i] - list2[i]) > 5.0*(numeric_limits<double>::epsilon()))
+                return false;
+        } else {
+            if (list1[i] != list2[i])
+                return false;
+        }
+    }
 	
 	return true;
 }
+
+template<typename T>
+T *sfile_construct_list(sfilesize_t n) {
+    T *a = new T[n];
+    for (sfilesize_t i = 0; i < n; i++)
+        a[i] = i+1;
+
+    return a;
+}
+template<typename T>
+T **sfile_construct_array(sfilesize_t nr, sfilesize_t nc) {
+    T **a = new T*[nr];
+    a[0] = new T[nr*nc];
+
+    for (sfilesize_t i = 1; i < nr; i++)
+        a[i] = a[i-1] + nc;
+
+    for (sfilesize_t i = 0; i < nr; i++)
+        for (sfilesize_t j = 0; j < nc; j++)
+            a[i][j] = (T)(i*nc + j);
+
+    return a;
+}
+
 /**
  * Do a file test on the given SFile object.
  * Write output to the file named 'testname'.
@@ -69,7 +114,8 @@ bool sfile_test(SFile *sf, const string& testname, const bool multisupp, const b
 
 	// Construct the array
 	sfilesize_t array_rows=3, array_cols=4;
-	double **array = new double*[array_rows];
+    double **array = sfile_construct_array<double>(array_rows, array_cols);
+	/*double **array = new double*[array_rows];
 
 	array[0] = new double[array_cols*array_rows];
 	for (i = 1; i < array_rows; i++)
@@ -77,7 +123,7 @@ bool sfile_test(SFile *sf, const string& testname, const bool multisupp, const b
 
 	for (i = 0; i < array_rows; i++)
 		for (j = 0; j < array_cols; j++)
-			array[i][j] = (double)(i*array_cols + j);
+			array[i][j] = (double)(i*array_cols + j);*/
 	
 	// Construct the multi-dimensional array
 	sfilesize_t mularr_ni=3, mularr_nj=4, mularr_nk=5;
@@ -101,6 +147,26 @@ bool sfile_test(SFile *sf, const string& testname, const bool multisupp, const b
 		for (j = 0; j < mularr_nj; j++)
 			for (k = 0; k < mularr_nk; k++)
 				mularr[i][j][k] = (double)((mularr_nj*i + j)*mularr_nk + k);
+
+    // Construct the 1D integer array
+    sfilesize_t int64list_n = 5;
+    int64_t *int64list = sfile_construct_list<int64_t>(int64list_n);
+    /*int64_t *intarr = new int64_t[intarr_n];
+    for (i = 0; i < intarr_n; i++)
+        intarr[i] = i;*/
+
+    // Construct the 2D integer array
+    sfilesize_t int64arr_rows=4, int64arr_cols=3;
+    int64_t **int64arr = sfile_construct_array<int64_t>(int64arr_rows, int64arr_cols);
+    /*int64_t **intarr2D = new int64_t*[intarr2D_rows];
+    intarr2D[0] = new int64_t[intarr2D_rows*intarr2D_cols];
+
+    for (i = 1; i < intarr2D_rows; i++)
+        intarr2D[i] = intarr2D[i-1] + intarr2D_cols;
+
+    for (i = 0; i < intarr2D_rows; i++)
+        for (j = 0; j < intarr2D_cols; i++)
+            intarr2D[i][j] = (int64_t)(i*intarr2D_cols + j);*/
 
 	// Construct the scalar
 	double att_scalar = 3.14159;
@@ -137,6 +203,9 @@ bool sfile_test(SFile *sf, const string& testname, const bool multisupp, const b
     sf->WriteScalar("scalar", scalar);
 	sf->WriteString("string", sfile_string);
 
+    sf->WriteInt64List("int64list", int64list, int64list_n);
+    sf->WriteInt64Array("int64arr", int64arr, int64arr_rows, int64arr_cols);
+
 	if (multisupp)
 		sf->WriteMultiArray("multiArray", **mularr, 3, mularr_dims);
 	
@@ -158,6 +227,22 @@ bool sfile_test(SFile *sf, const string& testname, const bool multisupp, const b
 
 	delete [] arrbuf[0];
 	delete [] arrbuf;
+
+    // Read int64 list
+    int64_t *int64bufl = sf->GetInt64_1D("int64list", &lenbuf1);
+    if (!sfile_compareLists(int64bufl, int64list, lenbuf1, int64list_n))
+        throw SOFTLibException("Reading/writing int64 lists did not work.");
+
+    delete [] int64bufl;
+
+    // Read int64 array
+    int64_t **int64buf = sf->GetInt64_2D("int64arr", lenbuf2);
+    tlen[0] = int64arr_rows; tlen[1] = int64arr_cols;
+    if (!sfile_compareArray(int64buf, int64arr, lenbuf2, tlen))
+        throw SOFTLibException("Reading/writing int64 arrays did not work.");
+
+    delete [] int64buf[0];
+    delete [] int64buf;
 
 	// Read scalar attribute
 	scalbuf = sf->GetAttributeScalar("array", "att_scalar");

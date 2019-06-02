@@ -116,7 +116,53 @@ double **SFile_SDT::GetDoubles(const string& name, sfilesize_t *dims) {
     dims[0] = it->second.nrows;
     dims[1] = it->second.ncols;
 
+    double **narr = new double*[dims[0]];
+    narr[0] = new double[dims[0]*dims[1]];
+    for (sfilesize_t i = 1; i < dims[0]; i++)
+        narr[i] = narr[i-1] + dims[1];
+
     return it->second.value;
+}
+
+/**
+ * Loads the integer matrix with the given name from
+ * the SDT file.
+ * 
+ * name: Name of matrix to load.
+ * dims: Contains the matrix dimensions (rows, cols)
+ *       upon return.
+ */
+template<typename T>
+T **SFile_SDT_Get_IntArray2D(SFile_SDT *s, const string& name, sfilesize_t *dims) {
+    double **l = s->GetDoubles(name, dims);
+
+    // Allocate new array
+    T **a = new T*[dims[0]];
+    a[0] = new T[dims[0]*dims[1]];
+    for (sfilesize_t i = 1; i < dims[0]; i++)
+        a[i] = a[i-1] + dims[1];
+
+    // Copy values
+    for (sfilesize_t i = 0; i < dims[0]; i++)
+        for (sfilesize_t j = 0; j < dims[1]; j++)
+            a[i][j] = (T)l[i][j];
+
+    delete [] l[0];
+    delete [] l;
+
+    return a;
+}
+int32_t **SFile_SDT::GetInt32_2D(const string& name, sfilesize_t *dims) {
+    return SFile_SDT_Get_IntArray2D<int32_t>(this, name, dims);
+}
+int64_t **SFile_SDT::GetInt64_2D(const string& name, sfilesize_t *dims) {
+    return SFile_SDT_Get_IntArray2D<int64_t>(this, name, dims);
+}
+uint32_t **SFile_SDT::GetUInt32_2D(const string& name, sfilesize_t *dims) {
+    return SFile_SDT_Get_IntArray2D<uint32_t>(this, name, dims);
+}
+uint64_t **SFile_SDT::GetUInt64_2D(const string& name, sfilesize_t *dims) {
+    return SFile_SDT_Get_IntArray2D<uint64_t>(this, name, dims);
 }
 
 /**
@@ -152,7 +198,43 @@ double *SFile_SDT::GetDoubles1D(const string &name, sfilesize_t *dims) {
     else
         throw SFileException("The requested variable is not a vector: '%s'.", name.c_str());
 
-    return it->second.value[0];
+    double *narr = new double[*dims];
+    for (sfilesize_t i = 0; i < *dims; i++)
+        narr[i] = it->second.value[0][i];
+
+    return narr;
+}
+
+/**
+ * Loads the integer vector with the given name from
+ * the SDT file.
+ *
+ * name: Name of matrix to load.
+ * dims: Contains the matrix dimensions (rows, cols)
+ *       upon return.
+ */
+template<typename T>
+T *SFile_SDT_Get_IntArray1D(SFile_SDT *s, const string& name, sfilesize_t *dims) {
+    double *l = s->GetDoubles1D(name, dims);
+    T *a = new T[*dims];
+
+    for (sfilesize_t i = 0; i < *dims; i++)
+        a[i] = (T)l[i];
+
+    delete [] l;
+    return a;
+}
+int32_t *SFile_SDT::GetInt32_1D(const string& name, sfilesize_t *dims) {
+    return SFile_SDT_Get_IntArray1D<int32_t>(this, name, dims);
+}
+int64_t *SFile_SDT::GetInt64_1D(const string& name, sfilesize_t *dims) {
+    return SFile_SDT_Get_IntArray1D<int64_t>(this, name, dims);
+}
+uint32_t *SFile_SDT::GetUInt32_1D(const string& name, sfilesize_t *dims) {
+    return SFile_SDT_Get_IntArray1D<uint32_t>(this, name, dims);
+}
+uint64_t *SFile_SDT::GetUInt64_1D(const string& name, sfilesize_t *dims) {
+    return SFile_SDT_Get_IntArray1D<uint64_t>(this, name, dims);
 }
 
 /**
@@ -221,7 +303,8 @@ string SFile_SDT::GetString(const string &name) {
  */
 void SFile_SDT::CreateStruct(const string&) { }
 
-void SFile_SDT::WriteArray(const string& name, double **arr, sfilesize_t nrows, sfilesize_t ncols) {
+template<typename T>
+void SFile_SDT::WriteNumArray(const string& name, T **arr, sfilesize_t nrows, sfilesize_t ncols) {
     // Definition string
     sdtfile << "@matrix " << name << " " << nrows << " " << ncols << endl;
 
@@ -235,6 +318,35 @@ void SFile_SDT::WriteArray(const string& name, double **arr, sfilesize_t nrows, 
 
     sdtfile << endl;
 }
+
+void SFile_SDT::WriteArray(const string& name, double **arr, sfilesize_t nrows, sfilesize_t ncols) {
+    WriteNumArray<double>(name, arr, nrows, ncols);
+}
+void SFile_SDT::WriteInt32Array(const string& name, int32_t **arr, sfilesize_t nrows, sfilesize_t ncols) {
+    WriteNumArray<int32_t>(name, arr, nrows, ncols);
+}
+void SFile_SDT::WriteInt64Array(const string& name, int64_t **arr, sfilesize_t nrows, sfilesize_t ncols) {
+    WriteNumArray<int64_t>(name, arr, nrows, ncols);
+}
+void SFile_SDT::WriteUInt32Array(const string& name, uint32_t **arr, sfilesize_t nrows, sfilesize_t ncols) {
+    WriteNumArray<uint32_t>(name, arr, nrows, ncols);
+}
+void SFile_SDT::WriteUInt64Array(const string& name, uint64_t **arr, sfilesize_t nrows, sfilesize_t ncols) {
+    WriteNumArray<uint64_t>(name, arr, nrows, ncols);
+}
+    /*// Definition string
+    sdtfile << "@matrix " << name << " " << nrows << " " << ncols << endl;
+
+    for (sfilesize_t i = 0; i < nrows; i++) {
+        for (sfilesize_t j = 0; j < ncols; j++) {
+            sdtfile << arr[i][j] << " ";
+        }
+
+        sdtfile << endl;
+    }
+
+    sdtfile << endl;
+}*/
 
 void SFile_SDT::WriteAttribute_scalar(const string& datasetname, const string& name, double val) {
     string att_name = GetAttributeName(datasetname, name);
@@ -256,6 +368,18 @@ void SFile_SDT::WriteImage(const string& name, double **img, sfilesize_t pixels)
 
 void SFile_SDT::WriteList(const string& name, double *list, sfilesize_t length) {
     WriteArray(name, &list, 1, length);
+}
+void SFile_SDT::WriteInt32List(const string& name, int32_t *list, sfilesize_t length) {
+    WriteInt32Array(name, &list, 1, length);
+}
+void SFile_SDT::WriteInt64List(const string& name, int64_t *list, sfilesize_t length) {
+    WriteInt64Array(name, &list, 1, length);
+}
+void SFile_SDT::WriteUInt32List(const string& name, uint32_t *list, sfilesize_t length) {
+    WriteUInt32Array(name, &list, 1, length);
+}
+void SFile_SDT::WriteUInt64List(const string& name, uint64_t *list, sfilesize_t length) {
+    WriteUInt64Array(name, &list, 1, length);
 }
 
 void SFile_SDT::WriteString(const string& name, const string& val) {

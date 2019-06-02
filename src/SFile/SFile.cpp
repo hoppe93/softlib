@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <functional>
 #include <softlib/SFile.h>
 #include <softlib/SFileException.h>
 
@@ -158,18 +159,46 @@ double *SFile::GetList(const string& name, sfilesize_t *length) {
 		p = arr[0];
 		delete [] arr;
 	} else {
-		throw SFileException(filename+": The requested variable is not a list: '"+name+"'.");
+		throw SFileException("%s: The requested variable is not a list: '%s'.", filename, name);
 	}
 
 	return p;
 }
 
 /**
+ * Reads the variable expecting it to be a
+ * scalar value of the given type.
+ * 
+ * name: Name of variable to read.
+ * f:    Function to use to read the variable.
+ */
+template<typename T>
+T SFile::__GetSingle(const string& name, T** (SFile::*f)(const string&, sfilesize_t*), SFile *sf) {
+	sfilesize_t length[2];
+	T s;
+	T **arr = (sf->*f)(name, length);
+
+	if (length[0] != 1 || length[1] != 1)
+		throw SFileException("%s: The requested variable is not a scalar: '%s'.", filename, name);
+	
+	s = arr[0][0];
+	delete [] arr[0];
+	delete [] arr;
+
+	return s;
+}
+double SFile::GetScalar(const string& name) { return __GetSingle<double>(name, &SFile::GetDoubles, this); }
+int32_t SFile::GetInt32(const string& name) { return __GetSingle<int32_t>(name, &SFile::GetInt32_2D, this); }
+int64_t SFile::GetInt64(const string& name) { return __GetSingle<int64_t>(name, &SFile::GetInt64_2D, this); }
+uint32_t SFile::GetUInt32(const string& name) { return __GetSingle<uint32_t>(name, &SFile::GetUInt32_2D, this); }
+uint64_t SFile::GetUInt64(const string& name) { return __GetSingle<uint64_t>(name, &SFile::GetUInt64_2D, this); }
+
+/**
  * Reads a scalar (real) variable from the file.
  *
  * name: Name of scalar variable.
  */
-double SFile::GetScalar(const string& name) {
+/*double SFile::GetScalar(const string& name) {
 	sfilesize_t length[2];
 	double s;
 	double **arr = GetDoubles(name, length);
@@ -182,7 +211,7 @@ double SFile::GetScalar(const string& name) {
 	delete [] arr;
 
 	return s;
-}
+}*/
 
 /**
  * Write a scalar value.
