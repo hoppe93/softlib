@@ -60,18 +60,18 @@ public:
 	virtual void OverwriteValues(const Setting*) override;
 
     virtual Setting *Copy() override;
-	virtual size_t GetNumberOfValues() override;
+	virtual size_t GetNumberOfValues() const override;
 
     // Get value(s)
-	virtual bool GetBool(unsigned int index=0) override;
-    virtual int64_t GetInteger(unsigned int index=0) override;
-    virtual int32_t GetInteger32(unsigned int index=0) override;
-    virtual uint32_t GetUnsignedInteger32(unsigned int index=0) override;
-    virtual int64_t GetInteger64(unsigned int index=0) override;
-    virtual uint64_t GetUnsignedInteger64(unsigned int index=0) override;
-	virtual slibreal_t GetScalar(unsigned int index=0) override;
-	virtual std::string& GetString(unsigned int index=0) override;
-	virtual std::vector<slibreal_t> GetNumericVector() override;
+	virtual bool GetBool(unsigned int index=0) const override;
+    virtual int64_t GetInteger(unsigned int index=0) const override;
+    virtual int32_t GetInteger32(unsigned int index=0) const override;
+    virtual uint32_t GetUnsignedInteger32(unsigned int index=0) const override;
+    virtual int64_t GetInteger64(unsigned int index=0) const override;
+    virtual uint64_t GetUnsignedInteger64(unsigned int index=0) const override;
+	virtual slibreal_t GetScalar(unsigned int index=0) const override;
+	virtual std::string GetString(unsigned int index=0) const override;
+	virtual std::vector<slibreal_t> GetNumericVector() const override;
 	virtual const std::vector<std::string> GetTextVector() const override;
 
     // Check value type
@@ -102,7 +102,7 @@ public:
     virtual void FromFile(const std::string&) override;
 
 	void FromStdin();
-	ConfigBlock& FromString(const std::string&, const std::string& src="<unknown>");
+	ConfigBlock *FromString(const std::string&, const std::string& src="<unknown>");
 private:
 	/* Lexer properties/methods */
 	size_t cnfbufferpos, cnfbufferlength,

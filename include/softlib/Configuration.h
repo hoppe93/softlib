@@ -21,9 +21,7 @@ protected:
 
 public:
     Setting() {}
-    Setting(const Setting*);
-	/*Setting(const std::string&, const std::string&);
-    Setting(const std::string&, const std::vector<std::string>&);*/
+    //Setting(const Setting*);
 	virtual ~Setting();
 
 	bool HasName(const std::string&) const;
@@ -31,18 +29,18 @@ public:
 
     virtual Setting *Copy() = 0;
     virtual void OverwriteValues(const Setting*) = 0;
-    virtual size_t GetNumberOfValues() = 0;
+    virtual size_t GetNumberOfValues() const = 0;
 
     // Get value(s)
-	virtual bool GetBool(unsigned int index=0) = 0;
-    virtual int64_t GetInteger(unsigned int index=0) = 0;
-    virtual int32_t GetInteger32(unsigned int index=0) = 0;
-    virtual uint32_t GetUnsignedInteger32(unsigned int index=0) = 0;
-    virtual int64_t GetInteger64(unsigned int index=0) = 0;
-    virtual uint64_t GetUnsignedInteger64(unsigned int index=0) = 0;
-	virtual slibreal_t GetScalar(unsigned int index=0) = 0;
-	virtual std::string& GetString(unsigned int index=0) = 0;
-	virtual std::vector<slibreal_t> GetNumericVector() = 0;
+	virtual bool GetBool(unsigned int index=0) const = 0;
+    virtual int64_t GetInteger(unsigned int index=0) const = 0;
+    virtual int32_t GetInteger32(unsigned int index=0) const = 0;
+    virtual uint32_t GetUnsignedInteger32(unsigned int index=0) const = 0;
+    virtual int64_t GetInteger64(unsigned int index=0) const = 0;
+    virtual uint64_t GetUnsignedInteger64(unsigned int index=0) const = 0;
+	virtual slibreal_t GetScalar(unsigned int index=0) const = 0;
+	virtual std::string GetString(unsigned int index=0) const = 0;
+	virtual std::vector<slibreal_t> GetNumericVector() const = 0;
 	virtual const std::vector<std::string> GetTextVector() const = 0;
 
     // Check value type
@@ -80,7 +78,7 @@ class ConfigBlock {
 
 public:
 	ConfigBlock();
-    ConfigBlock(const ConfigBlock&);
+    ConfigBlock(const ConfigBlock*);
 	ConfigBlock(confblock_t, const std::string&, const std::string& stype="", ConfigBlock *parent=nullptr);
 	~ConfigBlock();
 
@@ -88,10 +86,10 @@ public:
     Setting& AddSetting(const std::string&, const std::vector<std::string>&);*/
 	Setting *AddSetting(Setting*);
 	ConfigBlock *AddSubBlock(confblock_t, const std::string&, const std::string& stype="");
-	ConfigBlock *AddSubBlock(ConfigBlock&);
+	ConfigBlock *AddSubBlock(ConfigBlock*);
 	std::vector<Setting*> GetAllSettings() const;
-	std::vector<ConfigBlock> GetAllSubBlocks() const;
-	std::vector<ConfigBlock> GetAllSubBlocksOfType(confblock_t) const;
+	std::vector<ConfigBlock*> GetAllSubBlocks() const;
+	std::vector<ConfigBlock*> GetAllSubBlocksOfType(confblock_t) const;
 	ConfigBlock *GetConfigBlock(confblock_t, const std::string&);
 	Setting *GetSetting(const std::string&);
 	Setting *GetSetting(const char*);
@@ -108,19 +106,19 @@ public:
     bool HasUntouchedSettings() const;
 	ConfigBlock *GetParent() const;
 	bool HasParent() const;
-	std::vector<std::string> *Merge(ConfigBlock&, bool allowNew=false);
+	std::vector<std::string> *Merge(ConfigBlock*, bool allowNew=false);
 	void MergeSetting(Setting*);
-	void SetParent(ConfigBlock&);
+	void SetParent(ConfigBlock*);
 
 	bool operator==(const ConfigBlock& rhs) const;
-	std::string& operator[](const std::string&);
+	std::string operator[](const std::string&);
 };
 
 /* Root class, representing the configuration file */
 class Configuration {
 protected:
 	std::string filename;
-	ConfigBlock root;
+	ConfigBlock *root;
 	std::vector<std::string> blocktypes;
     bool errorflag=false;
 
@@ -132,7 +130,7 @@ public:
 	virtual void FromFile(const std::string&) = 0;
 
     bool HasError() const { return this->errorflag; }
-	ConfigBlock GetRootBlock() const { return this->root; }
+	ConfigBlock *GetRootBlock() const { return this->root; }
 	bool IsBlockType(const std::string&);
     std::vector<std::string> *Merge(Configuration&, bool allowNew=false);
 	confblock_t RegisterBlockType(const std::string&);

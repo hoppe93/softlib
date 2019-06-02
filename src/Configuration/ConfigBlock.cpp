@@ -11,19 +11,19 @@ using namespace std;
  * Constructor & Destructor
  */
 ConfigBlock::ConfigBlock() { }
-ConfigBlock::ConfigBlock(const ConfigBlock &cb) {
-    this->type = cb.GetType();
-    this->name = cb.GetName();
-    this->secondary_type = cb.GetSecondaryType();
-    this->parent = cb.GetParent();
+ConfigBlock::ConfigBlock(const ConfigBlock *cb) {
+    this->type = cb->GetType();
+    this->name = cb->GetName();
+    this->secondary_type = cb->GetSecondaryType();
+    this->parent = cb->GetParent();
 
     // Copy sub-blocks
-    vector<ConfigBlock> sub = cb.GetAllSubBlocks();
+    vector<ConfigBlock*> sub = cb->GetAllSubBlocks();
     for (unsigned int i = 0; i < sub.size(); i++)
-        subblocks.push_back(ConfigBlock(sub.at(i)));
+        subblocks.push_back(new ConfigBlock(sub.at(i)));
 
     // Copy settings
-    this->settings = cb.GetAllSettings();
+    this->settings = cb->GetAllSettings();
     for (Setting *s : this->settings)
         settings.push_back(s->Copy());
 }
@@ -37,6 +37,10 @@ ConfigBlock::~ConfigBlock() {
     // Delete settings
     for (Setting *s : this->settings) {
         delete s;
+    }
+
+    for (ConfigBlock *cb : this->subblocks) {
+        delete cb;
     }
 }
 
@@ -67,20 +71,19 @@ Setting *ConfigBlock::AddSetting(Setting *set) {
  * return the newly added object.
  */
 ConfigBlock *ConfigBlock::AddSubBlock(confblock_t type, const string& name, const string& secondary_block) {
-    ConfigBlock cb(type, name, secondary_block, this);
-    return AddSubBlock(cb);
+    return AddSubBlock(new ConfigBlock(type, name, secondary_block, this));
 }
 
 /**
  * Add an existing sub-block to this ConfigBlock and
  * return the newly added object.
  */
-ConfigBlock *ConfigBlock::AddSubBlock(ConfigBlock& cb) {
-    if (HasSubBlock(cb.GetType(), cb.GetName())) {
-        return GetConfigBlock(cb.GetType(), cb.GetName());
+ConfigBlock *ConfigBlock::AddSubBlock(ConfigBlock *cb) {
+    if (HasSubBlock(cb->GetType(), cb->GetName())) {
+        return GetConfigBlock(cb->GetType(), cb->GetName());
     } else {
         this->subblocks.push_back(cb);
-        return &(this->subblocks.back());
+        return cb;
     }
 }
 
@@ -94,7 +97,7 @@ vector<Setting*> ConfigBlock::GetAllSettings() const {
 /**
  * Get a list of all sub-blocks of this ConfigBlock.
  */
-vector<ConfigBlock> ConfigBlock::GetAllSubBlocks() const {
+vector<ConfigBlock*> ConfigBlock::GetAllSubBlocks() const {
 	return this->subblocks;
 }
 
@@ -103,13 +106,13 @@ vector<ConfigBlock> ConfigBlock::GetAllSubBlocks() const {
  *
  * type: Type of blocks to retrieve.
  */
-vector<ConfigBlock> ConfigBlock::GetAllSubBlocksOfType(confblock_t type) const {
-    vector<ConfigBlock> blocks;
+vector<ConfigBlock*> ConfigBlock::GetAllSubBlocksOfType(confblock_t type) const {
+    vector<ConfigBlock*> blocks;
 
-	for (vector<ConfigBlock>::const_iterator it = subblocks.begin(); it != subblocks.end(); it++) {
-		if ((*it).HasType(type))
-			blocks.push_back(*it);
-	}
+    for (ConfigBlock *cb : this->subblocks) {
+        if (cb->HasType(type))
+            blocks.push_back(cb);
+    }
 
     return blocks;
 }
@@ -122,10 +125,10 @@ vector<ConfigBlock> ConfigBlock::GetAllSubBlocksOfType(confblock_t type) const {
  * name: Name of ConfigBlock to get.
  */
 ConfigBlock *ConfigBlock::GetConfigBlock(confblock_t type, const string& name) {
-	for (vector<ConfigBlock>::iterator it = subblocks.begin(); it != subblocks.end(); it++) {
-		if ((*it).HasTypeAndName(type, name))
-			return &(*it);
-	}
+    for (ConfigBlock *cb : this->subblocks) {
+        if (cb->HasTypeAndName(type, name))
+            return cb;
+    }
 
 	return nullptr;
 }
@@ -216,10 +219,10 @@ bool ConfigBlock::HasSetting(const string& name) {
  * name: Name of ConfigBlock go check for.
  */
 bool ConfigBlock::HasSubBlock(confblock_t type, const string& name) {
-	for (vector<ConfigBlock>::iterator it = subblocks.begin(); it != subblocks.end(); it++) {
-		if ((*it).HasTypeAndName(type, name))
-			return true;
-	}
+    for (ConfigBlock *cb : this->subblocks) {
+        if (cb->HasTypeAndName(type, name))
+            return true;
+    }
 
 	return false;
 }
@@ -232,10 +235,10 @@ bool ConfigBlock::HasSubBlock(confblock_t type, const string& name) {
  */
 bool ConfigBlock::HasSubBlocks() { return (subblocks.size() > 0); }
 bool ConfigBlock::HasSubBlocks(confblock_t type) {
-	for (vector<ConfigBlock>::iterator it = subblocks.begin(); it != subblocks.end(); it++) {
-		if ((*it).HasType(type))
-			return true;
-	}
+    for (ConfigBlock *cb : this->subblocks) {
+        if (cb->HasType(type))
+            return true;
+    }
 
 	return false;
 }
@@ -305,9 +308,9 @@ bool ConfigBlock::HasParent() const {
  *
  * NOTE: The returned vector should be deleted after use.
  */
-vector<string> *ConfigBlock::Merge(ConfigBlock& cb, bool allowNew) {
+vector<string> *ConfigBlock::Merge(ConfigBlock *cb, bool allowNew) {
 	ConfigBlock *tb;
-	vector<Setting*> set = cb.GetAllSettings();
+	vector<Setting*> set = cb->GetAllSettings();
 	unsigned int l = set.size(), i, j;
 	vector<string> *unknown = nullptr;
 
@@ -324,11 +327,11 @@ vector<string> *ConfigBlock::Merge(ConfigBlock& cb, bool allowNew) {
 	}
 
 	// Merge sub-blocks
-	vector<ConfigBlock> sb = cb.GetAllSubBlocks();
+	vector<ConfigBlock*> sb = cb->GetAllSubBlocks();
 	l = sb.size();
 	for (i = 0; i < l; i++) {
-		if (this->HasSubBlock(sb[i].GetType(), sb[i].GetName())) {
-			tb = this->GetConfigBlock(sb[i].GetType(), sb[i].GetName());
+		if (this->HasSubBlock(sb[i]->GetType(), sb[i]->GetName())) {
+			tb = this->GetConfigBlock(sb[i]->GetType(), sb[i]->GetName());
 			vector<string> *u = tb->Merge(sb[i], allowNew);
 
 			if (u != nullptr) {
@@ -341,10 +344,10 @@ vector<string> *ConfigBlock::Merge(ConfigBlock& cb, bool allowNew) {
 				}
 			}
 		} else if (allowNew) {
-			this->AddSubBlock(sb[i]);
+			this->AddSubBlock(new ConfigBlock(sb[i]));
 		} else {
 			if (unknown == nullptr) unknown = new vector<string>();
-			unknown->push_back(sb[i].GetName());
+			unknown->push_back(sb[i]->GetName());
 		}
 	}
 
@@ -364,8 +367,8 @@ void ConfigBlock::MergeSetting(Setting *s) {
  *
  * parent: The ConfigBlock object to use as parent.
  */
-void ConfigBlock::SetParent(ConfigBlock& parent) {
-	this->parent = &parent;
+void ConfigBlock::SetParent(ConfigBlock *parent) {
+	this->parent = parent;
 }
 
 /**
@@ -385,7 +388,7 @@ bool ConfigBlock::operator==(const ConfigBlock& rhs) const {
  *
  * setting: The name of the setting to return.
  */
-string& ConfigBlock::operator[](const string& setting) {
+string ConfigBlock::operator[](const string& setting) {
 	Setting *set = this->GetSetting(setting);
 
 	if (set == nullptr)

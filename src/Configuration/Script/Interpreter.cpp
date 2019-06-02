@@ -204,7 +204,7 @@ ConfigBlock *ConfigurationScript::Interpret(vector<ConfigToken*>& tkns) {
 	} while (advance());
 
 	// Have we returned to the root block?
-	if (blck != &rootblock) {
+	if (blck != rootblock) {
 		throw ConfigurationException(currline(), currcharpos(), currfile(), "Mismatched '{'. Document was not closed.");
 	}
 

@@ -24,11 +24,11 @@ using namespace std;
  */
 Configuration::Configuration() {
 	confblock_t t = RegisterBlockType("/root");
-	this->root = ConfigBlock(t, "<root>");
+	this->root = new ConfigBlock(t, "<root>");
 }
 Configuration::Configuration(const Configuration& conf) {
     this->filename = conf.GetFilename();
-    this->root = ConfigBlock(conf.GetRootBlock());
+    this->root = new ConfigBlock(conf.GetRootBlock());
     this->blocktypes = conf.GetBlockTypes();
     this->errorflag = conf.HasError();
 }
@@ -70,8 +70,8 @@ bool Configuration::IsBlockType(const string& name) {
  * all settings exclusively defined 'conf' is returned.
  */
 vector<string> *Configuration::Merge(Configuration& conf, bool allowNew) {
-    ConfigBlock cb = conf.GetRootBlock();
-    return this->root.Merge(cb, allowNew);
+    ConfigBlock *cb = conf.GetRootBlock();
+    return this->root->Merge(cb, allowNew);
 }
 
 /**

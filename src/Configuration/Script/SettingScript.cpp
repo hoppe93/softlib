@@ -44,40 +44,40 @@ Setting *SettingScript::Copy() {
 /**
  * Get the value as a boolean
  */
-bool SettingScript::GetBool(unsigned int index) {
-	string& value = this->values.at(index);
+bool SettingScript::GetBool(unsigned int index) const {
+	string value = this->values.at(index);
     return StringToBool(value);
 }
 
 /**
  * Get the value as a 64-bit signed integer.
  */
-int64_t SettingScript::GetInteger(unsigned int index) { return GetInteger64(index); }
+int64_t SettingScript::GetInteger(unsigned int index) const { return GetInteger64(index); }
 
 /**
  * Get the value as a 32-bit signed/unsigned integer.
  */
-int32_t SettingScript::GetInteger32(unsigned int index) {
+int32_t SettingScript::GetInteger32(unsigned int index) const {
     return stoi(this->values.at(index));
 }
-uint32_t SettingScript::GetUnsignedInteger32(unsigned int index) {
+uint32_t SettingScript::GetUnsignedInteger32(unsigned int index) const {
     return stoul(this->values.at(index));
 }
 
 /**
  * Get the value as a 64-bit signed integer.
  */
-int64_t SettingScript::GetInteger64(unsigned int index) {
+int64_t SettingScript::GetInteger64(unsigned int index) const {
     return stoll(this->values.at(index));
 }
-uint64_t SettingScript::GetUnsignedInteger64(unsigned int index) {
+uint64_t SettingScript::GetUnsignedInteger64(unsigned int index) const {
     return stoull(this->values.at(index));
 }
 
 /**
  * Get the value as a scalar
  */
-slibreal_t SettingScript::GetScalar(unsigned int index) {
+slibreal_t SettingScript::GetScalar(unsigned int index) const {
     if (is_same<slibreal_t, float>::value)
         return stof(this->values.at(index), NULL);
     else if (is_same<slibreal_t, double>::value)
@@ -91,12 +91,12 @@ slibreal_t SettingScript::GetScalar(unsigned int index) {
 /**
  * Get the value as a string
  */
-string& SettingScript::GetString(unsigned int index) { return this->values.at(index); }
+string SettingScript::GetString(unsigned int index) const { return this->values.at(index); }
 
 /**
  * Get the value as a numeric vector
  */
-vector<double> SettingScript::GetNumericVector() {
+vector<double> SettingScript::GetNumericVector() const {
 	size_t l = this->values.size();
 	vector<double> ret = vector<double>(l, 0.0);
 
@@ -117,7 +117,7 @@ const vector<string> SettingScript::GetTextVector() const {
 /**
  * Get the number of elements in 'values'
  */
-size_t SettingScript::GetNumberOfValues() {
+size_t SettingScript::GetNumberOfValues() const {
 	return this->values.size();
 }
 
