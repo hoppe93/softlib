@@ -38,6 +38,8 @@ set(core
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/ConfigurationScript.cpp"
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/Interpreter.cpp"
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/Lexer.cpp"
+	"${PROJECT_SOURCE_DIR}/src/Configuration/Script/SettingScript.cpp"
+	"${PROJECT_SOURCE_DIR}/src/Configuration/SFile/SettingSFile.cpp"
 	"${PROJECT_SOURCE_DIR}/src/Configuration/Setting.cpp"
 	"${PROJECT_SOURCE_DIR}/src/General/SOFTLibException.cpp"
 	"${PROJECT_SOURCE_DIR}/src/General/ProgressTracker.cpp"
@@ -149,7 +151,7 @@ endif (GSL_FOUND)
 
 # Compile with official Matlab OR HDF5 support?
 if (OFFICIAL_MATLAB)
-	find_package(Matlab COMPONENTS MAT_LIBRARY MX_LIBRARY)
+	find_package(Matlab 9.4 COMPONENTS MAT_LIBRARY MX_LIBRARY)
 	if (Matlab_FOUND)
 		include_directories(${Matlab_INCLUDE_DIRS})
 		target_link_libraries(softlib ${Matlab_MAT_LIBRARY} ${Matlab_MX_LIBRARY})

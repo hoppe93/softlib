@@ -130,15 +130,15 @@ const char *ConfigurationScript::ttos(conftoken_t type) {
 /**
  * Convert the stream of tokens to a 'ConfigBlock'.
  */
-ConfigBlock ConfigurationScript::Interpret(vector<ConfigToken*>& tkns) {
-	ConfigBlock rootblock = ConfigBlock(0, "<root>");
+ConfigBlock *ConfigurationScript::Interpret(vector<ConfigToken*>& tkns) {
+	ConfigBlock *rootblock = new ConfigBlock(0, "<root>");
 	ConfigBlock *blck;
 	ConfigToken *tkn;
 	confblock_t blockt;
 	string name, value, sndtype;
 	this->tknstream = tkns.begin();
 
-	blck = &rootblock;
+	blck = rootblock;
 
 	do {
 		try {
@@ -151,16 +151,17 @@ ConfigBlock ConfigurationScript::Interpret(vector<ConfigToken*>& tkns) {
 					expect(CTKN_VALUE);
 					tkn = token();
 					value = tkn->GetValue();
-					Setting& set = blck->AddSetting(name, value);
+                    SettingScript *set = new SettingScript(name, value);
 
 					// Append any trailing values to build a vector
 					while (tokent_n() == CTKN_VALUE) {
 						advance();
 						tkn = token();
 						value = tkn->GetValue();
-						set.AppendValue(value);
+						set->AppendValue(value);
 					}
 
+					blck->AddSetting(set);
 					expect(CTKN_END_STATEMENT);
 				} break;
 				case CTKN_BLOCKTYPE: {
@@ -203,7 +204,7 @@ ConfigBlock ConfigurationScript::Interpret(vector<ConfigToken*>& tkns) {
 	} while (advance());
 
 	// Have we returned to the root block?
-	if (blck != &rootblock) {
+	if (blck != rootblock) {
 		throw ConfigurationException(currline(), currcharpos(), currfile(), "Mismatched '{'. Document was not closed.");
 	}
 

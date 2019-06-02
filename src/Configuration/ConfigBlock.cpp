@@ -11,21 +11,21 @@ using namespace std;
  * Constructor & Destructor
  */
 ConfigBlock::ConfigBlock() { }
-ConfigBlock::ConfigBlock(const ConfigBlock &cb) {
-    this->type = cb.GetType();
-    this->name = cb.GetName();
-    this->secondary_type = cb.GetSecondaryType();
-    this->parent = cb.GetParent();
+ConfigBlock::ConfigBlock(const ConfigBlock *cb) {
+    this->type = cb->GetType();
+    this->name = cb->GetName();
+    this->secondary_type = cb->GetSecondaryType();
+    this->parent = cb->GetParent();
 
     // Copy sub-blocks
-    vector<ConfigBlock> sub = cb.GetAllSubBlocks();
+    vector<ConfigBlock*> sub = cb->GetAllSubBlocks();
     for (unsigned int i = 0; i < sub.size(); i++)
-        subblocks.push_back(ConfigBlock(sub.at(i)));
+        subblocks.push_back(new ConfigBlock(sub.at(i)));
 
     // Copy settings
-    vector<Setting> set = cb.GetAllSettings();
-    for (unsigned int i = 0; i < set.size(); i++)
-        settings.push_back(Setting(set.at(i)));
+    this->settings = cb->GetAllSettings();
+    for (Setting *s : this->settings)
+        settings.push_back(s->Copy());
 }
 ConfigBlock::ConfigBlock(confblock_t type, const string& name, const string& secondary_type, ConfigBlock *parent) {
 	this->type = type;
@@ -33,22 +33,15 @@ ConfigBlock::ConfigBlock(confblock_t type, const string& name, const string& sec
     this->secondary_type = secondary_type;
 	this->parent = parent;
 }
-ConfigBlock::~ConfigBlock() { }
+ConfigBlock::~ConfigBlock() {
+    // Delete settings
+    for (Setting *s : this->settings) {
+        delete s;
+    }
 
-/**
- * Add setting to the list of settings
- * in this block.
- * 
- * name: Name of the setting
- * value: Value of the setting
- */
-Setting& ConfigBlock::AddSetting(const string& name, const string& value) {
-    Setting s(name, value);
-    return AddSetting(s);
-}
-Setting& ConfigBlock::AddSetting(const string& name, const vector<string>& value) {
-    Setting s(name, value);
-    return AddSetting(s);
+    for (ConfigBlock *cb : this->subblocks) {
+        delete cb;
+    }
 }
 
 /**
@@ -58,15 +51,18 @@ Setting& ConfigBlock::AddSetting(const string& name, const vector<string>& value
  * name: Name of the setting.
  * values: List of values.
  */
-Setting& ConfigBlock::AddSetting(const Setting& set) {
-    if (HasSetting(set.GetName())) {
+Setting *ConfigBlock::AddSetting(Setting *set) {
+    if (HasSetting(set->GetName())) {
         // Replace setting
-        Setting *s = GetSetting(set.GetName());
-        s->OverwriteValues(set.GetTextVector());
-        return *s;
+        Setting *s = GetSetting(set->GetName());
+        s->OverwriteValues(set);
+
+        delete set;
+
+        return s;
     } else {
         this->settings.push_back(set);
-        return this->settings.back();
+        return set;
     }
 }
 
@@ -75,34 +71,33 @@ Setting& ConfigBlock::AddSetting(const Setting& set) {
  * return the newly added object.
  */
 ConfigBlock *ConfigBlock::AddSubBlock(confblock_t type, const string& name, const string& secondary_block) {
-    ConfigBlock cb(type, name, secondary_block, this);
-    return AddSubBlock(cb);
+    return AddSubBlock(new ConfigBlock(type, name, secondary_block, this));
 }
 
 /**
  * Add an existing sub-block to this ConfigBlock and
  * return the newly added object.
  */
-ConfigBlock *ConfigBlock::AddSubBlock(ConfigBlock& cb) {
-    if (HasSubBlock(cb.GetType(), cb.GetName())) {
-        return GetConfigBlock(cb.GetType(), cb.GetName());
+ConfigBlock *ConfigBlock::AddSubBlock(ConfigBlock *cb) {
+    if (HasSubBlock(cb->GetType(), cb->GetName())) {
+        return GetConfigBlock(cb->GetType(), cb->GetName());
     } else {
         this->subblocks.push_back(cb);
-        return &(this->subblocks.back());
+        return cb;
     }
 }
 
 /**
  * Get a list of all settings of this ConfigBlock.
  */
-vector<Setting> ConfigBlock::GetAllSettings() const {
+vector<Setting*> ConfigBlock::GetAllSettings() const {
 	return this->settings;
 }
 
 /**
  * Get a list of all sub-blocks of this ConfigBlock.
  */
-vector<ConfigBlock> ConfigBlock::GetAllSubBlocks() const {
+vector<ConfigBlock*> ConfigBlock::GetAllSubBlocks() const {
 	return this->subblocks;
 }
 
@@ -111,31 +106,31 @@ vector<ConfigBlock> ConfigBlock::GetAllSubBlocks() const {
  *
  * type: Type of blocks to retrieve.
  */
-vector<ConfigBlock> ConfigBlock::GetAllSubBlocksOfType(confblock_t type) const {
-    vector<ConfigBlock> blocks;
+vector<ConfigBlock*> ConfigBlock::GetAllSubBlocksOfType(confblock_t type) const {
+    vector<ConfigBlock*> blocks;
 
-	for (vector<ConfigBlock>::const_iterator it = subblocks.begin(); it != subblocks.end(); it++) {
-		if ((*it).HasType(type))
-			blocks.push_back(*it);
-	}
+    for (ConfigBlock *cb : this->subblocks) {
+        if (cb->HasType(type))
+            blocks.push_back(cb);
+    }
 
     return blocks;
 }
 
 /**
  * Get the sub-configuration block of type 'type'
- * with name 'name'. Returns NULL if not found.
+ * with name 'name'. Returns nullptr if not found.
  *
  * type: Type ID of ConfigBlock to get.
  * name: Name of ConfigBlock to get.
  */
 ConfigBlock *ConfigBlock::GetConfigBlock(confblock_t type, const string& name) {
-	for (vector<ConfigBlock>::iterator it = subblocks.begin(); it != subblocks.end(); it++) {
-		if ((*it).HasTypeAndName(type, name))
-			return &(*it);
-	}
+    for (ConfigBlock *cb : this->subblocks) {
+        if (cb->HasTypeAndName(type, name))
+            return cb;
+    }
 
-	return NULL;
+	return nullptr;
 }
 
 /**
@@ -162,19 +157,19 @@ ConfigBlock *ConfigBlock::GetParent() const {
 
 /**
  * Get the setting with name 'name'.
- * Returns NULL if not found.
+ * Returns nullptr if not found.
  *
  * name: Of setting to retrieve.
  */
 Setting *ConfigBlock::GetSetting(const string& name) {
-	for (vector<Setting>::iterator it = settings.begin(); it != settings.end(); it++) {
-		if ((*it).HasName(name)) {
-            (*it).Touch();
-			return &(*it);
+    for (Setting *s : this->settings) {
+        if (s->HasName(name)) {
+            s->Touch();
+            return s;
         }
-	}
+    }
 
-	return NULL;
+	return nullptr;
 }
 Setting *ConfigBlock::GetSetting(const char *name) {
 	string s = name;
@@ -193,9 +188,9 @@ confblock_t ConfigBlock::GetType() const { return type; }
 vector<Setting*> ConfigBlock::GetUntouchedSettings() {
     vector<Setting*> untouched;
 
-	for (vector<Setting>::iterator it = settings.begin(); it != settings.end(); it++) {
-        if (!(*it).Touched())
-            untouched.push_back(&(*it));
+    for (Setting *s : this->settings) {
+        if (!s->Touched())
+            untouched.push_back(s);
     }
 
     return untouched;
@@ -208,11 +203,10 @@ vector<Setting*> ConfigBlock::GetUntouchedSettings() {
  * name: Name of setting to check for.
  */
 bool ConfigBlock::HasSetting(const string& name) {
-	for (vector<Setting>::iterator it = settings.begin(); it != settings.end(); it++) {
-		if ((*it).HasName(name)) {
+    for (Setting *s : this->settings) {
+        if (s->HasName(name))
             return true;
-        }
-	}
+    }
 
     return false;
 }
@@ -225,10 +219,10 @@ bool ConfigBlock::HasSetting(const string& name) {
  * name: Name of ConfigBlock go check for.
  */
 bool ConfigBlock::HasSubBlock(confblock_t type, const string& name) {
-	for (vector<ConfigBlock>::iterator it = subblocks.begin(); it != subblocks.end(); it++) {
-		if ((*it).HasTypeAndName(type, name))
-			return true;
-	}
+    for (ConfigBlock *cb : this->subblocks) {
+        if (cb->HasTypeAndName(type, name))
+            return true;
+    }
 
 	return false;
 }
@@ -241,10 +235,10 @@ bool ConfigBlock::HasSubBlock(confblock_t type, const string& name) {
  */
 bool ConfigBlock::HasSubBlocks() { return (subblocks.size() > 0); }
 bool ConfigBlock::HasSubBlocks(confblock_t type) {
-	for (vector<ConfigBlock>::iterator it = subblocks.begin(); it != subblocks.end(); it++) {
-		if ((*it).HasType(type))
-			return true;
-	}
+    for (ConfigBlock *cb : this->subblocks) {
+        if (cb->HasType(type))
+            return true;
+    }
 
 	return false;
 }
@@ -275,8 +269,8 @@ bool ConfigBlock::HasTypeAndName(confblock_t type, const string& name) const {
  * ConfigBlock. Returns false if all settings were touched.
  */
 bool ConfigBlock::HasUntouchedSettings() const {
-	for (vector<Setting>::const_iterator it = settings.begin(); it != settings.end(); it++) {
-        if (!(*it).Touched())
+    for (Setting *s : this->settings) {
+        if (!s->Touched())
             return true;
     }
 
@@ -287,7 +281,7 @@ bool ConfigBlock::HasUntouchedSettings() const {
  * Check if this ConfigBlock has parent.
  */
 bool ConfigBlock::HasParent() const {
-	return (this->parent != NULL);
+	return (this->parent != nullptr);
 }
 
 /**
@@ -305,7 +299,7 @@ bool ConfigBlock::HasParent() const {
  *    strings containing the names of all settings
  *    that were in cb but not in this ConfigBlock.
  *
- * RETURNS 'NULL' if allowNew = true, or if allowNew = false
+ * RETURNS 'nullptr' if allowNew = true, or if allowNew = false
  *    and all settings defined in cb were also defined
  *    in this ConfigBlock object. If allowNew = false
  *    and some settings were defined only in cb,
@@ -314,34 +308,34 @@ bool ConfigBlock::HasParent() const {
  *
  * NOTE: The returned vector should be deleted after use.
  */
-vector<string> *ConfigBlock::Merge(ConfigBlock& cb, bool allowNew) {
+vector<string> *ConfigBlock::Merge(ConfigBlock *cb, bool allowNew) {
 	ConfigBlock *tb;
-	vector<Setting> set = cb.GetAllSettings();
+	vector<Setting*> set = cb->GetAllSettings();
 	unsigned int l = set.size(), i, j;
-	vector<string> *unknown = NULL;
+	vector<string> *unknown = nullptr;
 
 	// Merge settings
 	for (i = 0; i < l; i++) {
-		if (this->HasSetting(set[i].GetName()))
+		if (this->HasSetting(set[i]->GetName()))
 			this->MergeSetting(set[i]);
-		else if (allowNew)
-			this->AddSetting(set[i].GetName(), set[i].GetTextVector());
-		else {
-			if (unknown == NULL) unknown = new vector<string>();
-			unknown->push_back(set[i].GetName());
+		else if (allowNew) {
+			this->AddSetting(set[i]);
+		} else {
+			if (unknown == nullptr) unknown = new vector<string>();
+			unknown->push_back(set[i]->GetName());
 		}
 	}
 
 	// Merge sub-blocks
-	vector<ConfigBlock> sb = cb.GetAllSubBlocks();
+	vector<ConfigBlock*> sb = cb->GetAllSubBlocks();
 	l = sb.size();
 	for (i = 0; i < l; i++) {
-		if (this->HasSubBlock(sb[i].GetType(), sb[i].GetName())) {
-			tb = this->GetConfigBlock(sb[i].GetType(), sb[i].GetName());
+		if (this->HasSubBlock(sb[i]->GetType(), sb[i]->GetName())) {
+			tb = this->GetConfigBlock(sb[i]->GetType(), sb[i]->GetName());
 			vector<string> *u = tb->Merge(sb[i], allowNew);
 
-			if (u != NULL) {
-				if (unknown == NULL) unknown = u;
+			if (u != nullptr) {
+				if (unknown == nullptr) unknown = u;
 				else {
 					for (j = 0; j < u->size(); j++)
 						unknown->push_back(u->at(j));
@@ -350,22 +344,22 @@ vector<string> *ConfigBlock::Merge(ConfigBlock& cb, bool allowNew) {
 				}
 			}
 		} else if (allowNew) {
-			this->AddSubBlock(sb[i]);
+			this->AddSubBlock(new ConfigBlock(sb[i]));
 		} else {
-			if (unknown == NULL) unknown = new vector<string>();
-			unknown->push_back(sb[i].GetName());
+			if (unknown == nullptr) unknown = new vector<string>();
+			unknown->push_back(sb[i]->GetName());
 		}
 	}
 
 	return unknown;
 }
-void ConfigBlock::MergeSetting(Setting& s) {
-	for (vector<Setting>::iterator it = settings.begin(); it != settings.end(); it++) {
-		if ((*it).HasName(s.GetName())) {
-			(*it).OverwriteValues(s.GetTextVector());
-			break;
-		}
-	}
+void ConfigBlock::MergeSetting(Setting *s) {
+    for (Setting *set : this->settings) {
+        if (set->HasName(s->GetName())) {
+            set->OverwriteValues(s);
+            break;
+        }
+    }
 }
 
 /**
@@ -373,8 +367,8 @@ void ConfigBlock::MergeSetting(Setting& s) {
  *
  * parent: The ConfigBlock object to use as parent.
  */
-void ConfigBlock::SetParent(ConfigBlock& parent) {
-	this->parent = &parent;
+void ConfigBlock::SetParent(ConfigBlock *parent) {
+	this->parent = parent;
 }
 
 /**
@@ -394,10 +388,10 @@ bool ConfigBlock::operator==(const ConfigBlock& rhs) const {
  *
  * setting: The name of the setting to return.
  */
-string& ConfigBlock::operator[](const string& setting) {
+string ConfigBlock::operator[](const string& setting) {
 	Setting *set = this->GetSetting(setting);
 
-	if (set == NULL)
+	if (set == nullptr)
 		throw SOFTLibException("No setting with name '%s' in block '%s'.", setting.c_str(), this->name.c_str());
 	else return set->GetString();
 }

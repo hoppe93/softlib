@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <functional>
 #include <softlib/SFile.h>
 #include <softlib/SFileException.h>
 
@@ -158,24 +159,150 @@ double *SFile::GetList(const string& name, sfilesize_t *length) {
 		p = arr[0];
 		delete [] arr;
 	} else {
-		throw SFileException(filename+": The requested variable is not a list: '"+name+"'.");
+		throw SFileException("%s: The requested variable is not a list: '%s'.", filename.c_str(), name.c_str());
 	}
 
 	return p;
 }
 
 /**
- * Reads a scalar (real) variable from the file.
+ * Loads the named array and returns it
+ * converted to the desired type.
  *
- * name: Name of scalar variable.
+ * name: Name of variable to load.
+ * dims: Dimensions of the output array.
  */
-double SFile::GetScalar(const string& name) {
+template<typename Tout, typename Tin>
+Tout **SFile::__Get2DAs(const string& name, sfilesize_t *dims, Tin** (SFile::*f)(const string&, sfilesize_t*), SFile *sf) {
+    Tin **a = (sf->*f)(name, dims);
+
+    Tout **b = new Tout*[dims[0]];
+    b[0] = new Tout[dims[0]*dims[1]];
+    for (sfilesize_t i = 1; i < dims[0]; i++)
+        b[i] = b[i-1] + dims[1];
+
+    for (sfilesize_t i = 0; i < dims[0]; i++) {
+        for (sfilesize_t j = 0; j < dims[1]; j++) {
+            b[i][j] = (Tout)a[i][j];
+        }
+    }
+
+    delete [] a[0];
+    delete [] a;
+
+    return b;
+}
+template<typename Tout, typename Tin>
+Tout *SFile::__Get1DAs(const string& name, sfilesize_t *dims, Tin* (SFile::*f)(const string&, sfilesize_t*), SFile *sf) {
+    Tin *a = (sf->*f)(name, dims);
+
+    Tout *b = new Tout[*dims];
+    for (sfilesize_t i = 0; i < *dims; i++)
+        b[i] = (Tout)a[i];
+
+    delete [] a;
+
+    return b;
+}
+
+template<typename T>
+T **SFile::__Get2DAsType(const string& name, sfilesize_t *dims) {
+    enum sfile_data_type hint = SFILE_DATA_UNDEFINED;
+
+    if (typeid(T) == typeid(double)) hint = SFILE_DATA_DOUBLE;
+    else if (typeid(T) == typeid(int32_t)) hint = SFILE_DATA_INT32;
+    else if (typeid(T) == typeid(int64_t)) hint = SFILE_DATA_INT64;
+    else if (typeid(T) == typeid(uint32_t)) hint = SFILE_DATA_UINT32;
+    else if (typeid(T) == typeid(uint64_t)) hint = SFILE_DATA_UINT64;
+
+    switch (GetDataType(name, hint)) {
+        case SFILE_DATA_DOUBLE: return __Get2DAs<T,double>(name, dims, &SFile::GetDoubles, this);
+        case SFILE_DATA_INT32:  return __Get2DAs<T,int32_t>(name, dims, &SFile::GetInt32_2D, this);
+        case SFILE_DATA_INT64:  return __Get2DAs<T,int64_t>(name, dims, &SFile::GetInt64_2D, this);
+        case SFILE_DATA_UINT32: return __Get2DAs<T,uint32_t>(name, dims, &SFile::GetUInt32_2D, this);
+        case SFILE_DATA_UINT64: return __Get2DAs<T,uint64_t>(name, dims, &SFile::GetUInt64_2D, this);
+
+        default:
+            throw SFileException("%s: Unable to load the variable '%s' as an array of the desired type.", filename.c_str(), name.c_str());
+    }
+}
+template<typename T>
+T *SFile::__Get1DAsType(const string& name, sfilesize_t *dims) {
+    enum sfile_data_type hint = SFILE_DATA_UNDEFINED;
+
+    if (typeid(T) == typeid(double)) hint = SFILE_DATA_DOUBLE;
+    else if (typeid(T) == typeid(int32_t)) hint = SFILE_DATA_INT32;
+    else if (typeid(T) == typeid(int64_t)) hint = SFILE_DATA_INT64;
+    else if (typeid(T) == typeid(uint32_t)) hint = SFILE_DATA_UINT32;
+    else if (typeid(T) == typeid(uint64_t)) hint = SFILE_DATA_UINT64;
+
+    switch (GetDataType(name, hint)) {
+        case SFILE_DATA_INT32:  return __Get1DAs<T,int32_t>(name, dims, &SFile::GetInt32_1D, this);
+        case SFILE_DATA_INT64:  return __Get1DAs<T,int64_t>(name, dims, &SFile::GetInt64_1D, this);
+        case SFILE_DATA_UINT32: return __Get1DAs<T,uint32_t>(name, dims, &SFile::GetUInt32_1D, this);
+        case SFILE_DATA_UINT64: return __Get1DAs<T,uint64_t>(name, dims, &SFile::GetUInt64_1D, this);
+        case SFILE_DATA_DOUBLE: return __Get1DAs<T,double>(name, dims, &SFile::GetList, this);
+
+        default:
+            throw SFileException("%s: Unable to load the variable '%s' as an array of the desired type.", filename.c_str(), name.c_str());
+    }
+}
+
+template<typename T>
+T SFile::__GetScalarAsType(const string& name) {
+    enum sfile_data_type hint = SFILE_DATA_UNDEFINED;
+
+    if (typeid(T) == typeid(double)) hint = SFILE_DATA_DOUBLE;
+    else if (typeid(T) == typeid(int32_t)) hint = SFILE_DATA_INT32;
+    else if (typeid(T) == typeid(int64_t)) hint = SFILE_DATA_INT64;
+    else if (typeid(T) == typeid(uint32_t)) hint = SFILE_DATA_UINT32;
+    else if (typeid(T) == typeid(uint64_t)) hint = SFILE_DATA_UINT64;
+
+    switch (GetDataType(name, hint)) {
+        case SFILE_DATA_INT32:  return (T)GetInt32(name);
+        case SFILE_DATA_INT64:  return (T)GetInt64(name);
+        case SFILE_DATA_UINT32: return (T)GetUInt32(name);
+        case SFILE_DATA_UINT64: return (T)GetUInt64(name);
+        case SFILE_DATA_DOUBLE: return (T)GetScalar(name);
+
+        default:
+            throw SFileException("%s: Unable to load the variable '%s' as an array of the desired type.", filename.c_str(), name.c_str());
+    }
+}
+
+/**
+ * Returns the given variable as an integer array.
+ *
+ * name: Name of variable to load.
+ * dims: Contains dimensions of array on return.
+ */
+int64_t **SFile::GetIntArray(const string& name, sfilesize_t *dims) {
+    return __Get2DAsType<int64_t>(name, dims);
+}
+
+int64_t *SFile::GetIntList(const string& name, sfilesize_t *dims) {
+    return __Get1DAsType<int64_t>(name, dims);
+}
+
+int64_t SFile::GetInt(const string& name) {
+    return __GetScalarAsType<int64_t>(name);
+}
+
+/**
+ * Reads the variable expecting it to be a
+ * scalar value of the given type.
+ * 
+ * name: Name of variable to read.
+ * f:    Function to use to read the variable.
+ */
+template<typename T>
+T SFile::__GetSingle(const string& name, T** (SFile::*f)(const string&, sfilesize_t*), SFile *sf) {
 	sfilesize_t length[2];
-	double s;
-	double **arr = GetDoubles(name, length);
+	T s;
+	T **arr = (sf->*f)(name, length);
 
 	if (length[0] != 1 || length[1] != 1)
-		throw SFileException(filename+": The requested variable is not a real scalar: '"+name+"'.");
+		throw SFileException("%s: The requested variable is not a scalar: '%s'.", filename, name);
 	
 	s = arr[0][0];
 	delete [] arr[0];
@@ -183,6 +310,11 @@ double SFile::GetScalar(const string& name) {
 
 	return s;
 }
+double SFile::GetScalar(const string& name) { return __GetSingle<double>(name, &SFile::GetDoubles, this); }
+int32_t SFile::GetInt32(const string& name) { return __GetSingle<int32_t>(name, &SFile::GetInt32_2D, this); }
+int64_t SFile::GetInt64(const string& name) { return __GetSingle<int64_t>(name, &SFile::GetInt64_2D, this); }
+uint32_t SFile::GetUInt32(const string& name) { return __GetSingle<uint32_t>(name, &SFile::GetUInt32_2D, this); }
+uint64_t SFile::GetUInt64(const string& name) { return __GetSingle<uint64_t>(name, &SFile::GetUInt64_2D, this); }
 
 /**
  * Write a scalar value.

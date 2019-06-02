@@ -63,7 +63,7 @@ void ConfigurationScript::FromStdin() {
  * config:         String containing configuration text
  * (optional) src: Name of source of this string (i.e. filename).
  */
-ConfigBlock& ConfigurationScript::FromString(const string& config, const string& src) {
+ConfigBlock *ConfigurationScript::FromString(const string& config, const string& src) {
     this->file = src;
 
 	// Convert the string to a stream of tokens

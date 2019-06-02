@@ -246,6 +246,22 @@ void SFile_MAT::WriteArray(const string& name, double **arr, sfilesize_t rows, s
     SFile_HDF5::WriteArray(name, arr, rows, cols);
     WriteMATLAB_class(name, "double");
 }
+void SFile_MAT::WriteInt32Array(const string& name, int32_t **arr, sfilesize_t rows, sfilesize_t cols) {
+    SFile_HDF5::WriteInt32Array(name, arr, rows, cols);
+    WriteMATLAB_class(name, "int32");
+}
+void SFile_MAT::WriteInt64Array(const string& name, int64_t **arr, sfilesize_t rows, sfilesize_t cols) {
+    SFile_HDF5::WriteInt64Array(name, arr, rows, cols);
+    WriteMATLAB_class(name, "int64");
+}
+void SFile_MAT::WriteUInt32Array(const string& name, uint32_t **arr, sfilesize_t rows, sfilesize_t cols) {
+    SFile_HDF5::WriteUInt32Array(name, arr, rows, cols);
+    WriteMATLAB_class(name, "uint32");
+}
+void SFile_MAT::WriteUInt64Array(const string& name, uint64_t **arr, sfilesize_t rows, sfilesize_t cols) {
+    SFile_HDF5::WriteUInt64Array(name, arr, rows, cols);
+    WriteMATLAB_class(name, "uint64");
+}
 
 void SFile_MAT::WriteAttribute_scalar(const string& dsetname, const string& name, double q) {
     string nname = GetAttributeName(dsetname, name);
