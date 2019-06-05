@@ -302,7 +302,7 @@ T SFile::__GetSingle(const string& name, T** (SFile::*f)(const string&, sfilesiz
 	T **arr = (sf->*f)(name, length);
 
 	if (length[0] != 1 || length[1] != 1)
-		throw SFileException("%s: The requested variable is not a scalar: '%s'.", filename, name);
+		throw SFileException("%s: The requested variable is not a scalar: '%s'.", filename.c_str(), name.c_str());
 	
 	s = arr[0][0];
 	delete [] arr[0];
