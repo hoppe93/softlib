@@ -209,8 +209,8 @@ T **SFile_HDF5::GetArray2D(const string& name, sfilesize_t *dims, PredType p) {
 	if (ndims == 1) {
         dims[1] = dims[0];
         dims[0] = 1;
-		data = new T[dims[0]];
-		pointers = new T*;
+		data = new T[dims[1]];
+		pointers = new T*[dims[0]];
 		pointers[0] = data;
 	} else {
 		data = new T[dims[0]*dims[1]];
