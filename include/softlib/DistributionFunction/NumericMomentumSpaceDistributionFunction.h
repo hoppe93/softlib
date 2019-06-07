@@ -48,7 +48,7 @@ class NumericMomentumSpaceDistributionFunction : public MomentumSpaceDistributio
             int interp=INTERPOLATION_CUBIC
         );
         bool IsLogarithmic() { return this->logarithmic; }
-        virtual NumericMomentumSpaceDistributionFunction *MinClone();
+        virtual NumericMomentumSpaceDistributionFunction *MinClone() override;
         void SetLogarithmic(bool l) { this->logarithmic = l; }
 
         // Available interpolation methods

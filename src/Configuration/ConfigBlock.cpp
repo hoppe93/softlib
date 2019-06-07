@@ -23,8 +23,8 @@ ConfigBlock::ConfigBlock(const ConfigBlock *cb) {
         subblocks.push_back(new ConfigBlock(sub.at(i)));
 
     // Copy settings
-    this->settings = cb->GetAllSettings();
-    for (Setting *s : this->settings)
+    vector<Setting*> set = cb->GetAllSettings();
+    for (Setting *s : set)
         settings.push_back(s->Copy());
 }
 ConfigBlock::ConfigBlock(confblock_t type, const string& name, const string& secondary_type, ConfigBlock *parent) {

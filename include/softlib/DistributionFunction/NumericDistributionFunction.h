@@ -65,7 +65,7 @@ class NumericDistributionFunction : public DistributionFunction {
             int interp=INTERPOLATION_CUBIC, bool alloc=false
         );
         bool IsLogarithmic() { return this->logarithmic; }
-        virtual NumericDistributionFunction *MinClone();
+        virtual NumericDistributionFunction *MinClone() override;
 		void SetExtrapolationPermission(bool e) { this->allowExtrapolation = e; }
         void SetLogarithmic(bool l) { this->logarithmic = l; }
 

@@ -39,13 +39,13 @@ class MagneticFieldAnalytical2D : public MagneticField2D {
 		MagneticFieldAnalytical2D(slibreal_t, slibreal_t, slibreal_t, slibreal_t, enum MFAFieldSign, enum MFAFieldSign, enum MFASafetyFactorType, slibreal_t, slibreal_t, const std::string&, const std::string&);
 		virtual ~MagneticFieldAnalytical2D() {}
 
-        MagneticFieldAnalytical2D *Clone();
+        MagneticFieldAnalytical2D *Clone() override;
 
         void ConstructDomain(const slibreal_t, const slibreal_t, const slibreal_t);
 		slibreal_t *Eval(slibreal_t*);
-		slibreal_t *Eval(slibreal_t, slibreal_t, slibreal_t);
+		slibreal_t *Eval(slibreal_t, slibreal_t, slibreal_t) override;
 		struct magnetic_field_data& EvalDerivatives(slibreal_t*);
-		struct magnetic_field_data& EvalDerivatives(slibreal_t, slibreal_t, slibreal_t);
+		struct magnetic_field_data& EvalDerivatives(slibreal_t, slibreal_t, slibreal_t) override;
         virtual slibreal_t EvalFlux(slibreal_t, slibreal_t, slibreal_t) override;
         virtual struct flux_diff *EvalFluxDerivatives(slibreal_t, slibreal_t, slibreal_t) override;
         MagneticFieldNumeric2D *ToNumeric2D(const unsigned int nr=120, const unsigned int nz=120);

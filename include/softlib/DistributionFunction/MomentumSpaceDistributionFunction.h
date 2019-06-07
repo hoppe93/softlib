@@ -21,7 +21,7 @@ class MomentumSpaceDistributionFunction : public DistributionFunction {
             const slibreal_t xi, const slibreal_t drift_shift __attribute__((unused))
         ) override { return this->Eval(p, xi); }
 
-        virtual MomentumSpaceDistributionFunction *MinClone() = 0;
+        virtual MomentumSpaceDistributionFunction *MinClone() override = 0;
 
         RadialDistributionFunction *ToRadialDistribution();
         RadialDistributionFunction *ToRadialDistribution(RadialProfile*);

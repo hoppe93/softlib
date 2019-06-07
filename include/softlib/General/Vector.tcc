@@ -258,7 +258,7 @@ Vector<N,T> operator-(const Vector<N,T>& lhs, const T& rhs) {
 }
 template<unsigned int N, class T>
 Vector<N,T> operator-(const T& lhs, const Vector<N,T>& rhs) {
-	Vector<N,T> v;
+	Vector<N,T> v = rhs;
 
 	for (unsigned int i = 0; i < N; i++)
 		v[i] = lhs - v[i];

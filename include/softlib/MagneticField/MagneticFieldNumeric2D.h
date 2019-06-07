@@ -52,13 +52,13 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 		);
 		virtual ~MagneticFieldNumeric2D();
 
-        MagneticFieldNumeric2D *Clone();
+        MagneticFieldNumeric2D *Clone() override;
 
 		void BaseInit();
 		slibreal_t *Eval(slibreal_t*);
-		slibreal_t *Eval(slibreal_t, slibreal_t, slibreal_t);
+		slibreal_t *Eval(slibreal_t, slibreal_t, slibreal_t) override;
 		struct magnetic_field_data& EvalDerivatives(slibreal_t*);
-		struct magnetic_field_data& EvalDerivatives(slibreal_t, slibreal_t, slibreal_t);
+		struct magnetic_field_data& EvalDerivatives(slibreal_t, slibreal_t, slibreal_t) override;
         virtual slibreal_t EvalFlux(slibreal_t, slibreal_t, slibreal_t) override;
         virtual struct flux_diff *EvalFluxDerivatives(slibreal_t, slibreal_t, slibreal_t) override;
 		slibreal_t FindMaxRadius() override;
