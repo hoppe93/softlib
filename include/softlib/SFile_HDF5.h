@@ -10,6 +10,9 @@ class SFile_HDF5 : public SFile {
 		void WriteNumArray(const std::string&, T**, sfilesize_t, sfilesize_t, H5::PredType, H5::PredType);
 
         template<typename T>
+        void WriteNumList(const std::string&, T*, sfilesize_t, H5::PredType, H5::PredType);
+
+        template<typename T>
         T **GetArray2D(const std::string&, sfilesize_t*, H5::PredType);
 	protected:
 		H5::H5File *file;

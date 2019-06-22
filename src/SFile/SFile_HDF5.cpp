@@ -378,19 +378,19 @@ void SFile_HDF5::WriteNumArray(
 }
 
 void SFile_HDF5::WriteArray(const string& name, double **arr, sfilesize_t rows, sfilesize_t cols) {
-    return SFile_HDF5::WriteNumArray<double>(name, arr, rows, cols, PredType::IEEE_F64LE, PredType::NATIVE_DOUBLE);
+    SFile_HDF5::WriteNumArray<double>(name, arr, rows, cols, PredType::IEEE_F64LE, PredType::NATIVE_DOUBLE);
 }
 void SFile_HDF5::WriteInt32Array(const string& name, int32_t **arr, sfilesize_t rows, sfilesize_t cols) {
-    return SFile_HDF5::WriteNumArray<int32_t>(name, arr, rows, cols, PredType::STD_I32LE, PredType::NATIVE_INT32);
+    SFile_HDF5::WriteNumArray<int32_t>(name, arr, rows, cols, PredType::STD_I32LE, PredType::NATIVE_INT32);
 }
 void SFile_HDF5::WriteInt64Array(const string& name, int64_t **arr, sfilesize_t rows, sfilesize_t cols) {
-    return SFile_HDF5::WriteNumArray<int64_t>(name, arr, rows, cols, PredType::STD_I64LE, PredType::NATIVE_INT64);
+    SFile_HDF5::WriteNumArray<int64_t>(name, arr, rows, cols, PredType::STD_I64LE, PredType::NATIVE_INT64);
 }
 void SFile_HDF5::WriteUInt32Array(const string& name, uint32_t **arr, sfilesize_t rows, sfilesize_t cols) {
-    return SFile_HDF5::WriteNumArray<uint32_t>(name, arr, rows, cols, PredType::STD_U32LE, PredType::NATIVE_UINT32);
+    SFile_HDF5::WriteNumArray<uint32_t>(name, arr, rows, cols, PredType::STD_U32LE, PredType::NATIVE_UINT32);
 }
 void SFile_HDF5::WriteUInt64Array(const string& name, uint64_t **arr, sfilesize_t rows, sfilesize_t cols) {
-    return SFile_HDF5::WriteNumArray<uint64_t>(name, arr, rows, cols, PredType::STD_U64LE, PredType::NATIVE_UINT64);
+    SFile_HDF5::WriteNumArray<uint64_t>(name, arr, rows, cols, PredType::STD_U64LE, PredType::NATIVE_UINT64);
 }
 
 /**
@@ -416,20 +416,31 @@ void SFile_HDF5::WriteImage(const string& name, double **image, sfilesize_t n) {
  * list: Data to write
  * n: Number of elements in list
  */
+template<typename T>
+void SFile_HDF5::WriteNumList(
+    const string& name, T *arr, sfilesize_t n,
+    PredType op, PredType ip
+) {
+	hsize_t dims[] = {n};
+	DataSpace dspace(1, dims);
+	DataSet dset = file->createDataSet(name, op, dspace);
+	dset.write(arr, ip);
+	dset.close();
+}
 void SFile_HDF5::WriteList(const string& name, double *list, sfilesize_t n) {
-	WriteArray(name, &list, 1, n);
+	WriteNumList<double>(name, list, n, PredType::IEEE_F64LE, PredType::NATIVE_DOUBLE);
 }
 void SFile_HDF5::WriteInt32List(const string& name, int32_t *list, sfilesize_t n) {
-    WriteInt32Array(name, &list, 1, n);
+    WriteNumList<int32_t>(name, list, n, PredType::STD_I32LE, PredType::NATIVE_INT32);
 }
 void SFile_HDF5::WriteInt64List(const string& name, int64_t *list, sfilesize_t n) {
-    WriteInt64Array(name, &list, 1, n);
+    WriteNumList<int64_t>(name, list, n, PredType::STD_I64LE, PredType::NATIVE_INT64);
 }
 void SFile_HDF5::WriteUInt32List(const string& name, uint32_t *list, sfilesize_t n) {
-    WriteUInt32Array(name, &list, 1, n);
+    WriteNumList<uint32_t>(name, list, n, PredType::STD_U32LE, PredType::NATIVE_UINT32);
 }
 void SFile_HDF5::WriteUInt64List(const string& name, uint64_t *list, sfilesize_t n) {
-    WriteUInt64Array(name, &list, 1, n);
+    WriteNumList<uint64_t>(name, list, n, PredType::STD_U64LE, PredType::NATIVE_UINT64);
 }
 
 /**
