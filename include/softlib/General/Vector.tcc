@@ -18,10 +18,10 @@ template<unsigned int N, class T> Vector<N,T>::Vector(const T *init) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] = init[i];
 }
-/*template<unsigned int N, class T> Vector<N,T>::Vector(const Vector<N,T>& v) {
+template<unsigned int N, class T> Vector<N,T>::Vector(const Vector<N,T>& v) {
 	for (unsigned int i = 0; i < N; i++)
 		elems[i] = v[i];
-}*/
+}
 // Allow conversions between vectors of different types.
 template<unsigned int N, class T> template<class S> Vector<N,T>::Vector(const Vector<N,S>& v) {
     for (unsigned int i = 0; i < N; i++)

@@ -11,6 +11,7 @@ class Vector {
 	public:
 		Vector<N,T>();
 		Vector<N,T>(const T*);
+        Vector<N,T>(const Vector<N,T>&);
         template<class S = T> Vector<N,T>(const Vector<N,S>&);
 		~Vector<N,T>();
 
