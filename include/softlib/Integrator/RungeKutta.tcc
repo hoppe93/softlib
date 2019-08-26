@@ -144,7 +144,11 @@ template<unsigned int N>
 bool RungeKutta<N>::UpdateTimestep(const slibreal_t err) {
 	slibreal_t scale;
 
-	if (err <= 1.0) {
+    if (std::isnan(err)) {
+        optimal_step = h*1e-1;
+        previous_step_rejected = true;
+        return false;
+	} else if (err <= 1.0) {
 		if (err == 0.0)
 			scale = maxscale;
 		else {
