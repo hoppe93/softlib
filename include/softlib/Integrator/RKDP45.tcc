@@ -103,7 +103,10 @@ void RKDP45<N>::OutputDense(const unsigned int nt, slibreal_t *time, slibreal_t 
 			it++;
 
 		if (this->time[it+1] < T)
-			throw SOFTLibException("The requested tmax requires extrapolation.");
+			throw SOFTLibException(
+                "The requested tmax requires extrapolation. T = %e, tmax = %e, n = %u, i = %u",
+                T, this->time[it+1], this->ntimesteps, it+1
+            );
 
 		stepsize = this->time[it+1]-this->time[it];
 		
