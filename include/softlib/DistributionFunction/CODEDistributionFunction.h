@@ -4,6 +4,7 @@
 #include <string>
 #include <softlib/DistributionFunction/MomentumSpaceDistributionFunction.h>
 #include <softlib/DistributionFunction/NumericMomentumSpaceDistributionFunction.h>
+#include <softlib/SFile.h>
 
 #ifdef INTERP_SPLINTER
 #   error "SPLINTER interpolation has not been implemented in the CODEDistributionFunction class yet."
@@ -27,14 +28,16 @@ class CODEDistributionFunction : public MomentumSpaceDistributionFunction {
 #endif
     public:
         CODEDistributionFunction();
-        CODEDistributionFunction(const std::string&, int time=-1, int interptype=INTERPOLATION_LINEAR);
+        CODEDistributionFunction(const std::string&, int time=-1, int interptype=INTERPOLATION_LINEAR, const std::string& path="");
+        CODEDistributionFunction(SFile*, int time=-1, int interptype=INTERPOLATION_LINEAR, const std::string& path="");
         ~CODEDistributionFunction();
 
         void ComputeLegendrePolynomials(slibreal_t*, slibreal_t, int);
         void Destroy();
         using MomentumSpaceDistributionFunction::Eval;
         virtual slibreal_t Eval(const slibreal_t, const slibreal_t) override;
-        void Load(const std::string&, int time=-1, int interptype=INTERPOLATION_LINEAR);
+        void Load(const std::string&, int time=-1, int interptype=INTERPOLATION_LINEAR, const std::string& path="");
+        void Load(SFile*, int time=-1, int interptype=INTERPOLATION_LINEAR, const std::string& path="");
         void Initialize(const unsigned int, const unsigned int, slibreal_t*, slibreal_t*, int interptype=INTERPOLATION_LINEAR);
         void InitInterpolation(int interptype=INTERPOLATION_LINEAR);
         virtual CODEDistributionFunction *MinClone() override;

@@ -59,6 +59,7 @@ set(distribution
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/AnalyticalAvalanche.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/CODEDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/ExponentialPitch.cpp"
+    "${PROJECT_SOURCE_DIR}/src/DistributionFunction/GOCODEDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/LinearRadialProfile.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/LUKEDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/MomentumSpaceDistributionFunction.cpp"

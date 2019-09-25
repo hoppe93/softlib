@@ -29,8 +29,11 @@ using namespace std;
  * time:  Timeslice to extract from distribution.
  */
 CODEDistributionFunction::CODEDistributionFunction() { }
-CODEDistributionFunction::CODEDistributionFunction(const string& fname, int time, int interptype) {
-    Load(fname, time, interptype);
+CODEDistributionFunction::CODEDistributionFunction(const string& fname, int time, int interptype, const string& path) {
+    Load(fname, time, interptype, path);
+}
+CODEDistributionFunction::CODEDistributionFunction(SFile *sf, int time, int interptype, const string& path) {
+    Load(sf, time, interptype, path);
 }
 
 /**
@@ -58,26 +61,39 @@ CODEDistributionFunction::~CODEDistributionFunction() {
  *             distribution function.
  * time:       Time index of distribution slice to load.
  * interptype: Interpolation method to use (CODEDistributionFunction::INTERPOLATION_???).
+ * path:       Path in input file to load distribution from.
  */
-void CODEDistributionFunction::Load(const string& fname, int time, int interptype) {
+void CODEDistributionFunction::Load(const string& fname, int time, int interptype, const string& path) {
     SFile *sf;
+    sf = SFile::Create(fname, SFILE_MODE_READ);
+
+    this->Load(sf, time, interptype, path);
+    
+    sf->Close();
+}
+void CODEDistributionFunction::Load(SFile *sf, int time, int interptype, const string& path) {
     double **tf, **ty, **tdelta, **tNxi;
     slibreal_t *ff, *pp;
     sfilesize_t fsize[2];
     int i, nnp, Nleg, ntimes;
 
-    sf = SFile::Create(fname, SFILE_MODE_READ);
+    string modpath = "";
+    if (!path.empty()) {
+        modpath = path;
+        if (path.back() != '/')
+            modpath += '/';
+    }
 
-    ty = sf->GetDoubles("y", fsize);
+    ty = sf->GetDoubles(modpath+"y", fsize);
     if (fsize[0] == 1) nnp = fsize[1];
     else if (fsize[1] == 1) nnp = fsize[0];
     else throw SOFTLibException("Invalid size of CODE distribution function momentum grid: %llu x %llu.", fsize[0], fsize[1]);
 
-    tdelta = sf->GetDoubles("delta", fsize);
+    tdelta = sf->GetDoubles(modpath+"delta", fsize);
     if (fsize[0] != 1 || fsize[1] != 1)
         throw SOFTLibException("Invalid size of CODE distribution 'delta' variable: %llu x %llu.", fsize[0], fsize[1]);
 
-    tNxi = sf->GetDoubles("Nxi", fsize);
+    tNxi = sf->GetDoubles(modpath+"Nxi", fsize);
     if (fsize[0] != 1 || fsize[1] != 1)
         throw SOFTLibException("Invalid size of CODE distribution 'Nxi' variable: %llu x %llu.", fsize[0], fsize[1]);
 
@@ -88,12 +104,10 @@ void CODEDistributionFunction::Load(const string& fname, int time, int interptyp
     for (i = 0; i < nnp; i++)
         pp[i] = (slibreal_t)(ty[0][i] * tdelta[0][0]);
 
-    tf = sf->GetDoubles("f", fsize);
+    tf = sf->GetDoubles(modpath+"f", fsize);
     if (fsize[1] != (sfilesize_t)nnp*Nleg)
         throw SOFTLibException("Invalid size of CODE distribution 'f' variable: %llu x %llu.", fsize[0], fsize[1]);
     ntimes = fsize[0];
-
-    sf->Close();
 
     /* Convert negative time index to
      * index relative to end. This way
