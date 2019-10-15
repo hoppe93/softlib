@@ -8,6 +8,7 @@
 #include <string>
 
 #include <softlib/config.h>
+#include <softlib/constants.h>
 #include <softlib/DistributionFunction/CODEDistributionFunction.h>
 #include <softlib/DistributionFunction/NumericMomentumSpaceDistributionFunction.h>
 #include <softlib/SFile.h>
@@ -72,7 +73,7 @@ void CODEDistributionFunction::Load(const string& fname, int time, int interptyp
     sf->Close();
 }
 void CODEDistributionFunction::Load(SFile *sf, int time, int interptype, const string& path) {
-    double **tf, **ty, **tdelta, **tNxi;
+    double **tf, **ty, **tdelta, **tNxi, **tnref, **tTref;
     slibreal_t *ff, *pp;
     sfilesize_t fsize[2];
     int i, nnp, Nleg, ntimes;
@@ -92,6 +93,32 @@ void CODEDistributionFunction::Load(SFile *sf, int time, int interptype, const s
     tdelta = sf->GetDoubles(modpath+"delta", fsize);
     if (fsize[0] != 1 || fsize[1] != 1)
         throw SOFTLibException("Invalid size of CODE distribution 'delta' variable: %llu x %llu.", fsize[0], fsize[1]);
+
+    // Optional reference value
+    if (sf->HasVariable(modpath+"nref")) {
+        tnref = sf->GetDoubles(modpath+"nref", fsize);
+        if (fsize[0] != 1 || fsize[1] != 1)
+            throw SOFTLibException("Invalid size of CODE distribution 'nref' variable: %llu x %llu.", fsize[0], fsize[1]);
+    } else {
+        // This somewhat weird code is necessary due to that
+        // 'tnref' must be a 2D array (with only one element)
+        tnref = new double*[1];
+        tnref[0] = new double[1];
+        tnref[0][0] = 1;
+    }
+
+    // Optional reference value
+    if (sf->HasVariable(modpath+"Tref")) {
+        tTref = sf->GetDoubles(modpath+"Tref", fsize);
+        if (fsize[0] != 1 || fsize[1] != 1)
+            throw SOFTLibException("Invalid size of CODE distribution 'Tref' variable: %llu x %llu.", fsize[0], fsize[1]);
+    } else {
+        // This somewhat weird code is necessary due to that
+        // 'tTref' must be a 2D array (with only one element)
+        tTref = new double*[1];
+        tTref[0] = new double[1];
+        tTref[0][0] = 1;
+    }
 
     tNxi = sf->GetDoubles(modpath+"Nxi", fsize);
     if (fsize[0] != 1 || fsize[1] != 1)
@@ -124,8 +151,11 @@ void CODEDistributionFunction::Load(SFile *sf, int time, int interptype, const s
 
     // Copy to f
     ff = new slibreal_t[nnp*Nleg];
-    for (i = 0; i < nnp*Nleg; i++)
-        ff[i] = (slibreal_t)tf[time][i];
+    double norm_div = 2*M_PI*ELECTRON_MASS*tTref[0][0];
+    double norm     = tnref[0][0] / (sqrt(norm_div) * norm_div);
+    for (i = 0; i < nnp*Nleg; i++) {
+        ff[i] = (slibreal_t)(tf[time][i] * norm);
+    }
 
     delete [] tf[0];
     delete [] tf;
@@ -133,6 +163,10 @@ void CODEDistributionFunction::Load(SFile *sf, int time, int interptype, const s
     delete [] ty;
     delete [] tdelta[0];
     delete [] tdelta;
+    delete [] tnref[0];
+    delete [] tnref;
+    delete [] tTref[0];
+    delete [] tTref;
     delete [] tNxi[0];
     delete [] tNxi;
 
