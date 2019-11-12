@@ -33,7 +33,7 @@ slibreal_t GOCODEDistributionFunction::Eval(
     const slibreal_t r, const slibreal_t p,
     const slibreal_t xi, const slibreal_t drift_shift
 ) {
-    slibreal_t rho = r-drift_shift, fval1, fval2;
+    slibreal_t rho = r-drift_shift, f0, f1;
 
     if (!this->allowExtrapolation) {
         if (rho < this->rhomin || rho > this->rhomax)
@@ -41,19 +41,31 @@ slibreal_t GOCODEDistributionFunction::Eval(
     }
 
     unsigned int ir = (unsigned int)__FindNearestR(rho);
-    slibreal_t   dr = rho - this->rho[ir];
+    slibreal_t r0, r1;
 
-    if (ir >= this->nr-1) {
-        fval1 = this->code[this->nr-1]->Eval(p, xi);
-        fval2 = 0;
-        dr   /= this->rho[this->nr-1] - this->rho[nr-2];
+    if (ir == 0) {
+        r0 = 0;
+        r1 = this->rho[0];
+        slibreal_t r2 = this->rho[1], f2;
+
+        f1 = this->code[0]->Eval(p, xi);
+        f2 = this->code[1]->Eval(p, xi);
+        f0 = (r2*f1 - r1*f2) / (r2-r1);
+    } else if (ir >= this->nr-1) {
+        r0 = this->rho[this->nr-1];
+        r1 = r0 + (2*r0 - this->rho[nr-2]);
+
+        f0 = this->code[this->nr-1]->Eval(p, xi);
+        f1 = 2*f0 - this->code[this->nr-2]->Eval(p, xi);
     } else {
-        fval1 = this->code[ir]->Eval(p, xi);
-        fval2 = this->code[ir+1]->Eval(p, xi);
-        dr   /= this->rho[ir+1] - this->rho[ir];
+        r0 = this->rho[ir];
+        r1 = this->rho[ir+1];
+
+        f0 = this->code[ir]->Eval(p, xi);
+        f1 = this->code[ir+1]->Eval(p, xi);
     }
 
-    return ((1-dr)*fval1 + dr*fval2);
+    return ((r1-rho)*f0 + (rho-r0)*f1)/(r1-r0);
 }
 
 /**

@@ -25,7 +25,7 @@ slibreal_t NumericDistributionFunction::Eval(
     const slibreal_t r, const slibreal_t p,
     const slibreal_t xi, const slibreal_t drift_shift
 ) {
-    slibreal_t rho = r-drift_shift, dr, fval1, fval2;
+    slibreal_t rho = r-drift_shift, f0, f1;
     unsigned int ir;
 
 	if (!this->allowExtrapolation) {
@@ -34,19 +34,31 @@ slibreal_t NumericDistributionFunction::Eval(
 	}
 
     ir = (unsigned int)__FindNearestR(rho);
-    dr = rho - this->r[ir];
+    slibreal_t r0, r1;
 
-    if (ir >= nr-1) {
-        fval1 = msdf[nr-1].Eval(p, xi);
-        fval2 = 0.0;
-        dr   /= this->r[nr-1] - this->r[nr-2];
+    if (ir == 0) {
+        r0 = 0;
+        r1 = this->r[0];
+        slibreal_t r2 = this->r[1], f2;
+
+        f1 = this->msdf[0].Eval(p, xi);
+        f2 = this->msdf[1].Eval(p, xi);
+        f0 = (r2*f1 - r1*f2) / (r2-r1);
+    } else if (ir >= this->nr-1) {
+        r0 = this->r[this->nr-1];
+        r1 = r0 + (2*r0 - this->r[nr-2]);
+
+        f0 = this->msdf[this->nr-1].Eval(p, xi);
+        f1 = 2*f0 - this->msdf[this->nr-2].Eval(p, xi);
     } else {
-        fval1 = this->msdf[ir].Eval(p, xi);
-        fval2 = this->msdf[ir+1].Eval(p, xi);
-        dr   /= this->r[ir+1] - this->r[ir];
+        r0 = this->r[ir];
+        r1 = this->r[ir+1];
+
+        f0 = this->msdf[ir].Eval(p, xi);
+        f1 = this->msdf[ir+1].Eval(p, xi);
     }
 
-    return ((1.0-dr)*fval1 + dr*fval2);
+    return ((r1-rho)*f0 + (rho-r0)*f1)/(r1-r0);
 }
 
 /**
