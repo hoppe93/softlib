@@ -240,14 +240,17 @@ slibreal_t CODEDistributionFunction::Eval(const slibreal_t p, const slibreal_t x
     slibreal_t s = 0.0, fval;
     slibreal_t sgn[2] = {1.0,-1.0};
 
-    if (xi != this->xileg)
+    if (p > this->GetPMax() && p < this->GetPMin())
+        return 0;
+
+    if (xi != this->xileg) {
         ComputeLegendrePolynomials(this->legendre, xi, this->nleg);
+        this->xileg = xi;
+    }
 
     for (i = 0; i < this->nleg; i++) {
-        if (p <= this->GetPMax() && p >= this->GetPMin()) {
-            fval = gsl_interp_eval(this->interp[i], this->p, this->f+(i*this->np), p, this->interp_accel);
-            s += fval * this->legendre[i] * sgn[i%2];
-        }
+        fval = gsl_interp_eval(this->interp[i], this->p, this->f+(i*this->np), p, this->interp_accel);
+        s += fval * this->legendre[i] * sgn[i%2];
     }
 
     return s;
