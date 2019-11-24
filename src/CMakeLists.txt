@@ -81,6 +81,13 @@ set(distribution_tests
 )
 set(hdf5 "${PROJECT_SOURCE_DIR}/src/SFile/SFile_HDF5.cpp" "${PROJECT_SOURCE_DIR}/src/SFile/SFile_MAT.HDF5.cpp")
 set(hdf5_test "${PROJECT_SOURCE_DIR}/tests/sfile/hdf5_test.cpp" "${PROJECT_SOURCE_DIR}/tests/sfile/matlab_test.cpp")
+set(imagegenerator
+    "${PROJECT_SOURCE_DIR}/src/ImageGenerator/ImageGenerator.cpp"
+    "${PROJECT_SOURCE_DIR}/src/ImageGenerator/ImageGeneratorPPM.cpp"
+)
+set(imagegeneratorpng
+    "${PROJECT_SOURCE_DIR}/src/ImageGenerator/ImageGeneratorPNG.cpp"
+)
 set(integration
 	"${PROJECT_SOURCE_DIR}/src/Integration/PeakedIntegration.cpp"
 )
@@ -126,7 +133,15 @@ else (OFFICIAL_MATLAB)
 	set(core_tests ${core_tests} ${hdf5_test})
 endif (OFFICIAL_MATLAB)
 
-set(target ${core} ${distribution} ${integration} ${magnetic})
+set(target ${core} ${distribution} ${imagegenerator} ${integration} ${magnetic})
+
+# Check for libpng
+find_package(PNG)
+if (PNG_FOUND)
+    set(target ${target} ${imagegeneratorpng})
+endif (PNG_FOUND)
+
+# Define library target
 add_library(softlib ${target})
 
 if (BUILD_TESTS)
@@ -150,6 +165,19 @@ if (GSL_FOUND)
 		message(FATAL_ERROR "softlib needs GSL >= 2.0")
 	endif ((GSL_VERSION VERSION_GREATER "2.0") OR (GSL_VERSION VERSION_EQUAL "2.0"))
 endif (GSL_FOUND)
+
+# Find libpng (optional) -- checked earlier above
+#find_package(PNG QUIET)
+if (PNG_FOUND)
+    include_directories(${PNG_INCLUDE_DIRS})
+    target_link_libraries(softlib ${PNG_LIBRARIES})
+
+    if (BUILD_TESTS)
+        target_link_libraries(softlib_tests ${PNG_LIBRARIES})
+    endif (BUILD_TESTS)
+else (PNG_FOUND)
+    message(INFO "No libpng was found. Configuring without PNG image support...")
+endif (PNG_FOUND)
 
 # Compile with official Matlab OR HDF5 support?
 if (OFFICIAL_MATLAB)

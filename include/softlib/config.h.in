@@ -13,6 +13,7 @@ typedef ${REALTYPE} slibreal_t;
 #cmakedefine DEBUG
 #cmakedefine INTERP_SPLINTER
 #cmakedefine OFFICIAL_MATLAB
+#cmakedefine PNG_FOUND
 #cmakedefine PRECISION_DOUBLE
 #cmakedefine PRECISION_SINGLE
 
@@ -20,6 +21,10 @@ typedef ${REALTYPE} slibreal_t;
 #   undef SOFT_HDF5
 #else
 #   define SOFT_HDF5
+#endif
+
+#ifdef PNG_FOUND
+#   define HAS_LIBPNG
 #endif
 
 #cmakedefine APPLE
