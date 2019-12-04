@@ -2,6 +2,7 @@
 #define _NUMERIC_DISTRIBUTION_FUNCTION_H
 
 #include <cstdlib>
+#include <vector>
 #include <gsl/gsl_interp2d.h>
 #include <gsl/gsl_spline2d.h>
 
@@ -18,12 +19,7 @@
 
 class NumericDistributionFunction : public DistributionFunction {
     private:
-        slibreal_t *f=nullptr,      // Distribution function (of size nr*np*nxi)
-                   // Grid points
-                   *r=nullptr,      // Radial coordinate
-                   *p=nullptr,      // Magnitude of momentum
-                   *xi=nullptr;     // Cosine of pitch angle
-        unsigned int nr, np, nxi;   // Length of r, p and xi respectively
+        std::vector<slibreal_t> r;      // Radial grid
 
         /**
          * For simplicity, we consider the 3-D distribution
@@ -41,12 +37,11 @@ class NumericDistributionFunction : public DistributionFunction {
          * where r is the radial index corresponding to
          * R(r) < R0 < R(r+1), and dr = R0-R(r).
          */
-        unsigned int nmsdf;
-        NumericMomentumSpaceDistributionFunction *msdf;
+        //unsigned int nmsdf;
+        //NumericMomentumSpaceDistributionFunction *msdf;
+        std::vector<NumericMomentumSpaceDistributionFunction*> msdf;
 
         slibreal_t rmin, rmax;
-        slibreal_t pmin, pmax;
-        slibreal_t ximin, ximax;
 
 		bool allowExtrapolation = true;
         bool logarithmic = false;
@@ -63,6 +58,17 @@ class NumericDistributionFunction : public DistributionFunction {
             const unsigned int, const unsigned int, const unsigned int,
             slibreal_t*, slibreal_t*, slibreal_t*, slibreal_t*,
             int interp=INTERPOLATION_CUBIC, bool alloc=false
+        );
+        int InsertMomentumSpaceDistribution(
+            slibreal_t, NumericMomentumSpaceDistributionFunction*
+        );
+        int InsertMomentumSpaceDistribution(
+            const unsigned int, const unsigned int, slibreal_t,
+            slibreal_t*, slibreal_t*, slibreal_t*, int
+        );
+        int InsertMomentumSpaceDistributionLog(
+            const unsigned int, const unsigned int, slibreal_t,
+            slibreal_t*, slibreal_t*, slibreal_t*, int, bool alloc=false
         );
         bool IsLogarithmic() { return this->logarithmic; }
         virtual NumericDistributionFunction *MinClone() override;

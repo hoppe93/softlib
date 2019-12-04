@@ -10,6 +10,9 @@
 using namespace std;
 
 
+// Type string (used to identify distribution function files)
+const string GOCODEDistributionFunction::MAGIC = "distribution/gocode";
+
 /**
  * Constructor.
  */
@@ -128,6 +131,13 @@ void GOCODEDistributionFunction::Load(const string& fname, MagneticField2D *mf, 
 
     sfilesize_t fsize[2];
     unsigned int nnr;
+
+    // Check if type is specified
+    if (sf->HasVariable("type")) {
+        string type = sf->GetString("type");
+        if (type != GOCODEDistributionFunction::MAGIC)
+            throw SOFTLibException("The given file is not a SOFT distribution function file.");
+    }
 
     // ///////////
     // r grid

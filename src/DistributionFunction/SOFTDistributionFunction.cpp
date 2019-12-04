@@ -13,10 +13,14 @@
 #include <softlib/SFile.h>
 #include <softlib/SOFTLibException.h>
 
+
 using namespace std;
 
-SOFTDistributionFunction::SOFTDistributionFunction(const string &fname, MagneticField2D*, bool logarithmic, int interptype) {
-    Load(fname, logarithmic, interptype);
+// Type string (used to identify distribution function files)
+const string SOFTDistributionFunction::MAGIC = "distribution/soft";
+
+SOFTDistributionFunction::SOFTDistributionFunction(const string &fname, MagneticField2D *mf, bool logarithmic, int interptype) {
+    Load(fname, mf, logarithmic, interptype);
 }
 
 /**
@@ -31,24 +35,31 @@ SOFTDistributionFunction::SOFTDistributionFunction(const string &fname, Magnetic
  *              (exp(log(f))).
  * interptype:  Type of interpolation to do (NumericDistributionFunction::INTERPOLATION_???).
  */
-void SOFTDistributionFunction::Load(const string& fname, bool logarithmic, int interptype) {
+void SOFTDistributionFunction::Load(const string& fname, MagneticField2D *mf, bool logarithmic, int interptype) {
     struct softdf_data *dat;
-    dat = SOFTDistributionFunction::__Load(fname, nullptr);
+    dat = SOFTDistributionFunction::__Load(fname, mf);
 
     if (logarithmic) {
-        this->InitializeLog(
-            dat->nr, dat->np, dat->nxi,
-            dat->r, dat->p, dat->xi, dat->f,
-            interptype
-        );
+        for (unsigned int i = 0; i < dat->nr; i++) {
+            struct softmdf_data *mdf = dat->fr+i;
+
+            this->InsertMomentumSpaceDistributionLog(
+                mdf->np, mdf->nxi, dat->r[i],
+                mdf->p, mdf->xi, mdf->f, interptype
+            );
+        }
     } else {
-        this->Initialize(
-            dat->nr, dat->np, dat->nxi,
-            dat->r, dat->p, dat->xi, dat->f,
-            interptype
-        );
+        for (unsigned int i = 0; i < dat->nr; i++) {
+            struct softmdf_data *mdf = dat->fr+i;
+
+            this->InsertMomentumSpaceDistribution(
+                mdf->np, mdf->nxi, dat->r[i],
+                mdf->p, mdf->xi, mdf->f, interptype
+            );
+        }
     }
 
+    delete [] dat->r;
     delete dat;
 }
 
@@ -77,7 +88,7 @@ void SOFTDistributionFunction::Load(const string& fname, bool logarithmic, int i
  */
 NumericMomentumSpaceDistributionFunction
 *SOFTDistributionFunction::LoadMomentumSpace(
-    const string& fname, MagneticField2D*,
+    const string& fname, MagneticField2D *mf,
 	bool logarithmic, unsigned int radindex,
     int interptype
 ) {
@@ -85,22 +96,33 @@ NumericMomentumSpaceDistributionFunction
         = new NumericMomentumSpaceDistributionFunction();
     struct softdf_data *dat;
     
-    dat = __Load(fname);
+    dat = __Load(fname, mf);
 
     if (radindex >= dat->nr)
         throw SOFTLibException("Invalid radial index selected for the SOFT distribution function: %u > %u (number of radial points).", radindex, dat->nr-1);
 
     // Copy selected part of distribution function
-    slibreal_t *tf = new slibreal_t[dat->np*dat->nxi];
-    memcpy(tf, dat->f + radindex*(dat->np*dat->nxi), sizeof(slibreal_t)*dat->np*dat->nxi);
+    struct softmdf_data *mdf = dat->fr+radindex;
     
     if (logarithmic)
-        msdf->InitializeLog(dat->np, dat->nxi, dat->p, dat->xi, tf, interptype);
+        msdf->InitializeLog(mdf->np, mdf->nxi, mdf->p, mdf->xi, mdf->f, interptype);
     else
-        msdf->Initialize(dat->np, dat->nxi, dat->p, dat->xi, tf, interptype);
+        msdf->Initialize(mdf->np, mdf->nxi, mdf->p, mdf->xi, mdf->f, interptype);
 
     delete [] dat->r;
-    delete [] dat->f;
+    for (unsigned int i = 0; i < dat->nr; i++) {
+        if (i == radindex)
+            continue;
+        
+        mdf = dat->fr+i;
+
+        delete [] mdf->p;
+        delete [] mdf->xi;
+        delete [] mdf->f;
+    }
+
+    delete [] dat->fr;
+
     // p and xi are still used!
     delete dat;
 
@@ -117,14 +139,20 @@ NumericMomentumSpaceDistributionFunction
  *
  * RETURNS a data structure representing the SOFT data file.
  */
-struct softdf_data *SOFTDistributionFunction::__Load(const string &fname, MagneticField2D*) {
+struct SOFTDistributionFunction::softdf_data *SOFTDistributionFunction::__Load(const string &fname, MagneticField2D *mf) {
     string punits;
     sfilesize_t fsize[2];
-    slibreal_t normf;
-    unsigned int i, nnr, nnp, nnxi, dn;
+    unsigned int nnr;
     struct softdf_data *dat;
 
     SFile *sf = SFile::Create(fname, SFILE_MODE_READ);
+
+    // Check if type is specified
+    if (sf->HasVariable("type")) {
+        string type = sf->GetString("type");
+        if (type != SOFTDistributionFunction::MAGIC)
+            throw SOFTLibException("The given file is not a SOFT distribution function file.");
+    }
 
     // r grid
     double **tr = sf->GetDoubles("r", fsize);
@@ -132,151 +160,108 @@ struct softdf_data *SOFTDistributionFunction::__Load(const string &fname, Magnet
     else if (fsize[1] == 1) nnr = fsize[0];
     else throw SOFTLibException("Invalid size of SOFT distribution function 'r' vector: %llu x %llu.", fsize[0], fsize[1]);
 
-    // p grid
-    double **tp = sf->GetDoubles("p", fsize);
-    if (fsize[0] == 1) nnp = fsize[1];
-    else if (fsize[1] == 1) nnp = fsize[0];
-    else throw SOFTLibException("Invalid size of SOFT distribution function 'p' vector: %llu x %llu.", fsize[0], fsize[1]);
+    dat     = new struct softdf_data;
+    dat->nr = nnr;
+    dat->fr = new struct softmdf_data[nnr];
 
-    // xi grid
-    double **txi = sf->GetDoubles("xi", fsize);
-    if (fsize[0] == 1) nnxi = fsize[1];
-    else if (fsize[1] == 1) nnxi = fsize[0];
-    else throw SOFTLibException("Invalid size of SOFT distribution function 'xi' vector: %llu x %llu.", fsize[0], fsize[1]);
-
-    // Distribution function
-    double **ttf = sf->GetDoubles("f", fsize);
-	double *tf = ttf[0];
-
-    if (!(fsize[0] == nnr && fsize[1] == (nnp*nnxi)) &&
-		!(fsize[0] == 1   && fsize[1] == (nnp*nnxi*nnr)) &&
-		!(fsize[1] == 1   && fsize[0] == (nnp*nnxi*nnr)))
-        throw SOFTLibException("Invalid size of SOFT distribution function 'f' vector: %llu x %llu.", fsize[0], fsize[1]);
-
-    // f(p,xi0)
-    if (!Verify("fp0", ttf, nnp, 1, sf))
-        throw SOFTLibException("Verification of distribution function failed in 'p' dimension.");
-    if (!Verify("fxi0", ttf, nnxi, nnp, sf))
-        throw SOFTLibException("Verification of distribution function failed in 'xi' dimension.");
-    if (!Verify("fr0", ttf, nnr, nnp*nnxi, sf))
-        throw SOFTLibException("Verification of distribution function failed in 'r' dimension.");
-
-	delete [] ttf;
-
-    punits = sf->GetString("punits");
+    // Load individual momentum space distribution functions
+    for (unsigned int i = 0; i < nnr; i++) {
+        string groupname = "r"+to_string(i)+"/";
+        __LoadRadius(sf, groupname, dat->fr+i);
+    }
 
     sf->Close();
-
-    // Normalize if necessary
-    if (punits == "ev") {
-        normf = ELECTRON_MASS_EV;
-    } else if (punits == "normalized") {
-        normf = 1.0;
-    } else if (punits == "si") {
-        normf = ELECTRON_MASS * LIGHTSPEED;
-    } else
-        throw SOFTLibException("Unrecognized momentum units of SOFT distribution function: '%s'.", punits.c_str());
-
-    if (normf != 1.0)
-        for (i = 0; i < nnp; i++)
-            tp[0][i] /= normf;
-    
-    //this->Initialize(nnp, nnxi, tp[0], txi[0], tf[0]);
-    dat     = new struct softdf_data;
-    dat->nr  = nnr;
-    dat->np  = nnp;
-    dat->nxi = nnxi;
 
     // Convert 'double' to 'slibreal_t' if necessary
     if (std::is_same<slibreal_t,double>::value) {
         // Not necessary, just copy
         dat->r  = tr[0];
-        dat->p  = tp[0];
-        dat->xi = txi[0];
-        dat->f  = tf;
     } else {
         // Necessary, copy
         dat->r = new slibreal_t[nnr];
-        for (i = 0; i < nnr; i++)
+        for (unsigned int i = 0; i < nnr; i++)
             dat->r[i] = (slibreal_t)tr[0][i];
-
-        dat->p = new slibreal_t[nnp];
-        for (i = 0; i < nnp; i++)
-            dat->p[i] = (slibreal_t)tp[0][i];
-
-        dat->xi = new slibreal_t[nnxi];
-        for (i = 0; i < nnxi; i++)
-            dat->xi[i] = (slibreal_t)txi[0][i];
-
-        dn = nnp*nnxi*nnr;
-        dat->f = new slibreal_t[dn];
-        for (i = 0; i < dn; i++) {
-			dat->f[i] = (slibreal_t)tf[i];
-        }
 
         delete [] tr[0];
         delete [] tr;
-        delete [] tp[0];
-        delete [] tp;
-        delete [] txi[0];
-        delete [] txi;
-        delete [] tf;
+    }
+
+    // Shift radial grid (convert from normalized minor radius -> major radius)
+    for (unsigned int i = 0; i < nnr; i++) {
+        dat->r[i] += mf->GetMagneticAxisR();
+
+        if (i > 0 && dat->r[i] <= dat->r[i-1])
+            throw SOFTLibException("The radial grid in the SOFT distribution function is not strictly increasing.");
     }
 
     return dat;
 }
 
 /**
- * Load the verification vector named 'var' from the file
- * represented by 'sf' and make sure that the vector matrix
- * 'v' matches the verification.
+ * Load a momentum space distribution function at a
+ * single radius.
  *
- * The matrix v is verified by checking that
+ * f:         SFile handle to read file with.
+ * groupname: Name of group (in the file) from which the
+ *            the distribution function should be read.
  *
- *   |v[0][step*0] - var[0]| < eps
- *   |v[0][step*1] - var[1]| < eps
- *   ...
- *   |v[0][step*n(var)] - var[n(var)]| < eps
- *
- * var:  Name of verification vector to load. The structure of
- *       the vector in file is expected to be 1-by-(<=n) or
- *       (<=n)-by-1.
- * v:    Matrix to verify (i.e. the distribution function).
- * n:    Number of elements in dimension to verify.
- * step: Step to take to get to the "next" element in v.
- * sf:   File to load verification vector from.
- *
- * RETURNS true if the matrix 'v' was successfully verified
- * against 'var'. If 'var' does not exist, also returns without
- * any further checking. Returns 'false' in all other cases.
+ * RETURNS a data structure representing the SOFT data file.
  */
-bool SOFTDistributionFunction::Verify(const string& var, double **v, sfilesize_t n, sfilesize_t step, SFile *sf) {
-    double **f0 = nullptr, err;
-    sfilesize_t nf0, fsize[2], i;
+void SOFTDistributionFunction::__LoadRadius(
+    SFile *sf, const string groupname, struct softmdf_data *dat
+) {
+    sfilesize_t fsize[2];
+    unsigned int nnp, nnxi, dn;
 
-    try {
-        f0 = sf->GetDoubles(var, fsize);
-    } catch (SOFTLibException& e) {
-        return true;
+    // p grid
+    double **tp = sf->GetDoubles(groupname+"p", fsize);
+    if (fsize[0] == 1) nnp = fsize[1];
+    else if (fsize[1] == 1) nnp = fsize[0];
+    else throw SOFTLibException("Invalid size of SOFT distribution function '%sp' vector: %llu x %llu.", groupname.c_str(), fsize[0], fsize[1]);
+
+    // xi grid
+    double **txi = sf->GetDoubles(groupname+"xi", fsize);
+    if (fsize[0] == 1) nnxi = fsize[1];
+    else if (fsize[1] == 1) nnxi = fsize[0];
+    else throw SOFTLibException("Invalid size of SOFT distribution function '%sxi' vector: %llu x %llu.", groupname.c_str(), fsize[0], fsize[1]);
+
+    // Distribution function
+    double **ttf = sf->GetDoubles(groupname+"f", fsize);
+	double *tf = ttf[0];
+    delete ttf;
+
+    if (fsize[0] != nnxi || fsize[1] != nnp)
+        throw SOFTLibException("Invalid size of SOFT distribution function '%sf' vector: %llu x %llu. Must have size nxi-by-np (%llu x %llu).", groupname.c_str(), fsize[0], fsize[1]);
+
+    dat->np = nnp;
+    dat->nxi = nnxi;
+    
+    if (std::is_same<slibreal_t,double>::value) {
+        // Not necessary, just copy
+        dat->p  = tp[0];
+        dat->xi = txi[0];
+        dat->f  = tf;
+    } else {
+        // Necessary, copy
+        dat->p = new slibreal_t[nnp];
+        for (unsigned int i = 0; i < nnp; i++)
+            dat->p[i] = (slibreal_t)tp[0][i];
+
+        dat->xi = new slibreal_t[nnxi];
+        for (unsigned int i = 0; i < nnxi; i++)
+            dat->xi[i] = (slibreal_t)txi[0][i];
+
+        dn = nnxi*nnp;
+        dat->f = new slibreal_t[dn];
+        for (unsigned int i = 0; i < dn; i++) {
+			dat->f[i] = (slibreal_t)tf[i];
+        }
+
+        delete [] tp[0];
+        delete [] tp;
+        delete [] txi[0];
+        delete [] txi;
+        delete [] tf;
     }
-
-    if (fsize[0] == 1 && fsize[1] <= n)
-        nf0 = fsize[1];
-    else if (fsize[1] == 1 && fsize[0] <= n)
-        nf0 = fsize[0];
-    else
-        throw SOFTLibException("Invalid size of SOFT distribution function verification vector '%s': %llu x %llu.", var.c_str(), fsize[0], fsize[1]);
-
-    for (i = 0; i < nf0; i++) {
-        err = fabs(f0[0][i] - v[0][i*step]);
-
-        if (f0[0][i] == 0.0) {
-            if (err > DBL_EPSILON)
-                return false;
-        } else if (err/fabs(f0[0][i]) > DBL_EPSILON)
-            return false;
-    }
-
-    return true;
 }
 

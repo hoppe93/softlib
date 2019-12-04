@@ -19,6 +19,8 @@ class GOCODEDistributionFunction : public DistributionFunction {
         int __FindNearestR(const slibreal_t);
 
     public:
+        static const std::string MAGIC;
+
         GOCODEDistributionFunction() {};
         GOCODEDistributionFunction(const std::string&, MagneticField2D*, int, int interptype=CODEDistributionFunction::INTERPOLATION_LINEAR);
         ~GOCODEDistributionFunction();

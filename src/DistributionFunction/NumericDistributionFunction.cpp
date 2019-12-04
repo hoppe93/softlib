@@ -6,11 +6,15 @@
 
 #include <cmath>
 #include <limits>
+#include <vector>
 
 #include <softlib/config.h>
 #include <softlib/DistributionFunction/NumericDistributionFunction.h>
 #include <softlib/DistributionFunction/NumericMomentumSpaceDistributionFunction.h>
 #include <softlib/SOFTLibException.h>
+
+
+using namespace std;
 
 /**
  * Evaluate the distribution function in the given
@@ -26,36 +30,36 @@ slibreal_t NumericDistributionFunction::Eval(
     const slibreal_t xi, const slibreal_t drift_shift
 ) {
     slibreal_t rho = r-drift_shift, f0, f1;
-    unsigned int ir;
 
 	if (!this->allowExtrapolation) {
 		if (rho < this->rmin || rho > this->rmax)
 			throw SOFTLibException("Numeric distribution function: No data available for particle position. rho = %e, (shifted by %e from r = %e).", rho, drift_shift, r);
 	}
 
-    ir = (unsigned int)__FindNearestR(rho);
+    size_t nr = this->r.size();
+    int ir = __FindNearestR(rho);
     slibreal_t r0, r1;
 
-    if (ir == 0) {
+    if (ir <= 0) {
         r0 = 0;
         r1 = this->r[0];
         slibreal_t r2 = this->r[1], f2;
 
-        f1 = this->msdf[0].Eval(p, xi);
-        f2 = this->msdf[1].Eval(p, xi);
+        f1 = this->msdf[0]->Eval(p, xi);
+        f2 = this->msdf[1]->Eval(p, xi);
         f0 = (r2*f1 - r1*f2) / (r2-r1);
-    } else if (ir >= this->nr-1) {
-        r0 = this->r[this->nr-1];
+    } else if ((size_t)ir >= nr-1) {
+        r0 = this->r[nr-1];
         r1 = r0 + (2*r0 - this->r[nr-2]);
 
-        f0 = this->msdf[this->nr-1].Eval(p, xi);
-        f1 = 2*f0 - this->msdf[this->nr-2].Eval(p, xi);
+        f0 = this->msdf[nr-1]->Eval(p, xi);
+        f1 = 2*f0 - this->msdf[nr-2]->Eval(p, xi);
     } else {
         r0 = this->r[ir];
         r1 = this->r[ir+1];
 
-        f0 = this->msdf[ir].Eval(p, xi);
-        f1 = this->msdf[ir+1].Eval(p, xi);
+        f0 = this->msdf[ir]->Eval(p, xi);
+        f1 = this->msdf[ir+1]->Eval(p, xi);
     }
 
     return ((r1-rho)*f0 + (rho-r0)*f1)/(r1-r0);
@@ -73,13 +77,14 @@ slibreal_t NumericDistributionFunction::Eval(
  */
 int NumericDistributionFunction::__FindNearestR(const slibreal_t r) {
     bool ascnd;
-    int il, im, iu, nnr = (int)nr;
+    int il, im, iu, nnr = (int)this->r.size();
 
-    if (nr == 1) return 0;
+    if (nnr == 0) return -1;
+    else if (nnr == 1) return 0;
     ascnd = (this->r[1] > this->r[0]);
     
     il = 0;
-    iu = nr-1;
+    iu = nnr-1;
     while (iu-il > 1) {
         im = (iu+il) >> 1;
         if ((r >= this->r[im]) == ascnd)
@@ -89,7 +94,9 @@ int NumericDistributionFunction::__FindNearestR(const slibreal_t r) {
     }
 
     if (il > nnr-1)
-        return nr-1;
+        return nnr-1;
+    else if (r < this->r[0])
+        return -1;
     else
         return il;
 }
@@ -118,39 +125,36 @@ void NumericDistributionFunction::Initialize(
     slibreal_t *f, int interptype
 ) {
     bool ascnd = true;
-    unsigned int i;
-    this->msdf = new NumericMomentumSpaceDistributionFunction[nr];
-    this->r = r;
-    this->p = p;
-    this->xi = xi;
-    this->f = f;
-    this->nr = nr;
-    this->np = np;
-    this->nxi = nxi;
-    this->interptype = interptype;
-
-    for (i = 0; i < nr; i++) {
-        if (interptype == INTERPOLATION_LINEAR)
-            this->msdf[i].Initialize(np, nxi, p, xi, f+i*(np*nxi), NumericMomentumSpaceDistributionFunction::INTERPOLATION_LINEAR);
-        else
-            this->msdf[i].Initialize(np, nxi, p, xi, f+i*(np*nxi), NumericMomentumSpaceDistributionFunction::INTERPOLATION_CUBIC);
-    }
 
     // Ensure that the radial grid is monotonically increasing or decreasing
     if (nr > 2)
         ascnd = (r[1] >= r[0]);
 
-    for (i = 1; i < nr; i++) {
+    for (unsigned int i = 0; i < nr; i++) {
         if ((ascnd && r[i-1] >= r[i]) || (!ascnd && r[i-1] <= r[i]))
             throw SOFTLibException("Numerical distribution function: The radial grid must be monotonically increasing or decreasing.");
+
+        // Copy radius to radial grid
+        this->r.push_back(r[i]);
     }
 
+    // Set radial grid limits
     this->rmin = r[0];
     this->rmax = r[nr-1];
     if (this->rmin > this->rmax) {
         slibreal_t t = this->rmin;
         this->rmin = this->rmax;
         this->rmax = t;
+    }
+
+    // Initialize momentum space distributions
+    for (unsigned int i = 0; i < nr; i++) {
+        this->msdf.push_back(new NumericMomentumSpaceDistributionFunction());
+
+        if (interptype == INTERPOLATION_LINEAR)
+            this->msdf[i]->Initialize(np, nxi, p, xi, f+i*(np*nxi), NumericMomentumSpaceDistributionFunction::INTERPOLATION_LINEAR);
+        else
+            this->msdf[i]->Initialize(np, nxi, p, xi, f+i*(np*nxi), NumericMomentumSpaceDistributionFunction::INTERPOLATION_CUBIC);
     }
 }
 
@@ -196,11 +200,97 @@ void NumericDistributionFunction::InitializeLog(
 			tf[i] = log(f[i]);
     }
 
-    this->logarithmic = true;
     this->Initialize(nr, np, nxi, r, p, xi, tf, interptype);
 
     for (unsigned int i = 0; i < nr; i++)
-        this->msdf[i].SetLogarithmic(true);
+        this->msdf[i]->SetLogarithmic(true);
+}
+
+/**
+ * Inserts a new momentum-space distribution function at the given
+ * radius.
+ *
+ * np:         Number of momentum grid points.
+ * nxi:        Number of pitch grid points.
+ * r:          Radius at which this momentum distribution exists.
+ * p:          Momentum grid (np elements).
+ * xi:         Pitch grid (nxi elements).
+ * f:          Distribution function (as 1D vector).
+ * interptype: Type of interpolation to do.
+ *
+ * RETURNS the index of the inserted distribution function.
+ */
+int NumericDistributionFunction::InsertMomentumSpaceDistribution(
+    slibreal_t r, NumericMomentumSpaceDistributionFunction *msdf
+) {
+    int ir = __FindNearestR(r);
+    if (ir == -1)
+        this->r.push_back(r);
+    else
+        this->r.insert(this->r.begin() + ir+1, r);
+
+    // Set radial grid limits
+    if (this->r.size() == 1)
+        this->rmin = this->rmax = r;
+    else if (r > this->rmax)
+        this->rmax = r;
+    else if (r < this->rmin)
+        this->rmin = r;
+
+    // Initialize momentum space distributions
+    this->msdf.insert(this->msdf.begin() + ir+1, msdf);
+
+    return (ir+1);
+}
+int NumericDistributionFunction::InsertMomentumSpaceDistribution(
+    const unsigned int np, const unsigned int nxi, slibreal_t r,
+    slibreal_t *p, slibreal_t *xi, slibreal_t *f, int interptype
+) {
+    int idx = this->InsertMomentumSpaceDistribution(r, new NumericMomentumSpaceDistributionFunction());
+
+    if (interptype == INTERPOLATION_LINEAR)
+        this->msdf[idx]->Initialize(np, nxi, p, xi, f, NumericMomentumSpaceDistributionFunction::INTERPOLATION_LINEAR);
+    else
+        this->msdf[idx]->Initialize(np, nxi, p, xi, f, NumericMomentumSpaceDistributionFunction::INTERPOLATION_CUBIC);
+
+    return idx;
+}
+/**
+ * Same as 'InsertMomentumSpaceDistribution()', but first logarithmizes
+ * the distribution function.
+ *
+ * alloc:      If true, allocates a new array to store
+ *             the logarithm of f in. Otherwise, the matrix
+ *             f given here is overwritten (default).
+ *
+ * RETURNS the index of the inserted distribution function.
+ */
+int NumericDistributionFunction::InsertMomentumSpaceDistributionLog(
+    const unsigned int np, const unsigned int nxi, slibreal_t r,
+    slibreal_t *p, slibreal_t *xi, slibreal_t *f, int interptype,
+    bool alloc
+) {
+	slibreal_t *tf;
+
+    if (alloc)
+        tf = new slibreal_t[np*nxi];
+    else
+        tf = f;
+
+    for (unsigned int i = 0; i < np*nxi; i++) {
+		if (f[i] <= 0)
+			tf[i] = -std::numeric_limits<slibreal_t>::infinity();
+		else
+			tf[i] = log(f[i]);
+    }
+
+    int idx = this->InsertMomentumSpaceDistribution(
+        np, nxi, r, p, xi, f, interptype
+    );
+
+    this->msdf[idx]->SetLogarithmic(true);
+
+    return idx;
 }
 
 /**
@@ -210,9 +300,12 @@ void NumericDistributionFunction::InitializeLog(
 NumericDistributionFunction *NumericDistributionFunction::MinClone() {
     NumericDistributionFunction *df = new NumericDistributionFunction();
 
-    // No need to check if object is logarithmic, as the
-    // stored data already is logarithmized in that case.
-    df->Initialize(this->nr, this->np, this->nxi, this->r, this->p, this->xi, this->f, this->interptype);
+    for (unsigned int i = 0; i < this->r.size(); i++) {
+        df->InsertMomentumSpaceDistribution(
+            this->r[i], this->msdf[i]->MinClone()
+        );
+    }
+
     return df;
 }
 

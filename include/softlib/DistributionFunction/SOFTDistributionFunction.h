@@ -8,17 +8,26 @@
 
 #define ELECTRON_MASS_EV        5.109989461e5       // Electron mass in units of eV/mc^2
 
-struct softdf_data {
-    unsigned int nr, np, nxi;
-    slibreal_t *r, *p, *xi, *f;
-};
-
 class SOFTDistributionFunction : public NumericDistributionFunction {
     public:
+        static const std::string MAGIC;
+
+        struct softmdf_data {
+            unsigned int np, nxi;
+            slibreal_t *p, *xi;
+            slibreal_t *f;
+        };
+        struct softdf_data {
+            unsigned int nr;
+            slibreal_t *r;
+            struct softmdf_data *fr;
+        };
+
         SOFTDistributionFunction(const std::string&, MagneticField2D *mf=nullptr, bool logarithmic=true, int interptype=NumericDistributionFunction::INTERPOLATION_CUBIC);
 
-        void Load(const std::string&, bool logarithmic=true, int interptype=NumericDistributionFunction::INTERPOLATION_CUBIC);
-        static struct softdf_data* __Load(const std::string&, MagneticField2D *mf=nullptr);
+        void Load(const std::string&, MagneticField2D*, bool logarithmic=true, int interptype=NumericDistributionFunction::INTERPOLATION_CUBIC);
+        static struct softdf_data *__Load(const std::string&, MagneticField2D *mf=nullptr);
+        static void __LoadRadius(SFile*, const std::string, struct softmdf_data*);
         static NumericMomentumSpaceDistributionFunction *LoadMomentumSpace(
             const std::string&, MagneticField2D *mf=nullptr,
 			bool logarithmic=true, unsigned int radindex=0,

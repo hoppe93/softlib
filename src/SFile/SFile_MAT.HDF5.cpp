@@ -194,11 +194,17 @@ string SFile_MAT::GetString(const string& name) {
     DataSpace dspace = dataset.getSpace();
 
     sfilesize_t dims[2]={0,0};
-    if (dspace.getSimpleExtentDims(dims) != 2)
-        throw SFileException("Invalid number of dimensions for string.");
+    sfilesize_t n = dspace.getSimpleExtentDims(dims);
+    if (n != 1 && n != 2)
+        throw SFileException("Invalid number of dimensions (%llu) for string: %s.", n, name.c_str());
     
     if (type == PredType::STD_U16LE) {
-        sfilesize_t len = (dims[1]==1?dims[0]:dims[1]);
+        sfilesize_t len;
+        if (n == 1)
+            len = dims[0];
+        else
+            len = (dims[1]==1?dims[0]:dims[1]);
+
         unsigned short arr[len];
         dataset.read(arr, type, dspace);
 
@@ -209,10 +215,11 @@ string SFile_MAT::GetString(const string& name) {
         str[len] = 0;
 
         s = str;
-    } else if (type == PredType::C_S1) {
+    } else if (type.getClass() == H5T_STRING) {
         dataset.read(s, type, dspace);
-    } else
+    } else {
         throw SFileException("Unrecognized data type for string.");
+    }
 
     return s;
 }
