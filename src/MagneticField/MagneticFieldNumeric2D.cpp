@@ -248,6 +248,10 @@ void MagneticFieldNumeric2D::Init(
     else
         SetDomain(this->rsep, this->zsep, this->nsep);
 
+    // Always set 'separatrix', even if it is 'null'.
+    // (This quantity is only used as metadata)
+    SetSeparatrix(this->rsep, this->zsep, this->nsep);
+
 	InitInterpolation();
 }
 
@@ -689,6 +693,10 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
         SetDomain(this->rwall, this->zwall, this->nwall);
     else
         SetDomain(this->rsep, this->zsep, this->nsep);
+
+    // Always set 'separatrix', even if it is 'null'.
+    // (This quantity is only used as metadata)
+    SetSeparatrix(this->rsep, this->zsep, this->nsep);
 }
 
 /**

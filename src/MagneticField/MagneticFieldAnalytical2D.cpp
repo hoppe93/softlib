@@ -101,6 +101,7 @@ void MagneticFieldAnalytical2D::ConstructDomain(const slibreal_t Rm, const slibr
     z[N-1] = z[0];
 
     SetDomain(r, z, N);
+    SetSeparatrix(r, z, N);
 }
 
 /**

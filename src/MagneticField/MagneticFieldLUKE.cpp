@@ -339,5 +339,7 @@ void MagneticFieldLUKE::LoadWall(const string& wallname, enum sfile_type walltyp
 		SetDomain(this->rwall, this->zwall, this->nwall);
 	else
 		SetDomain(this->rsep, this->zsep, this->nsep);
+
+    SetSeparatrix(this->rsep, this->zsep, this->nsep);
 }
 

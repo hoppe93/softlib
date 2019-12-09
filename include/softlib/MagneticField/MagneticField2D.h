@@ -23,6 +23,9 @@ class MagneticField2D {
         unsigned int ndomain;
 		slibreal_t maxradius=-1, minradius=-1;		// Maximum and minimum radius from which particles can be dropped
 
+        slibreal_t *rseparatrix=nullptr, *zseparatrix=nullptr;
+        unsigned int nseparatrix;
+
         bool bounds_set = false;
         struct {
             slibreal_t rmin, rmax, zmin, zmax;
@@ -70,6 +73,10 @@ class MagneticField2D {
         slibreal_t *GetZDomain() { return this->zdomain; }
         unsigned int GetNDomain() { return this->ndomain; }
 
+        slibreal_t *GetRSeparatrix() { return this->rseparatrix; }
+        slibreal_t *GetZSeparatrix() { return this->zseparatrix; }
+        unsigned int GetNSeparatrix() { return this->nseparatrix; }
+
         void GetDomainBounds(slibreal_t&, slibreal_t&, slibreal_t&, slibreal_t&);
 
 		bool CrossesDomain(slibreal_t*);
@@ -86,6 +93,7 @@ class MagneticField2D {
 		bool IntersectsDomain3D(slibreal_t*, slibreal_t*, bool has_outer_wall=true);
 		bool IntersectsDomain3D(slibreal_t, slibreal_t, slibreal_t, slibreal_t, slibreal_t, slibreal_t, bool has_outer_wall=true);
         void SetDomain(slibreal_t*, slibreal_t*, unsigned int);
+        void SetSeparatrix(slibreal_t*, slibreal_t*, unsigned int);
 };
 
 #endif/*_MAGNETICFIELD2D_H*/

@@ -455,3 +455,21 @@ void MagneticField2D::SetDomain(slibreal_t *rd, slibreal_t *zd, unsigned int nd)
 	this->FindMaxRadius();
 }
 
+/**
+ * Sets the separatrix of the magnetic field. This quantity
+ * is not used for actual computations, but is only stored
+ * as useful metadata.
+ *
+ * rs: Radial contour of separatrix.
+ * zs: Vertical contour of separatrix.
+ * ns: Number of points in separatrix.
+ */
+void MagneticField2D::SetSeparatrix(slibreal_t *rs, slibreal_t *zs, unsigned int ns) {
+    this->rseparatrix = rs;
+    this->zseparatrix = zs;
+    this->nseparatrix = ns;
+
+    if (rs == nullptr || zs == nullptr)
+        this->nseparatrix = 0;
+}
+
