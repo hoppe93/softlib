@@ -35,7 +35,7 @@ class NumericDistributionFunction : public DistributionFunction {
          *   f(R0,p,xi) = (1-dr)*f_{r}(p,xi) + dr*f_{r+1}(p,xi)
          *
          * where r is the radial index corresponding to
-         * R(r) < R0 < R(r+1), and dr = R0-R(r).
+         * R(r) < R0 < R(r+1), and dr = (R0-R(r)) / (R(r+1)-R(r)).
          */
         //unsigned int nmsdf;
         //NumericMomentumSpaceDistributionFunction *msdf;
@@ -74,6 +74,12 @@ class NumericDistributionFunction : public DistributionFunction {
         virtual NumericDistributionFunction *MinClone() override;
 		void SetExtrapolationPermission(bool e) { this->allowExtrapolation = e; }
         void SetLogarithmic(bool l) { this->logarithmic = l; }
+
+        void FlipPitchSign(bool v) {
+            std::vector<NumericMomentumSpaceDistributionFunction*>::iterator it;
+            for (it = this->msdf.begin(); it != this->msdf.end(); it++)
+                (*it)->FlipPitchSign(v);
+        }
 
         // Available interpolation methods
         enum {

@@ -140,7 +140,6 @@ NumericMomentumSpaceDistributionFunction
  * RETURNS a data structure representing the SOFT data file.
  */
 struct SOFTDistributionFunction::softdf_data *SOFTDistributionFunction::__Load(const string &fname, MagneticField2D *mf) {
-    string punits;
     sfilesize_t fsize[2];
     unsigned int nnr;
     struct softdf_data *dat;

@@ -28,7 +28,10 @@ slibreal_t NumericMomentumSpaceDistributionFunction::Eval(const slibreal_t p, co
     if (p <= this->pmin || p >= this->pmax) return 0.0;
     if (xi <= this->ximin || xi >= this->ximax) return 0.0;
 
-    fval = gsl_spline2d_eval(fspline, p, xi, pa, xia);
+    if (this->flipPitchSign)
+        fval = gsl_spline2d_eval(fspline, p, -xi, pa, xia);
+    else
+        fval = gsl_spline2d_eval(fspline, p, xi, pa, xia);
 
     if (this->logarithmic) {
         if (isnan(fval))

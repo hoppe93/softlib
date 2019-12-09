@@ -32,6 +32,7 @@ class NumericMomentumSpaceDistributionFunction : public MomentumSpaceDistributio
         slibreal_t pmin, pmax;
         slibreal_t ximin, ximax;
 
+        bool flipPitchSign = false;
         bool logarithmic = false;
         int interptype = INTERPOLATION_CUBIC;
     public:
@@ -50,6 +51,8 @@ class NumericMomentumSpaceDistributionFunction : public MomentumSpaceDistributio
         bool IsLogarithmic() { return this->logarithmic; }
         virtual NumericMomentumSpaceDistributionFunction *MinClone() override;
         void SetLogarithmic(bool l) { this->logarithmic = l; }
+
+        void FlipPitchSign(bool v=true) { this->flipPitchSign = v; }
 
         // Available interpolation methods
         enum {
