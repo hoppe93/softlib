@@ -230,7 +230,7 @@ void SOFTDistributionFunction::__LoadRadius(
     delete ttf;
 
     if (fsize[0] != nnxi || fsize[1] != nnp)
-        throw SOFTLibException("Invalid size of SOFT distribution function '%sf' vector: %llu x %llu. Must have size nxi-by-np (%llu x %llu).", groupname.c_str(), fsize[0], fsize[1]);
+        throw SOFTLibException("Invalid size of SOFT distribution function '%sf' vector: %llu x %llu. Must have size nxi-by-np (%llu x %llu).", groupname.c_str(), fsize[0], fsize[1], nnxi, nnp);
 
     dat->np = nnp;
     dat->nxi = nnxi;

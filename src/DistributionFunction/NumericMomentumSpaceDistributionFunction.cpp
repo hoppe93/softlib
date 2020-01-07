@@ -130,7 +130,7 @@ void NumericMomentumSpaceDistributionFunction::InitializeLog(
 NumericMomentumSpaceDistributionFunction *NumericMomentumSpaceDistributionFunction::MinClone() {
     NumericMomentumSpaceDistributionFunction *df = new NumericMomentumSpaceDistributionFunction();
 
-    df->Initialize(this->np, this->nxi, this->p, this->xi, this->f);
+    df->Initialize(this->np, this->nxi, this->p, this->xi, this->f, this->interptype);
     return df;
 }
 
