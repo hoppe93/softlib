@@ -17,9 +17,10 @@
  */
 ConnorHastieDistribution::ConnorHastieDistribution() { }
 ConnorHastieDistribution::ConnorHastieDistribution(
-    const slibreal_t EHat, const slibreal_t Zeff
+    const slibreal_t EHat, const slibreal_t Zeff,
+    const slibreal_t pMax, const slibreal_t deltaP
 ) {
-    this->Initialize(EHat, Zeff);
+    this->Initialize(EHat, Zeff, pMax, deltaP);
 }
 
 /**
@@ -35,7 +36,12 @@ ConnorHastieDistribution::ConnorHastieDistribution(
  *    this implementation).
  */
 slibreal_t ConnorHastieDistribution::Eval(const slibreal_t p, const slibreal_t xi) {
-    return (1.0/(p*abs(xi)) * exp(-this->D * p * (1-xi*xi)/abs(xi)));
+    if (deltaP == 0 || p < this->pMax)
+        return (1.0/(p*abs(xi)) * exp(-this->D * p * (1-xi*xi)/abs(xi)));
+    else {  // Apply Gaussian cut-off
+        slibreal_t del = (p-this->pMax) / this->deltaP;
+        return (1.0/(p*abs(xi)) * exp(-this->D * p * (1-xi*xi)/abs(xi) - del*del));
+    }
 }
 
 /**
@@ -45,12 +51,18 @@ slibreal_t ConnorHastieDistribution::Eval(const slibreal_t p, const slibreal_t x
  *    threshold electric field introduced by
  *    [Connor & Hastie, Nucl. Fusion 15, 415 (1975)].
  * Zeff:     Effective charge of the plasma.
+ * pMax:     Momentum at which Gaussian cut-off should
+ *           be applied.
+ * deltaP:   Rate at which the Gaussian cut-off decays.
  */
 void ConnorHastieDistribution::Initialize(
-    const slibreal_t EHat, const slibreal_t Zeff
+    const slibreal_t EHat, const slibreal_t Zeff,
+    const slibreal_t pMax, const slibreal_t deltaP
 ) {
-    this->EHat = EHat;
-    this->Zeff = Zeff;
+    this->EHat   = EHat;
+    this->Zeff   = Zeff;
+    this->pMax   = pMax;
+    this->deltaP = deltaP;
     this->D    = (this->EHat + 1) / (2*(this->Zeff + 1));
 }
 
@@ -58,6 +70,6 @@ void ConnorHastieDistribution::Initialize(
  * Clone this analytic avalanche distribution function.
  */
 ConnorHastieDistribution *ConnorHastieDistribution::MinClone() {
-    return new ConnorHastieDistribution(this->EHat, this->Zeff);
+    return new ConnorHastieDistribution(this->EHat, this->Zeff, this->pMax, this->deltaP);
 }
 

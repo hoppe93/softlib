@@ -57,6 +57,7 @@ set(core_tests
 )
 set(distribution
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/AnalyticalAvalanche.cpp"
+    "${PROJECT_SOURCE_DIR}/src/DistributionFunction/BesselRadialProfile.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/CODEDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/ConnorHastieDistribution.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/ExponentialPitch.cpp"
