@@ -1,35 +1,3 @@
-include_directories("${PROJECT_SOURCE_DIR}/include")
-include_directories("${PROJECT_SOURCE_DIR}/tests")
-
-set(CMAKE_CXX_STANDARD 17)
-
-option(BUILD_TESTS "Build unit tests" OFF)
-option(DEBUG "Compile with debug symbols and no optimizations" OFF)
-option(INTERP_SPLINTER "Use SPLINTER for interpolation" OFF)
-option(PRECISION_DOUBLE "Use double precision floating-point arithmetic" ON)
-option(OFFICIAL_MATLAB "Link against official Matlab libraries (disables HDF5 support)" OFF)
-
-# Dependent options
-#CMAKE_DEPENDENT_OPTION(INTERP_GSL "Use GSL for interpolation" ON
-#					   "INTERP_SPLINTER" OFF)
-#CMAKE_DEPENDENT_OPTION(PRECISION_SINGLE "Use single precision floating-point arithmetic" OFF
-#					   "PRECISION_DOUBLE" ON)
-
-# Set floating point precision
-if (PRECISION_SINGLE AND PRECISION_DOUBLE)
-	message(FATAL_ERROR "Can only compile with either single or double precision, not both simultaneously.")
-elseif (PRECISION_SINGLE)
-	set(REALTYPE "float")
-	set(REALEPSILON "FLT_EPSILON")
-elseif (PRECISION_DOUBLE)
-	set(REALTYPE "double")
-	set(REALEPSILON "DBL_EPSILON")
-else (PRECISION_SINGLE AND PRECISION_DOUBLE)
-	message(FATAL_ERROR "Both single and double precision cannot be turned off.")
-endif (PRECISION_SINGLE AND PRECISION_DOUBLE)
-
-# Set RK solver default tolerance
-set(RK_TOLERANCE "1e-6")
 
 set(core
 	"${PROJECT_SOURCE_DIR}/src/Configuration/ConfigBlock.cpp"
@@ -49,12 +17,6 @@ set(core
 	"${PROJECT_SOURCE_DIR}/src/SFile/SFile_SDT.cpp"
 	"${PROJECT_SOURCE_DIR}/src/SFile/SFile_SDT.load.cpp"
 )
-set(core_tests
-	"${PROJECT_SOURCE_DIR}/tests/runtest.cpp"
-	"${PROJECT_SOURCE_DIR}/tests/configuration/configuration_test.cpp"
-	"${PROJECT_SOURCE_DIR}/tests/sfile/sfile_test.cpp"
-	"${PROJECT_SOURCE_DIR}/tests/sfile/sdt_test.cpp"
-)
 set(distribution
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/AnalyticalAvalanche.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/BesselRadialProfile.cpp"
@@ -73,17 +35,7 @@ set(distribution
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/SOFTDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/UnitDistributionFunction.cpp"
 )
-set(distribution_tests
-    "${PROJECT_SOURCE_DIR}/tests/distribution/Test_AnalyticalAvalanche.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/distribution/Test_CODEDistributionFunction.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/distribution/Test_DistributionFunction.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/distribution/Test_LUKEDistributionFunction.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/distribution/Test_NumericMomentumSpaceDistribution.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/distribution/Test_NumericDistributionFunction.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/distribution/Test_SOFTDistributionFunction.cpp"
-)
 set(hdf5 "${PROJECT_SOURCE_DIR}/src/SFile/SFile_HDF5.cpp" "${PROJECT_SOURCE_DIR}/src/SFile/SFile_MAT.HDF5.cpp")
-set(hdf5_test "${PROJECT_SOURCE_DIR}/tests/sfile/hdf5_test.cpp" "${PROJECT_SOURCE_DIR}/tests/sfile/matlab_test.cpp")
 set(imagegenerator
     "${PROJECT_SOURCE_DIR}/src/ImageGenerator/ImageGenerator.cpp"
     "${PROJECT_SOURCE_DIR}/src/ImageGenerator/ImageGeneratorPPM.cpp"
@@ -94,16 +46,6 @@ set(imagegeneratorpng
 set(integration
 	"${PROJECT_SOURCE_DIR}/src/Integration/PeakedIntegration.cpp"
 )
-#set(integrator
-#	"${PROJECT_SOURCE_DIR}/src/Integrator/GeneralEquation.cpp"
-#	"${PROJECT_SOURCE_DIR}/src/Integrator/Integrator.cpp"
-#	"${PROJECT_SOURCE_DIR}/src/Integrator/RKDP45.cpp"
-#	"${PROJECT_SOURCE_DIR}/src/Integrator/RungeKutta.cpp"
-#)
-set(integrator_tests
-	"${PROJECT_SOURCE_DIR}/tests/integrator/integrator.cpp"
-	"${PROJECT_SOURCE_DIR}/tests/integrator/rkdp45.cpp"
-)
 set(magnetic
 	"${PROJECT_SOURCE_DIR}/src/MagneticField/MagneticField2D.cpp"
 	"${PROJECT_SOURCE_DIR}/src/MagneticField/MagneticFieldNumeric2D.cpp"
@@ -111,59 +53,74 @@ set(magnetic
 	"${PROJECT_SOURCE_DIR}/src/MagneticField/MagneticFieldAnalytical2D.q.cpp"
 	"${PROJECT_SOURCE_DIR}/src/MagneticField/MagneticFieldLUKE.cpp"
 )
-set(magnetic_test
-	"${PROJECT_SOURCE_DIR}/tests/magnetic/analytical2d.cpp"
-	"${PROJECT_SOURCE_DIR}/tests/magnetic/domain.cpp"
-	"${PROJECT_SOURCE_DIR}/tests/magnetic/luke.cpp"
-	"${PROJECT_SOURCE_DIR}/tests/magnetic/magfield_points.cpp"
-	"${PROJECT_SOURCE_DIR}/tests/magnetic/magnetic.cpp"
-	"${PROJECT_SOURCE_DIR}/tests/magnetic/numeric2d.cpp"
-)
 set(matlab "${PROJECT_SOURCE_DIR}/src/SFile/SFile_MAT.Matlab.cpp")
-set(matlab_test "${PROJECT_SOURCE_DIR}/tests/sfile/matlab_test.cpp")
 
-if (DEBUG)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-misleading-indentation -fopenmp -O0 -g -pg -D_FILE_OFFSET_BITS=64")
-else (DEBUG)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-misleading-indentation -fopenmp -O3 -march=native -D_FILE_OFFSET_BITS=64")
-endif (DEBUG)
+#if (DEBUG)
+#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-misleading-indentation -fopenmp -O0 -g -pg -D_FILE_OFFSET_BITS=64")
+#else (DEBUG)
+#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-misleading-indentation -fopenmp -O3 -march=native -D_FILE_OFFSET_BITS=64")
+#endif (DEBUG)
 
 if (OFFICIAL_MATLAB)
 	set(core ${core} ${matlab})
-	set(core_tests ${core_tests} ${matlab_test})
 else (OFFICIAL_MATLAB)
 	set(core ${core} ${hdf5})
-	set(core_tests ${core_tests} ${hdf5_test})
 endif (OFFICIAL_MATLAB)
 
 set(target ${core} ${distribution} ${imagegenerator} ${integration} ${magnetic})
 
-# Check for libpng
+# Check for libpng (if it exists => add PNG image generation support)
 find_package(PNG)
 if (PNG_FOUND)
     set(target ${target} ${imagegeneratorpng})
 endif (PNG_FOUND)
 
 # Define library target
-add_library(softlib ${target})
+add_library(softlib STATIC ${target})
+target_include_directories(softlib PUBLIC "${PROJECT_BINARY_DIR}/include" "${PROJECT_SOURCE_DIR}/include")
 
-if (BUILD_TESTS)
-	set(target_tests ${core_tests} ${distribution_tests} ${integrator_tests} ${magnetic_test})
-	add_executable(softlib_tests ${target} ${target_tests})
-endif (BUILD_TESTS)
+# Ensure we are able to open files that are larger than 4 GiB
+target_compile_definitions(softlib PUBLIC _FILE_OFFSET_BITS=64)
+
+# Require C++17
+set_target_properties(softlib PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED YES)
+
+# Set floating point precision
+if (PRECISION_SINGLE AND PRECISION_DOUBLE)
+	message(FATAL_ERROR "Can only compile with either single or double precision, not both simultaneously.")
+endif (PRECISION_SINGLE AND PRECISION_DOUBLE)
+
+########################
+# MODULES
+########################
+# Math library
+find_library(MATH_LIBRARY m)
+if (MATH_LIBRARY)
+    target_link_libraries(softlib PUBLIC ${MATH_LIBRARY})
+endif()
+
+# Interprocedural optimizations
+#if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+#    include(CheckIPOSupport)
+#    check_ipo_supported(RESULT result)
+#    if (result)
+#        set_target_properties(softlib PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+#    endif()
+#endif()
+
+# Find OpenMP
+find_package(OpenMP)
+if (OpenMP_CXX_FOUND)
+    target_link_libraries(softlib PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 # Find GSL!
 find_package(GSL REQUIRED)
 if (GSL_FOUND)
 	if ((GSL_VERSION VERSION_GREATER "2.0") OR (GSL_VERSION VERSION_EQUAL "2.0"))
-		include_directories(${GSL_INCLUDE_DIRS})
-		target_link_libraries(softlib ${GSL_LIBRARIES})
-		target_link_libraries(softlib ${GSL_CBLAS_LIBRARY})
-
-		if (BUILD_TESTS)
-			target_link_libraries(softlib_tests ${GSL_LIBRARIES})
-			target_link_libraries(softlib_tests ${GSL_CBLAS_LIBRARY})
-		endif (BUILD_TESTS)
+		target_include_directories(softlib PUBLIC "${GSL_INCLUDE_DIRS}")
+		target_link_libraries(softlib PUBLIC "${GSL_LIBRARIES}")
+		target_link_libraries(softlib PUBLIC "${GSL_CBLAS_LIBRARY}")
 	else ((GSL_VERSION VERSION_GREATER "2.0") OR (GSL_VERSION VERSION_EQUAL "2.0"))
 		message(FATAL_ERROR "softlib needs GSL >= 2.0")
 	endif ((GSL_VERSION VERSION_GREATER "2.0") OR (GSL_VERSION VERSION_EQUAL "2.0"))
@@ -172,12 +129,8 @@ endif (GSL_FOUND)
 # Find libpng (optional) -- checked earlier above
 #find_package(PNG QUIET)
 if (PNG_FOUND)
-    include_directories(${PNG_INCLUDE_DIRS})
-    target_link_libraries(softlib ${PNG_LIBRARIES})
-
-    if (BUILD_TESTS)
-        target_link_libraries(softlib_tests ${PNG_LIBRARIES})
-    endif (BUILD_TESTS)
+    target_include_directories(softlib PUBLIC "${PNG_INCLUDE_DIRS}")
+    target_link_libraries(softlib PUBLIC "${PNG_LIBRARIES}")
 else (PNG_FOUND)
     message(INFO "No libpng was found. Configuring without PNG image support...")
 endif (PNG_FOUND)
@@ -186,31 +139,18 @@ endif (PNG_FOUND)
 if (OFFICIAL_MATLAB)
 	find_package(Matlab 9.4 COMPONENTS MAT_LIBRARY MX_LIBRARY)
 	if (Matlab_FOUND)
-		include_directories(${Matlab_INCLUDE_DIRS})
-		target_link_libraries(softlib ${Matlab_MAT_LIBRARY} ${Matlab_MX_LIBRARY})
-
-		if (BUILD_TESTS)
-			target_link_libraries(softlib_tests ${Matlab_MAT_LIBRARY} ${Matlab_MX_LIBRARY})
-		endif (BUILD_TESTS)
+		target_include_directories(softlib PUBLIC "${Matlab_INCLUDE_DIRS}")
+		target_link_libraries(softlib PUBLIC "${Matlab_MAT_LIBRARY}" "${Matlab_MX_LIBRARY}")
 	else (Matlab_FOUND)
 		message(FATAL_ERROR "Official MATLAB support was requested, but no MATLAB installation was found")
 	endif (Matlab_FOUND)
 else (OFFICIAL_MATLAB)
 	find_package(HDF5 COMPONENTS CXX)
 	if (HDF5_FOUND)
-		include_directories(${HDF5_INCLUDE_DIRS})
-		target_link_libraries(softlib ${HDF5_LIBRARIES})
-
-		if (BUILD_TESTS)
-			target_link_libraries(softlib_tests ${HDF5_LIBRARIES})
-		endif (BUILD_TESTS)
+		target_include_directories(softlib PUBLIC "${HDF5_INCLUDE_DIRS}")
+		target_link_libraries(softlib PUBLIC "${HDF5_LIBRARIES}")
 	else (HDF5_FOUND)
 		message(FATAL_ERROR "HDF5 support was requested, but no HDF5 library was found on this system")
 	endif (HDF5_FOUND)
 endif (OFFICIAL_MATLAB)
-
-configure_file(
-	"${PROJECT_SOURCE_DIR}/include/softlib/config.h.in"
-	"${PROJECT_SOURCE_DIR}/include/softlib/config.h"
-)
 

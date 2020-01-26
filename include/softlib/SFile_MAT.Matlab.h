@@ -12,7 +12,7 @@ class SFile_MAT : public SFile {
 	public:
 		~SFile_MAT();
 
-		void Close();
+		virtual void Close() override;
         virtual bool HasVariable(const std::string&) override;
 		virtual void CreateStruct(const std::string&) override;
 		virtual double GetAttributeScalar(const std::string&, const std::string&) override;

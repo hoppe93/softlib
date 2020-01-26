@@ -3,12 +3,20 @@
 
 #include <cfloat>
 
-#define REAL_BITS (${REALBITS})
-#define REAL_EPSILON (${REALEPSILON})
-#define SQRT_REAL_EPSILON (sqrt(${REALEPSILON}))
-typedef ${REALTYPE} slibreal_t;
+#ifdef PRECISION_SINGLE
+#   warning "Compiling with single-precision floating point numbers"
+#   define REAL_BITS (32)
+#   define REAL_EPSILON (FLT_EPSILON)
+#   define SQRT_REAL_EPSILON (sqrt(FLT_EPSILON))
+    typedef float slibreal_t;
+#else
+#   define REAL_BITS (64)
+#   define REAL_EPSILON (DBL_EPSILON)
+#   define SQRT_REAL_EPSILON (sqrt(DBL_EPSILON))
+    typedef double slibreal_t;
+#endif
 
-#define RK_DEFAULT_TOLERANCE ${RK_TOLERANCE}
+#define RK_DEFAULT_TOLERANCE (1e-6)
 
 #cmakedefine DEBUG
 #cmakedefine INTERP_SPLINTER

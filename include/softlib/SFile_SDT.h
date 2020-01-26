@@ -35,7 +35,7 @@ class SFile_SDT : public SFile {
         template<typename T>
         void WriteNumArray(const std::string&, T**, sfilesize_t, sfilesize_t);
 	public:
-		void Close();
+		virtual void Close() override;
 		virtual void CreateStruct(const std::string&) override;
         virtual bool HasVariable(const std::string&) override;
         virtual double GetAttributeScalar(const std::string&, const std::string&) override;

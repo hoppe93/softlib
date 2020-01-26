@@ -209,7 +209,8 @@ long long int ProgressTracker::DiffPassedTime()  { return PassedTime(this->last)
  * time: Timer object representing the start time.
  */
 long long int ProgressTracker::PassedTime(Timer *tim) {
-    chrono::time_point<chrono::high_resolution_clock> clk = chrono::system_clock::now();
+    //chrono::time_point<chrono::high_resolution_clock> clk = chrono::system_clock::now();
+    chrono::time_point<chrono::high_resolution_clock> clk = chrono::high_resolution_clock::now();
     chrono::milliseconds ms = chrono::duration_cast<chrono::milliseconds>(clk - tim->GetClock());
 
     return ((long long int)ms.count());
