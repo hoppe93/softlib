@@ -1,7 +1,7 @@
 #ifndef _SFILE_H
 #define _SFILE_H
 
-#include "config.h"
+#include <softlib/config.h>
 #include <functional>
 #include <map>
 #include <string>
