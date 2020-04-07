@@ -56,6 +56,8 @@ class SFile {
             SFILE_DATA_STRING
         };
 
+        virtual ~SFile() {}
+
 		static SFile *Create(const std::string&, enum sfile_mode);
 		static SFile *Create(const std::string&, enum sfile_mode, enum sfile_type);
 		static enum sfile_type GetFileType(const std::string&);
