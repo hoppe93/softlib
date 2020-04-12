@@ -367,7 +367,7 @@ void SFile_HDF5::WriteString(const string& name, const string& str) {
  */
 template<typename T>
 void SFile_HDF5::WriteNumArray(
-    const string& name, T **arr, sfilesize_t rows,
+    const string& name, const T *const* arr, sfilesize_t rows,
     sfilesize_t cols, PredType op, PredType ip
 ) {
 	hsize_t dims[] = {rows, cols};
@@ -377,19 +377,19 @@ void SFile_HDF5::WriteNumArray(
 	dset.close();
 }
 
-void SFile_HDF5::WriteArray(const string& name, double **arr, sfilesize_t rows, sfilesize_t cols) {
+void SFile_HDF5::WriteArray(const string& name, const double *const* arr, sfilesize_t rows, sfilesize_t cols) {
     SFile_HDF5::WriteNumArray<double>(name, arr, rows, cols, PredType::IEEE_F64LE, PredType::NATIVE_DOUBLE);
 }
-void SFile_HDF5::WriteInt32Array(const string& name, int32_t **arr, sfilesize_t rows, sfilesize_t cols) {
+void SFile_HDF5::WriteInt32Array(const string& name, const int32_t *const* arr, sfilesize_t rows, sfilesize_t cols) {
     SFile_HDF5::WriteNumArray<int32_t>(name, arr, rows, cols, PredType::STD_I32LE, PredType::NATIVE_INT32);
 }
-void SFile_HDF5::WriteInt64Array(const string& name, int64_t **arr, sfilesize_t rows, sfilesize_t cols) {
+void SFile_HDF5::WriteInt64Array(const string& name, const int64_t *const* arr, sfilesize_t rows, sfilesize_t cols) {
     SFile_HDF5::WriteNumArray<int64_t>(name, arr, rows, cols, PredType::STD_I64LE, PredType::NATIVE_INT64);
 }
-void SFile_HDF5::WriteUInt32Array(const string& name, uint32_t **arr, sfilesize_t rows, sfilesize_t cols) {
+void SFile_HDF5::WriteUInt32Array(const string& name, const uint32_t *const* arr, sfilesize_t rows, sfilesize_t cols) {
     SFile_HDF5::WriteNumArray<uint32_t>(name, arr, rows, cols, PredType::STD_U32LE, PredType::NATIVE_UINT32);
 }
-void SFile_HDF5::WriteUInt64Array(const string& name, uint64_t **arr, sfilesize_t rows, sfilesize_t cols) {
+void SFile_HDF5::WriteUInt64Array(const string& name, const uint64_t *const* arr, sfilesize_t rows, sfilesize_t cols) {
     SFile_HDF5::WriteNumArray<uint64_t>(name, arr, rows, cols, PredType::STD_U64LE, PredType::NATIVE_UINT64);
 }
 
@@ -403,7 +403,7 @@ void SFile_HDF5::WriteUInt64Array(const string& name, uint64_t **arr, sfilesize_
  * image: Image data to write
  * n: Number of pixels to write (image is assumed square)
  */
-void SFile_HDF5::WriteImage(const string& name, double **image, sfilesize_t n) {
+void SFile_HDF5::WriteImage(const string& name, const double *const* image, sfilesize_t n) {
 	WriteArray(name, image, n, n);
 }
 /**
@@ -418,7 +418,7 @@ void SFile_HDF5::WriteImage(const string& name, double **image, sfilesize_t n) {
  */
 template<typename T>
 void SFile_HDF5::WriteNumList(
-    const string& name, T *arr, sfilesize_t n,
+    const string& name, const T *arr, sfilesize_t n,
     PredType op, PredType ip
 ) {
 	hsize_t dims[] = {n};
@@ -427,19 +427,19 @@ void SFile_HDF5::WriteNumList(
 	dset.write(arr, ip);
 	dset.close();
 }
-void SFile_HDF5::WriteList(const string& name, double *list, sfilesize_t n) {
+void SFile_HDF5::WriteList(const string& name, const double *list, sfilesize_t n) {
 	WriteNumList<double>(name, list, n, PredType::IEEE_F64LE, PredType::NATIVE_DOUBLE);
 }
-void SFile_HDF5::WriteInt32List(const string& name, int32_t *list, sfilesize_t n) {
+void SFile_HDF5::WriteInt32List(const string& name, const int32_t *list, sfilesize_t n) {
     WriteNumList<int32_t>(name, list, n, PredType::STD_I32LE, PredType::NATIVE_INT32);
 }
-void SFile_HDF5::WriteInt64List(const string& name, int64_t *list, sfilesize_t n) {
+void SFile_HDF5::WriteInt64List(const string& name, const int64_t *list, sfilesize_t n) {
     WriteNumList<int64_t>(name, list, n, PredType::STD_I64LE, PredType::NATIVE_INT64);
 }
-void SFile_HDF5::WriteUInt32List(const string& name, uint32_t *list, sfilesize_t n) {
+void SFile_HDF5::WriteUInt32List(const string& name, const uint32_t *list, sfilesize_t n) {
     WriteNumList<uint32_t>(name, list, n, PredType::STD_U32LE, PredType::NATIVE_UINT32);
 }
-void SFile_HDF5::WriteUInt64List(const string& name, uint64_t *list, sfilesize_t n) {
+void SFile_HDF5::WriteUInt64List(const string& name, const uint64_t *list, sfilesize_t n) {
     WriteNumList<uint64_t>(name, list, n, PredType::STD_U64LE, PredType::NATIVE_UINT64);
 }
 
@@ -455,7 +455,7 @@ void SFile_HDF5::WriteUInt64List(const string& name, uint64_t *list, sfilesize_t
  * dims:  Array with 'ndims' elements, specifying the
  *        the number of elements in each dimension.
  */
-void SFile_HDF5::WriteMultiArray(const string& name, double *arr, sfilesize_t ndims, sfilesize_t *dims) {
+void SFile_HDF5::WriteMultiArray(const string& name, const double *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
 	hsize_t *h_dims = new hsize_t[ndims];
 	for (sfilesize_t i = 0; i < ndims; i++)
 		h_dims[i] = dims[i];
@@ -474,7 +474,7 @@ void SFile_HDF5::WriteMultiArray(const string& name, double *arr, sfilesize_t nd
  * name: Name of the attribute to create
  * val: Value to give the attribute
  */
-void SFile_HDF5::WriteAttribute_scalar(const string& dsetname, const string& name, double val) {
+void SFile_HDF5::WriteAttribute_scalar(const string& dsetname, const string& name, const double val) {
 	DataSet dset = file->openDataSet(dsetname);
 	DataSpace dspace(H5S_SCALAR);
 	Attribute att = dset.createAttribute(name, PredType::IEEE_F64LE, dspace);

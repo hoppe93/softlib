@@ -324,7 +324,7 @@ string SFile_SDT::GetString(const string &name) {
 void SFile_SDT::CreateStruct(const string&) { }
 
 template<typename T>
-void SFile_SDT::WriteNumArray(const string& name, T **arr, sfilesize_t nrows, sfilesize_t ncols) {
+void SFile_SDT::WriteNumArray(const string& name, const T *const* arr, sfilesize_t nrows, sfilesize_t ncols) {
     // Definition string
     sdtfile << "@matrix " << name << " " << nrows << " " << ncols << endl;
 
@@ -339,19 +339,19 @@ void SFile_SDT::WriteNumArray(const string& name, T **arr, sfilesize_t nrows, sf
     sdtfile << endl;
 }
 
-void SFile_SDT::WriteArray(const string& name, double **arr, sfilesize_t nrows, sfilesize_t ncols) {
+void SFile_SDT::WriteArray(const string& name, const double *const* arr, sfilesize_t nrows, sfilesize_t ncols) {
     WriteNumArray<double>(name, arr, nrows, ncols);
 }
-void SFile_SDT::WriteInt32Array(const string& name, int32_t **arr, sfilesize_t nrows, sfilesize_t ncols) {
+void SFile_SDT::WriteInt32Array(const string& name, const int32_t *const* arr, sfilesize_t nrows, sfilesize_t ncols) {
     WriteNumArray<int32_t>(name, arr, nrows, ncols);
 }
-void SFile_SDT::WriteInt64Array(const string& name, int64_t **arr, sfilesize_t nrows, sfilesize_t ncols) {
+void SFile_SDT::WriteInt64Array(const string& name, const int64_t *const* arr, sfilesize_t nrows, sfilesize_t ncols) {
     WriteNumArray<int64_t>(name, arr, nrows, ncols);
 }
-void SFile_SDT::WriteUInt32Array(const string& name, uint32_t **arr, sfilesize_t nrows, sfilesize_t ncols) {
+void SFile_SDT::WriteUInt32Array(const string& name, const uint32_t *const* arr, sfilesize_t nrows, sfilesize_t ncols) {
     WriteNumArray<uint32_t>(name, arr, nrows, ncols);
 }
-void SFile_SDT::WriteUInt64Array(const string& name, uint64_t **arr, sfilesize_t nrows, sfilesize_t ncols) {
+void SFile_SDT::WriteUInt64Array(const string& name, const uint64_t *const* arr, sfilesize_t nrows, sfilesize_t ncols) {
     WriteNumArray<uint64_t>(name, arr, nrows, ncols);
 }
     /*// Definition string
@@ -368,7 +368,7 @@ void SFile_SDT::WriteUInt64Array(const string& name, uint64_t **arr, sfilesize_t
     sdtfile << endl;
 }*/
 
-void SFile_SDT::WriteAttribute_scalar(const string& datasetname, const string& name, double val) {
+void SFile_SDT::WriteAttribute_scalar(const string& datasetname, const string& name, const double val) {
     string att_name = GetAttributeName(datasetname, name);
 
     sdtfile << "@matrix " << att_name << " 1 1" << endl << val << endl << endl;
@@ -378,27 +378,27 @@ void SFile_SDT::WriteAttribute_string(const string& datasetname, const string& n
     WriteString(att_name, val);
 }
 
-void SFile_SDT::WriteMultiArray(const string& name, double*, sfilesize_t, sfilesize_t*) {
+void SFile_SDT::WriteMultiArray(const string& name, const double*, const sfilesize_t, const sfilesize_t*) {
 	throw SFileException("Trying to write variable '%s': The SDT format does not support higher than 2-dimensional arrays.", name.c_str());
 }
 
-void SFile_SDT::WriteImage(const string& name, double **img, sfilesize_t pixels) {
+void SFile_SDT::WriteImage(const string& name, const double *const* img, sfilesize_t pixels) {
     WriteArray(name, img, pixels, pixels);
 }
 
-void SFile_SDT::WriteList(const string& name, double *list, sfilesize_t length) {
+void SFile_SDT::WriteList(const string& name, const double *list, sfilesize_t length) {
     WriteArray(name, &list, 1, length);
 }
-void SFile_SDT::WriteInt32List(const string& name, int32_t *list, sfilesize_t length) {
+void SFile_SDT::WriteInt32List(const string& name, const int32_t *list, sfilesize_t length) {
     WriteInt32Array(name, &list, 1, length);
 }
-void SFile_SDT::WriteInt64List(const string& name, int64_t *list, sfilesize_t length) {
+void SFile_SDT::WriteInt64List(const string& name, const int64_t *list, sfilesize_t length) {
     WriteInt64Array(name, &list, 1, length);
 }
-void SFile_SDT::WriteUInt32List(const string& name, uint32_t *list, sfilesize_t length) {
+void SFile_SDT::WriteUInt32List(const string& name, const uint32_t *list, sfilesize_t length) {
     WriteUInt32Array(name, &list, 1, length);
 }
-void SFile_SDT::WriteUInt64List(const string& name, uint64_t *list, sfilesize_t length) {
+void SFile_SDT::WriteUInt64List(const string& name, const uint64_t *list, sfilesize_t length) {
     WriteUInt64Array(name, &list, 1, length);
 }
 

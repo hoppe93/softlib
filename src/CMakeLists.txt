@@ -146,7 +146,7 @@ endif (PNG_FOUND)
 
 # Compile with official Matlab OR HDF5 support?
 if (OFFICIAL_MATLAB)
-	find_package(Matlab 9.4 COMPONENTS MAT_LIBRARY MX_LIBRARY)
+	find_package(Matlab 9.2 COMPONENTS MAT_LIBRARY MX_LIBRARY)
 	if (Matlab_FOUND)
 		target_include_directories(softlib PUBLIC "${Matlab_INCLUDE_DIRS}")
 		target_link_libraries(softlib PUBLIC "${Matlab_MAT_LIBRARY}" "${Matlab_MX_LIBRARY}")
