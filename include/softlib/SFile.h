@@ -94,12 +94,30 @@ class SFile {
         virtual uint64_t *GetUInt64_1D(const std::string&, sfilesize_t*) = 0;
 
 		virtual void WriteArray(const std::string&, const double *const*, sfilesize_t, sfilesize_t) = 0;
+        virtual void WriteArray(const std::string& s, const int32_t *const* a, sfilesize_t z1, sfilesize_t z2)
+        { this->WriteInt32Array(s, a, z1, z2); }
+        virtual void WriteArray(const std::string& s, const int64_t *const* a, sfilesize_t z1, sfilesize_t z2)
+        { this->WriteInt64Array(s, a, z1, z2); }
+        virtual void WriteArray(const std::string& s, const uint32_t *const* a, sfilesize_t z1, sfilesize_t z2)
+        { this->WriteUInt32Array(s, a, z1, z2); }
+        virtual void WriteArray(const std::string& s, const uint64_t *const* a, sfilesize_t z1, sfilesize_t z2)
+        { this->WriteUInt64Array(s, a, z1, z2); }
+
         virtual void WriteInt32Array(const std::string&, const int32_t *const*, sfilesize_t, sfilesize_t) = 0;
         virtual void WriteInt64Array(const std::string&, const int64_t *const*, sfilesize_t, sfilesize_t) = 0;
         virtual void WriteUInt32Array(const std::string&, const uint32_t *const*, sfilesize_t, sfilesize_t) = 0;
         virtual void WriteUInt64Array(const std::string&, const uint64_t *const*, sfilesize_t, sfilesize_t) = 0;
 
 		virtual void WriteList(const std::string&, const double*, sfilesize_t) = 0;
+        virtual void WriteList(const std::string& s, const int32_t* l, sfilesize_t z)
+        { this->WriteInt32List(s, l, z); }
+        virtual void WriteList(const std::string& s, const int64_t* l, sfilesize_t z)
+        { this->WriteInt64List(s, l, z); }
+        virtual void WriteList(const std::string& s, const uint32_t* l, sfilesize_t z)
+        { this->WriteUInt32List(s, l, z); }
+        virtual void WriteList(const std::string& s, const uint64_t* l, sfilesize_t z)
+        { this->WriteUInt64List(s, l, z); }
+
         virtual void WriteInt32List(const std::string&, const int32_t*, sfilesize_t) = 0;
         virtual void WriteInt64List(const std::string&, const int64_t*, sfilesize_t) = 0;
         virtual void WriteUInt32List(const std::string&, const uint32_t*, sfilesize_t) = 0;

@@ -205,7 +205,7 @@ string SFile_MAT::GetString(const string& name) {
         else
             len = (dims[1]==1?dims[0]:dims[1]);
 
-        unsigned short arr[len];
+        unsigned short *arr = new unsigned short[len];
         dataset.read(arr, type, dspace);
 
         // Convert to proper string
@@ -213,6 +213,8 @@ string SFile_MAT::GetString(const string& name) {
         for (sfilesize_t i = 0; i < len; i++)
             str[i] = (char)arr[i];
         str[len] = 0;
+
+        delete [] arr;
 
         s = str;
     } else if (type.getClass() == H5T_STRING) {
@@ -302,7 +304,7 @@ void SFile_MAT::WriteString(const string& name, const string& str) {
 
     DataSet dset = file->createDataSet(name, PredType::STD_U16LE, dspace);
     // Convert string to array of shorts
-    unsigned short arr[dims[0]];
+    unsigned short *arr = new unsigned short[dims[0]];
     for (sfilesize_t i = 0; i < dims[0]; i++)
         arr[i] = (unsigned short)str.at(i);
 
@@ -313,6 +315,8 @@ void SFile_MAT::WriteString(const string& name, const string& str) {
     WriteMATLAB_int_decode(name, &dset);
 
     dset.close();
+
+    delete [] arr;
 }
 
 /**
