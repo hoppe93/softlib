@@ -90,7 +90,7 @@ set_target_properties(softlib PROPERTIES
 
 # Make code position-independent (required for linking to shared libraries)
 if (POS_INDP_CODE)
-    set_property(TARGET softlib POSITION_INDEPENDENT_CODE YES)
+    set_property(TARGET softlib PROPERTY POSITION_INDEPENDENT_CODE YES)
 endif ()
 
 # Set floating point precision
