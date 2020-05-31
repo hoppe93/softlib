@@ -2,6 +2,7 @@
  * Implementation of the SFile Setting.
  */
 
+#include <limits>
 #include <vector>
 #include <softlib/Configuration/ConfigurationSFile.h>
 

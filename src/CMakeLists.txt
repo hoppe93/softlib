@@ -82,8 +82,16 @@ target_include_directories(softlib PUBLIC "${PROJECT_BINARY_DIR}/include" "${PRO
 # Ensure we are able to open files that are larger than 4 GiB
 target_compile_definitions(softlib PUBLIC _FILE_OFFSET_BITS=64)
 
-# Require C++17
-set_target_properties(softlib PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED YES)
+set_target_properties(softlib PROPERTIES
+    # Require C++17
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED YES
+)
+
+# Make code position-independent (required for linking to shared libraries)
+if (POS_INDP_CODE)
+    set_property(TARGET softlib POSITION_INDEPENDENT_CODE YES)
+endif ()
 
 # Set floating point precision
 if (PRECISION_SINGLE AND PRECISION_DOUBLE)
