@@ -86,7 +86,7 @@ int NumericDistributionFunction::__FindNearestR(const slibreal_t r) {
     il = 0;
     iu = nnr-1;
     while (iu-il > 1) {
-        im = (iu+il) >> 1;
+        im = (iu+il) / 2;
         if ((r >= this->r[im]) == ascnd)
             il = im;
         else
@@ -97,6 +97,8 @@ int NumericDistributionFunction::__FindNearestR(const slibreal_t r) {
         return nnr-1;
     else if (r < this->r[0])
         return -1;
+    else if (r > this->r[nnr-1])
+        return nnr-1;
     else
         return il;
 }

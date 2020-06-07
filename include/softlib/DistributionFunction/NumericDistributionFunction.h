@@ -45,19 +45,19 @@ class NumericDistributionFunction : public DistributionFunction {
 
 		bool allowExtrapolation = true;
         bool logarithmic = false;
-        int interptype = INTERPOLATION_CUBIC;       // Type of interpolation done
+        int interptype = INTERPOLATION_LINEAR;       // Type of interpolation done
     public:
         virtual slibreal_t Eval(const slibreal_t, const slibreal_t, const slibreal_t, const slibreal_t drift_shift=0.0) override;
         int __FindNearestR(const slibreal_t);
         void Initialize(
             const unsigned int, const unsigned int, const unsigned int,
             slibreal_t*, slibreal_t*, slibreal_t*, slibreal_t*,
-            int interp=INTERPOLATION_CUBIC
+            int interp=INTERPOLATION_LINEAR
         );
         void InitializeLog(
             const unsigned int, const unsigned int, const unsigned int,
             slibreal_t*, slibreal_t*, slibreal_t*, slibreal_t*,
-            int interp=INTERPOLATION_CUBIC, bool alloc=false
+            int interp=INTERPOLATION_LINEAR, bool alloc=false
         );
         int InsertMomentumSpaceDistribution(
             slibreal_t, NumericMomentumSpaceDistributionFunction*

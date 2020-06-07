@@ -91,7 +91,7 @@ int GOCODEDistributionFunction::__FindNearestR(const slibreal_t r) {
     il = 0;
     iu = nr-1;
     while (iu-il > 1) {
-        im = (iu+il) >> 1;
+        im = (iu+il) / 2;
         if ((r >= this->rho[im]) == ascnd)
             il = im;
         else
@@ -100,6 +100,10 @@ int GOCODEDistributionFunction::__FindNearestR(const slibreal_t r) {
 
     if (il > nnr-1)
         return nr-1;
+    else if (r < this->rho[0])
+        return -1;
+    else if (r > this->rho[nnr-1])
+        return nnr-1;
     else
         return il;
 }
