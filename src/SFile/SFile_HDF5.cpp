@@ -19,7 +19,7 @@ SFile_HDF5::SFile_HDF5() {
     H5::Exception::dontPrint();
 }
 SFile_HDF5::~SFile_HDF5() {
-	if (this->file != NULL)
+	if (this->file != nullptr)
 		delete this->file;
 }
 /**
@@ -58,6 +58,8 @@ void SFile_HDF5::Open(const string& filename, enum sfile_mode openmode) {
 void SFile_HDF5::Close(void) {
 	this->file->close();
 	delete this->file;
+
+    this->file = nullptr;
 }
 
 /**
