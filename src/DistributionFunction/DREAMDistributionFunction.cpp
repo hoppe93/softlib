@@ -126,10 +126,10 @@ struct DREAMDistributionFunction::dreamdf_data *DREAMDistributionFunction::__Loa
     double *tp = sf->GetDoubles1D(momgridname + "/p1", &np);
     double *tx = sf->GetDoubles1D(momgridname + "/p2", &nxi);
     
-    if (fsize[1] != nr || fsize[2] != nxi || fsize[3] != np)
+    if (ndims != 4 || fsize[1] != nr || fsize[2] != nxi || fsize[3] != np)
         throw SOFTLibException(
-            "DREAMDistributionFunction: Invalid dimensions of distribution functions. The grid has size %llux%llux%llu, but f has size %llux%llux%llu.",
-            nr, nxi, np, fsize[1], fsize[2], fsize[3]
+            "DREAMDistributionFunction: Invalid dimensions of distribution functions (%llu). The grid has size %llux%llux%llu, but f has size %llux%llux%llu.",
+            ndims, nr, nxi, np, fsize[1], fsize[2], fsize[3]
         );
 
     sfilesize_t TIMEINDEX = (nt-1)*nr*np*nxi;
