@@ -118,26 +118,28 @@ struct DREAMDistributionFunction::dreamdf_data *DREAMDistributionFunction::__Loa
     /////////////////////////////
     // LOAD DATA
     /////////////////////////////
-    sfilesize_t fsize[3], ndims, nr, np, nxi;
+    sfilesize_t fsize[4], ndims, nr, np, nxi, nt;
     // f
-    double *tf = sf->GetMultiArray_linear(dname, 3, ndims, fsize);
+    double *tf = sf->GetMultiArray_linear(dname, 4, ndims, fsize);
+    double *tt = sf->GetDoubles1D("/grid/t", &nt);
     double *tr = sf->GetDoubles1D("/grid/r", &nr);
     double *tp = sf->GetDoubles1D(momgridname + "/p1", &np);
     double *tx = sf->GetDoubles1D(momgridname + "/p2", &nxi);
     
-    if (fsize[0] != nr || fsize[1] != nxi || fsize[2] != np)
+    if (fsize[1] != nr || fsize[2] != nxi || fsize[3] != np)
         throw SOFTLibException(
             "DREAMDistributionFunction: Invalid dimensions of distribution functions. The grid has size %llux%llux%llu, but f has size %llux%llux%llu.",
-            nr, nxi, np, fsize[0], fsize[1], fsize[2]
+            nr, nxi, np, fsize[1], fsize[2], fsize[3]
         );
 
+    sfilesize_t TIMEINDEX = (nt-1)*nr*np*nxi;
     dat->nr  = nr;
     dat->np  = np;
     dat->nxi = nxi;
 
     // Convert to slibreal_t (if necessary)
     if (std::is_same<slibreal_t, double>::value) {
-        dat->f  = tf;
+        dat->f  = tf + TIMEINDEX;
         dat->r  = tr;
         dat->p  = tp;
         dat->xi = tx;
@@ -148,7 +150,7 @@ struct DREAMDistributionFunction::dreamdf_data *DREAMDistributionFunction::__Loa
         dat->xi = new slibreal_t[nxi];
 
         for (sfilesize_t i = 0; i < nr*nxi*np; i++)
-            dat->f[i]  = (slibreal_t)tf[i];
+            dat->f[i]  = (slibreal_t)(tf+TIMEINDEX)[i];
         for (sfilesize_t i = 0; i < nr; i++)
             dat->r[i]  = (slibreal_t)tr[i];
         for (sfilesize_t i = 0; i < np; i++)
@@ -161,6 +163,8 @@ struct DREAMDistributionFunction::dreamdf_data *DREAMDistributionFunction::__Loa
         delete [] tr;
         delete [] tf;
     }
+
+    delete [] tt;
 
     // Shift radial grid (convert from normalized minor radius -> major radius)
     for (sfilesize_t i = 0; i < nr; i++) {
