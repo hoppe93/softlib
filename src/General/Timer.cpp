@@ -43,22 +43,39 @@ slibreal_t Timer::GetMilliseconds(struct time &t) {
  */
 struct Timer::time Timer::GetTimeStruct() const {
     struct time t;
+	time_point<high_resolution_clock> toc;
 
-    time_point<high_resolution_clock> toc = high_resolution_clock::now();
+	if (!this->stopped)
+		toc = high_resolution_clock::now();
+	else
+		toc = this->toc;
 
     //long long useconds = duration_cast<microseconds>(toc-tic);
     //unsigned long long seconds  = useconds / 1e6;
 
-    t.tp = duration_cast<microseconds>(toc-tic);
+    t.tp = duration_cast<microseconds>(toc-tic+offset);
 
-    t.days         = duration_cast<hours>(toc-tic) / 24;
-    t.hours        = duration_cast<hours>((toc-t.days)-tic);
-    t.minutes      = duration_cast<minutes>((toc-t.days-t.hours)-tic);
-    t.seconds      = duration_cast<seconds>((toc-t.days-t.hours-t.minutes)-tic);
-    t.milliseconds = duration_cast<milliseconds>((toc-t.days-t.hours-t.minutes-t.seconds)-tic);
-    t.microseconds = duration_cast<microseconds>((toc-t.days-t.hours-t.minutes-t.seconds-t.milliseconds)-tic);
+    t.days         = duration_cast<hours>(toc-tic+offset) / 24;
+    t.hours        = duration_cast<hours>((toc-t.days)-tic+offset);
+    t.minutes      = duration_cast<minutes>((toc-t.days-t.hours)-tic+offset);
+    t.seconds      = duration_cast<seconds>((toc-t.days-t.hours-t.minutes)-tic+offset);
+    t.milliseconds = duration_cast<milliseconds>((toc-t.days-t.hours-t.minutes-t.seconds)-tic+offset);
+    t.microseconds = duration_cast<microseconds>((toc-t.days-t.hours-t.minutes-t.seconds-t.milliseconds)-tic+offset);
 
     return t;
+}
+
+/**
+ * Continue running the timer.
+ */
+void Timer::Continue() {
+	if (this->stopped)
+		offset += toc-tic;
+	else
+		offset = high_resolution_clock::duration::zero();
+	
+	tic = high_resolution_clock::now();
+	this->stopped = false;
 }
 
 /**
@@ -66,6 +83,16 @@ struct Timer::time Timer::GetTimeStruct() const {
  */
 void Timer::Reset() {
     tic = high_resolution_clock::now();
+	offset = high_resolution_clock::duration::zero();
+	this->stopped = false;
+}
+
+/**
+ * Stop the timer.
+ */
+void Timer::Stop() {
+	toc = high_resolution_clock::now();
+	this->stopped = true;
 }
 
 /**

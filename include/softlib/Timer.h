@@ -9,6 +9,11 @@
 class Timer {
     private:
         std::chrono::time_point<std::chrono::high_resolution_clock> tic;
+		std::chrono::time_point<std::chrono::high_resolution_clock> toc;
+
+		std::chrono::high_resolution_clock::duration offset=std::chrono::high_resolution_clock::duration::zero();
+
+		bool stopped=false;
     public:
         Timer();
 
@@ -23,10 +28,12 @@ class Timer {
             std::chrono::microseconds tp;
         };
 
+		void Continue();
         slibreal_t GetMilliseconds() const;
         static slibreal_t GetMilliseconds(struct time&);
         struct time GetTimeStruct() const;
         void Reset();
+		void Stop();
 
         std::string ToString() const;
         static std::string ToString(struct time&);
