@@ -240,7 +240,7 @@ slibreal_t CODEDistributionFunction::Eval(const slibreal_t p, const slibreal_t x
     slibreal_t s = 0.0, fval;
     slibreal_t sgn[2] = {1.0,-1.0};
 
-    if (p > this->GetPMax() && p < this->GetPMin())
+    if (p > this->GetPMax() || p < this->GetPMin())
         return 0;
 
     if (xi != this->xileg) {
@@ -252,6 +252,8 @@ slibreal_t CODEDistributionFunction::Eval(const slibreal_t p, const slibreal_t x
         fval = gsl_interp_eval(this->interp[i], this->p, this->f+(i*this->np), p, this->interp_accel);
         s += fval * this->legendre[i] * sgn[i%2];
     }
+
+    if (s <= 0) return 0;
 
     return s;
 }

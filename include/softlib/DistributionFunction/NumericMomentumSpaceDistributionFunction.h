@@ -34,19 +34,19 @@ class NumericMomentumSpaceDistributionFunction : public MomentumSpaceDistributio
 
         bool flipPitchSign = false;
         bool logarithmic = false;
-        int interptype = INTERPOLATION_CUBIC;
+        int interptype = INTERPOLATION_LINEAR;
     public:
         using MomentumSpaceDistributionFunction::Eval;
         virtual slibreal_t Eval(const slibreal_t, const slibreal_t) override;
         void Initialize(
             const unsigned int, const unsigned int,
             slibreal_t*, slibreal_t*, slibreal_t*,
-            int interp=INTERPOLATION_CUBIC
+            int interp=INTERPOLATION_LINEAR
         );
         void InitializeLog(
             const unsigned int, const unsigned int,
             slibreal_t*, slibreal_t*, slibreal_t*,
-            int interp=INTERPOLATION_CUBIC
+            int interp=INTERPOLATION_LINEAR
         );
         bool IsLogarithmic() { return this->logarithmic; }
         virtual NumericMomentumSpaceDistributionFunction *MinClone() override;

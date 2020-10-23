@@ -31,6 +31,8 @@ class Timer {
 		void Continue();
         slibreal_t GetMilliseconds() const;
         static slibreal_t GetMilliseconds(struct time&);
+        slibreal_t GetMicroseconds() const;
+        static slibreal_t GetMicroseconds(struct time&);
         struct time GetTimeStruct() const;
         void Reset();
 		void Stop();

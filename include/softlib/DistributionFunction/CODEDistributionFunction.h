@@ -43,7 +43,7 @@ class CODEDistributionFunction : public MomentumSpaceDistributionFunction {
         virtual CODEDistributionFunction *MinClone() override;
         NumericMomentumSpaceDistributionFunction *ToMomentumSpace(
             bool logarithmic=true, bool uniformTheta=false, unsigned int nxi=200,
-            int interptype=NumericMomentumSpaceDistributionFunction::INTERPOLATION_CUBIC
+            int interptype=NumericMomentumSpaceDistributionFunction::INTERPOLATION_LINEAR
         );
 
         slibreal_t GetPMax();

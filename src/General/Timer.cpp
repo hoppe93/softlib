@@ -37,6 +37,21 @@ slibreal_t Timer::GetMilliseconds(struct time &t) {
 }
 
 /**
+ * Returns the total elapsed time in microseconds
+ * since this timer was started.
+ */
+slibreal_t Timer::GetMicroseconds() const {
+    struct time t = GetTimeStruct();
+    return GetMicroseconds(t);
+}
+slibreal_t Timer::GetMicroseconds(struct time &t) {
+    slibreal_t microseconds =
+        (slibreal_t)(t.tp.count());
+
+    return microseconds;
+}
+
+/**
  * Returns a Timer::time struct representing the
  * total elapsed time, grouped into days, hours,
  * minutes, seconds, milliseconds and microseconds.

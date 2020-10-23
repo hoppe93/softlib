@@ -16,6 +16,7 @@ option(DEBUG "Compile with debug symbols and no optimizations" OFF)
 option(INTERP_SPLINTER "Use SPLINTER for interpolation" OFF)
 option(PRECISION_DOUBLE "Use double precision floating-point arithmetic" ON)
 option(OFFICIAL_MATLAB "Link against official Matlab libraries (disables HDF5 support)" OFF)
+option(POS_INDP_CODE "Enable position-independent code generation (decreases performance but allows dynamic linking)" OFF)
 
 configure_file(
 	"${PROJECT_SOURCE_DIR}/include/softlib/config.h.in"

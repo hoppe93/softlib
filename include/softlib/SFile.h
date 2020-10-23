@@ -56,6 +56,8 @@ class SFile {
             SFILE_DATA_STRING
         };
 
+        virtual ~SFile() {}
+
 		static SFile *Create(const std::string&, enum sfile_mode);
 		static SFile *Create(const std::string&, enum sfile_mode, enum sfile_type);
 		static enum sfile_type GetFileType(const std::string&);
@@ -73,10 +75,10 @@ class SFile {
 		virtual double *GetMultiArray_linear(const std::string&, const sfilesize_t, sfilesize_t&, sfilesize_t*) = 0;
 		virtual std::string GetString(const std::string&) = 0;
 		virtual void Open(const std::string&, enum sfile_mode) = 0;
-		virtual void WriteAttribute_scalar(const std::string&, const std::string&, double) = 0;
+		virtual void WriteAttribute_scalar(const std::string&, const std::string&, const double) = 0;
 		virtual void WriteAttribute_string(const std::string&, const std::string&, const std::string&) = 0;
-		virtual void WriteImage(const std::string&, double**, sfilesize_t) = 0;
-		virtual void WriteMultiArray(const std::string&, double*, sfilesize_t, sfilesize_t*) = 0;
+		virtual void WriteImage(const std::string&, const double *const*, sfilesize_t) = 0;
+		virtual void WriteMultiArray(const std::string&, const double*, const sfilesize_t, const sfilesize_t*) = 0;
 		virtual void WriteString(const std::string&, const std::string&) = 0;
 
 		virtual double **GetDoubles(const std::string&, sfilesize_t*) = 0;
@@ -91,17 +93,35 @@ class SFile {
         virtual uint32_t *GetUInt32_1D(const std::string&, sfilesize_t*) = 0;
         virtual uint64_t *GetUInt64_1D(const std::string&, sfilesize_t*) = 0;
 
-		virtual void WriteArray(const std::string&, double**, sfilesize_t, sfilesize_t) = 0;
-        virtual void WriteInt32Array(const std::string&, int32_t**, sfilesize_t, sfilesize_t) = 0;
-        virtual void WriteInt64Array(const std::string&, int64_t**, sfilesize_t, sfilesize_t) = 0;
-        virtual void WriteUInt32Array(const std::string&, uint32_t**, sfilesize_t, sfilesize_t) = 0;
-        virtual void WriteUInt64Array(const std::string&, uint64_t**, sfilesize_t, sfilesize_t) = 0;
+		virtual void WriteArray(const std::string&, const double *const*, sfilesize_t, sfilesize_t) = 0;
+        virtual void WriteArray(const std::string& s, const int32_t *const* a, sfilesize_t z1, sfilesize_t z2)
+        { this->WriteInt32Array(s, a, z1, z2); }
+        virtual void WriteArray(const std::string& s, const int64_t *const* a, sfilesize_t z1, sfilesize_t z2)
+        { this->WriteInt64Array(s, a, z1, z2); }
+        virtual void WriteArray(const std::string& s, const uint32_t *const* a, sfilesize_t z1, sfilesize_t z2)
+        { this->WriteUInt32Array(s, a, z1, z2); }
+        virtual void WriteArray(const std::string& s, const uint64_t *const* a, sfilesize_t z1, sfilesize_t z2)
+        { this->WriteUInt64Array(s, a, z1, z2); }
 
-		virtual void WriteList(const std::string&, double*, sfilesize_t) = 0;
-        virtual void WriteInt32List(const std::string&, int32_t*, sfilesize_t) = 0;
-        virtual void WriteInt64List(const std::string&, int64_t*, sfilesize_t) = 0;
-        virtual void WriteUInt32List(const std::string&, uint32_t*, sfilesize_t) = 0;
-        virtual void WriteUInt64List(const std::string&, uint64_t*, sfilesize_t) = 0;
+        virtual void WriteInt32Array(const std::string&, const int32_t *const*, sfilesize_t, sfilesize_t) = 0;
+        virtual void WriteInt64Array(const std::string&, const int64_t *const*, sfilesize_t, sfilesize_t) = 0;
+        virtual void WriteUInt32Array(const std::string&, const uint32_t *const*, sfilesize_t, sfilesize_t) = 0;
+        virtual void WriteUInt64Array(const std::string&, const uint64_t *const*, sfilesize_t, sfilesize_t) = 0;
+
+		virtual void WriteList(const std::string&, const double*, sfilesize_t) = 0;
+        virtual void WriteList(const std::string& s, const int32_t* l, sfilesize_t z)
+        { this->WriteInt32List(s, l, z); }
+        virtual void WriteList(const std::string& s, const int64_t* l, sfilesize_t z)
+        { this->WriteInt64List(s, l, z); }
+        virtual void WriteList(const std::string& s, const uint32_t* l, sfilesize_t z)
+        { this->WriteUInt32List(s, l, z); }
+        virtual void WriteList(const std::string& s, const uint64_t* l, sfilesize_t z)
+        { this->WriteUInt64List(s, l, z); }
+
+        virtual void WriteInt32List(const std::string&, const int32_t*, sfilesize_t) = 0;
+        virtual void WriteInt64List(const std::string&, const int64_t*, sfilesize_t) = 0;
+        virtual void WriteUInt32List(const std::string&, const uint32_t*, sfilesize_t) = 0;
+        virtual void WriteUInt64List(const std::string&, const uint64_t*, sfilesize_t) = 0;
 
 		// Functions implemented in the base class
         int64_t **GetIntArray(const std::string&, sfilesize_t*);
@@ -114,7 +134,7 @@ class SFile {
         uint32_t GetUInt32(const std::string&);
         uint64_t GetUInt64(const std::string&);
 		double GetScalar(const std::string&);
-        void WriteScalar(const std::string&, double);
+        void WriteScalar(const std::string&, const double);
 };
 
 #endif/*_SFILE_H*/

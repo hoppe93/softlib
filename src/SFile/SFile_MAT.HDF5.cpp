@@ -205,7 +205,7 @@ string SFile_MAT::GetString(const string& name) {
         else
             len = (dims[1]==1?dims[0]:dims[1]);
 
-        unsigned short arr[len];
+        unsigned short *arr = new unsigned short[len];
         dataset.read(arr, type, dspace);
 
         // Convert to proper string
@@ -213,6 +213,8 @@ string SFile_MAT::GetString(const string& name) {
         for (sfilesize_t i = 0; i < len; i++)
             str[i] = (char)arr[i];
         str[len] = 0;
+
+        delete [] arr;
 
         s = str;
     } else if (type.getClass() == H5T_STRING) {
@@ -249,28 +251,28 @@ void SFile_MAT::CreateStruct(const string& name) {
  * rows: Number of rows of array
  * cols: Number of columns of data
  */
-void SFile_MAT::WriteArray(const string& name, double **arr, sfilesize_t rows, sfilesize_t cols) {
+void SFile_MAT::WriteArray(const string& name, const double *const* arr, sfilesize_t rows, sfilesize_t cols) {
     SFile_HDF5::WriteArray(name, arr, rows, cols);
     WriteMATLAB_class(name, "double");
 }
-void SFile_MAT::WriteInt32Array(const string& name, int32_t **arr, sfilesize_t rows, sfilesize_t cols) {
+void SFile_MAT::WriteInt32Array(const string& name, const int32_t *const* arr, sfilesize_t rows, sfilesize_t cols) {
     SFile_HDF5::WriteInt32Array(name, arr, rows, cols);
     WriteMATLAB_class(name, "int32");
 }
-void SFile_MAT::WriteInt64Array(const string& name, int64_t **arr, sfilesize_t rows, sfilesize_t cols) {
+void SFile_MAT::WriteInt64Array(const string& name, const int64_t *const* arr, sfilesize_t rows, sfilesize_t cols) {
     SFile_HDF5::WriteInt64Array(name, arr, rows, cols);
     WriteMATLAB_class(name, "int64");
 }
-void SFile_MAT::WriteUInt32Array(const string& name, uint32_t **arr, sfilesize_t rows, sfilesize_t cols) {
+void SFile_MAT::WriteUInt32Array(const string& name, const uint32_t *const* arr, sfilesize_t rows, sfilesize_t cols) {
     SFile_HDF5::WriteUInt32Array(name, arr, rows, cols);
     WriteMATLAB_class(name, "uint32");
 }
-void SFile_MAT::WriteUInt64Array(const string& name, uint64_t **arr, sfilesize_t rows, sfilesize_t cols) {
+void SFile_MAT::WriteUInt64Array(const string& name, const uint64_t *const* arr, sfilesize_t rows, sfilesize_t cols) {
     SFile_HDF5::WriteUInt64Array(name, arr, rows, cols);
     WriteMATLAB_class(name, "uint64");
 }
 
-void SFile_MAT::WriteAttribute_scalar(const string& dsetname, const string& name, double q) {
+void SFile_MAT::WriteAttribute_scalar(const string& dsetname, const string& name, const double q) {
     string nname = GetAttributeName(dsetname, name);
     WriteList(nname, &q, 1);
 }
@@ -291,7 +293,7 @@ void SFile_MAT::WriteAttribute_string(const string& dsetname, const string& name
  * dims:  Array with 'ndims' elements, specifying the
  *        the number of elements in each dimension.
  */
-void SFile_MAT::WriteMultiArray(const string& name, double *arr, sfilesize_t ndims, sfilesize_t *dims) {
+void SFile_MAT::WriteMultiArray(const string& name, const double *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
 	SFile_HDF5::WriteMultiArray(name, arr, ndims, dims);
 	WriteMATLAB_class(name, "double");
 }
@@ -302,7 +304,7 @@ void SFile_MAT::WriteString(const string& name, const string& str) {
 
     DataSet dset = file->createDataSet(name, PredType::STD_U16LE, dspace);
     // Convert string to array of shorts
-    unsigned short arr[dims[0]];
+    unsigned short *arr = new unsigned short[dims[0]];
     for (sfilesize_t i = 0; i < dims[0]; i++)
         arr[i] = (unsigned short)str.at(i);
 
@@ -313,6 +315,8 @@ void SFile_MAT::WriteString(const string& name, const string& str) {
     WriteMATLAB_int_decode(name, &dset);
 
     dset.close();
+
+    delete [] arr;
 }
 
 /**

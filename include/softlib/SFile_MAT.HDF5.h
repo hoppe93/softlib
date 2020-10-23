@@ -24,16 +24,16 @@ class SFile_MAT : public SFile_HDF5 {
 		virtual std::string GetAttributeString(const std::string&, const std::string&) override;
         virtual std::string GetString(const std::string&) override;
 
-		virtual void WriteAttribute_scalar(const std::string&, const std::string&, double) override;
+		virtual void WriteAttribute_scalar(const std::string&, const std::string&, const double) override;
 		virtual void WriteAttribute_string(const std::string&, const std::string&, const std::string&) override;
-        virtual void WriteMultiArray(const std::string&, double*, sfilesize_t, sfilesize_t*) override;
+        virtual void WriteMultiArray(const std::string&, const double*, const sfilesize_t, const sfilesize_t*) override;
 		virtual void WriteString(const std::string&, const std::string&) override;
 
-		virtual void WriteArray(const std::string&, double**, sfilesize_t, sfilesize_t) override;
-        virtual void WriteInt32Array(const std::string&, int32_t**, sfilesize_t, sfilesize_t) override;
-        virtual void WriteInt64Array(const std::string&, int64_t**, sfilesize_t, sfilesize_t) override;
-        virtual void WriteUInt32Array(const std::string&, uint32_t**, sfilesize_t, sfilesize_t) override;
-        virtual void WriteUInt64Array(const std::string&, uint64_t**, sfilesize_t, sfilesize_t) override;
+		virtual void WriteArray(const std::string&, const double *const*, sfilesize_t, sfilesize_t) override;
+        virtual void WriteInt32Array(const std::string&, const int32_t *const*, sfilesize_t, sfilesize_t) override;
+        virtual void WriteInt64Array(const std::string&, const int64_t *const*, sfilesize_t, sfilesize_t) override;
+        virtual void WriteUInt32Array(const std::string&, const uint32_t *const*, sfilesize_t, sfilesize_t) override;
+        virtual void WriteUInt64Array(const std::string&, const uint64_t *const*, sfilesize_t, sfilesize_t) override;
 
         void WriteMATLAB_class(const std::string&, const std::string&, H5::H5Object *obj=nullptr);
         void WriteMATLAB_int_decode(const std::string&, H5::H5Object *obj=nullptr, const int val=2);
