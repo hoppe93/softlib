@@ -131,6 +131,7 @@ NumericMomentumSpaceDistributionFunction *NumericMomentumSpaceDistributionFuncti
     NumericMomentumSpaceDistributionFunction *df = new NumericMomentumSpaceDistributionFunction();
 
     df->Initialize(this->np, this->nxi, this->p, this->xi, this->f, this->interptype);
+    df->FlipPitchSign(this->flipPitchSign);
     return df;
 }
 
