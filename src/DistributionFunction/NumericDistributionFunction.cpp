@@ -40,7 +40,13 @@ slibreal_t NumericDistributionFunction::Eval(
     int ir = __FindNearestR(rho);
     slibreal_t r0, r1;
 
-    if (ir <= 0) {
+    if (nr == 1) {
+        r0 = rho;
+        r1 = 0;
+
+        f0 = this->msdf[0]->Eval(p, xi);
+        f1 = 0;
+    } else if (ir <= 0) {
         r0 = 0;
         r1 = this->r[0];
         slibreal_t r2 = this->r[1], f2;
