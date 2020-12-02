@@ -56,6 +56,7 @@ void SFile_HDF5::Open(const string& filename, enum sfile_mode openmode) {
  * Close the currently open HDF5 file.
  */
 void SFile_HDF5::Close(void) {
+    this->file->flush(H5F_SCOPE_GLOBAL);
 	this->file->close();
 	delete this->file;
 
