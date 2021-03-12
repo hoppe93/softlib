@@ -31,6 +31,7 @@ set(distribution
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/NumericDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/NumericMomentumSpaceDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/PowerRadialProfile.cpp"
+		"${PROJECT_SOURCE_DIR}/src/DistributionFunction/GaussianRadialProfile.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/RadialDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/deprSOFTDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/SOFTDistributionFunction.cpp"
@@ -171,4 +172,3 @@ else (OFFICIAL_MATLAB)
 		message(FATAL_ERROR "HDF5 support was requested, but no HDF5 library was found on this system")
 	endif (HDF5_FOUND)
 endif (OFFICIAL_MATLAB)
-
