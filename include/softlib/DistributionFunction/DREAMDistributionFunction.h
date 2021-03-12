@@ -15,15 +15,15 @@ private:
         slibreal_t *r, *xi, *p;
         slibreal_t *f;
     };
-    static struct dreamdf_data *__Load(const std::string&, MagneticField2D *mf=nullptr, const std::string& distname="");
+    static struct dreamdf_data *__Load(const std::string&, MagneticField2D *mf=nullptr, const std::string& distname="", int timestep=-1);
 
     struct dreamdf_data *rawdata;
 
 public:
-    DREAMDistributionFunction(const std::string&, MagneticField2D *mf=nullptr, const std::string& distname="", bool logarithmic=false, int interptype=NumericDistributionFunction::INTERPOLATION_LINEAR);
+    DREAMDistributionFunction(const std::string&, MagneticField2D *mf=nullptr, const std::string& distname="", int timestep=-1, bool logarithmic=false, int interptype=NumericDistributionFunction::INTERPOLATION_LINEAR);
     ~DREAMDistributionFunction();
 
-    void Load(const std::string&, MagneticField2D*, const std::string& distname="", bool logarithmic=false, int interptype=NumericDistributionFunction::INTERPOLATION_LINEAR);
+    void Load(const std::string&, MagneticField2D*, const std::string& distname="", int timestep=-1, bool logarithmic=false, int interptype=NumericDistributionFunction::INTERPOLATION_LINEAR);
 };
 
 #endif/*_DREAM_DISTRIBUTION_FUNCTION_H*/

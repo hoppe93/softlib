@@ -20,14 +20,15 @@ using namespace std;
  * filename:    Name of file to load distribution function from.
  * mf:          Magnetic field in which the distribution function lives.
  * distname:    Name of distribution function unknown to load (default: 'f_re' if existing, else 'f_hot').
+ * timestep:    Time index to select distribution from.
  * logarithmic: If 'true', interpolates in the logarithm of f instead of f directly.
  * interptype:  Type of interpolation method to use for the momentum distributions.
  */
 DREAMDistributionFunction::DREAMDistributionFunction(
     const string &filename, MagneticField2D *mf, const string &distname,
-    bool logarithmic, int interptype
+    int timestep, bool logarithmic, int interptype
 ) {
-    Load(filename, mf, distname, logarithmic, interptype);
+    Load(filename, mf, distname, timestep, logarithmic, interptype);
 }
 
 /**
@@ -52,9 +53,9 @@ DREAMDistributionFunction::~DREAMDistributionFunction() {
  */
 void DREAMDistributionFunction::Load(
     const string &filename, MagneticField2D *mf, const string &distname,
-    bool logarithmic, int interptype
+    int timestep, bool logarithmic, int interptype
 ) {
-    this->rawdata = this->__Load(filename, mf, distname);
+    this->rawdata = this->__Load(filename, mf, distname, timestep);
     unsigned int
         nr = this->rawdata->nr,
         N = this->rawdata->np*this->rawdata->nxi;
@@ -83,7 +84,8 @@ void DREAMDistributionFunction::Load(
  * DREAM output file.
  */
 struct DREAMDistributionFunction::dreamdf_data *DREAMDistributionFunction::__Load(
-    const string &filename, MagneticField2D *mf, const string &distname
+    const string &filename, MagneticField2D *mf, const string &distname,
+    int timestep
 ) {
     SFile *sf = SFile::Create(filename, SFILE_MODE_READ);
 
@@ -132,7 +134,19 @@ struct DREAMDistributionFunction::dreamdf_data *DREAMDistributionFunction::__Loa
             ndims, nr, nxi, np, fsize[1], fsize[2], fsize[3]
         );
 
-    sfilesize_t TIMEINDEX = (nt-1)*nr*np*nxi;
+    sfilesize_t TIMEINDEX;
+    if (timestep < 0)
+        TIMEINDEX = (nt+timestep)*nr*np*nxi;
+    else
+        TIMEINDEX = timestep * nr*np*nxi;
+
+    // Bounds check
+    if (TIMEINDEX > nt*nr*np*nxi)
+        throw SOFTLibException(
+            "DREAMDistributionFunction: Invalid time step specified. The distribution contains %llu time steps.",
+            nt
+        );
+
     dat->nr  = nr;
     dat->np  = np;
     dat->nxi = nxi;
