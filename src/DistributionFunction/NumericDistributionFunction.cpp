@@ -138,7 +138,7 @@ void NumericDistributionFunction::Initialize(
     if (nr > 2)
         ascnd = (r[1] >= r[0]);
 
-    for (unsigned int i = 0; i < nr; i++) {
+    for (unsigned int i = 1; i < nr; i++) {
         if ((ascnd && r[i-1] >= r[i]) || (!ascnd && r[i-1] <= r[i]))
             throw SOFTLibException("Numerical distribution function: The radial grid must be monotonically increasing or decreasing.");
 
