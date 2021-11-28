@@ -297,6 +297,22 @@ void SFile_MAT::WriteMultiArray(const string& name, const double *arr, const sfi
 	SFile_HDF5::WriteMultiArray(name, arr, ndims, dims);
 	WriteMATLAB_class(name, "double");
 }
+void SFile_MAT::WriteMultiInt32Array(const string& name, const int32_t *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
+    SFile_HDF5::WriteMultiInt32Array(name, arr, ndims, dims);
+    WriteString(name, "int32");
+}
+void SFile_MAT::WriteMultiInt64Array(const string& name, const int64_t *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
+    SFile_HDF5::WriteMultiInt64Array(name, arr, ndims, dims);
+    WriteString(name, "int64");
+}
+void SFile_MAT::WriteMultiUInt32Array(const string& name, const uint32_t *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
+    SFile_HDF5::WriteMultiUInt32Array(name, arr, ndims, dims);
+    WriteString(name, "uint32");
+}
+void SFile_MAT::WriteMultiUInt64Array(const string& name, const uint64_t *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
+    SFile_HDF5::WriteMultiUInt64Array(name, arr, ndims, dims);
+    WriteString(name, "uint64");
+}
 
 void SFile_MAT::WriteString(const string& name, const string& str) {
     sfilesize_t dims[] = {str.size(),1};

@@ -458,15 +458,34 @@ void SFile_HDF5::WriteUInt64List(const string& name, const uint64_t *list, sfile
  * dims:  Array with 'ndims' elements, specifying the
  *        the number of elements in each dimension.
  */
-void SFile_HDF5::WriteMultiArray(const string& name, const double *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
+template<typename T>
+void SFile_HDF5::WriteMultiNumArray(
+    const string& name, const T *arr, const sfilesize_t ndims,
+    const sfilesize_t *dims, PredType op, PredType ip
+) {
 	hsize_t *h_dims = new hsize_t[ndims];
 	for (sfilesize_t i = 0; i < ndims; i++)
 		h_dims[i] = dims[i];
 
 	DataSpace dspace(ndims, dims);
-	DataSet dset = file->createDataSet(name, PredType::IEEE_F64LE, dspace);
-	dset.write(arr, PredType::NATIVE_DOUBLE);
+	DataSet dset = file->createDataSet(name, op, dspace);
+	dset.write(arr, ip);
 	dset.close();
+}
+void SFile_HDF5::WriteMultiArray(const string& name, const double *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
+    WriteMultiNumArray<double>(name, arr, ndims, dims, PredType::IEEE_F64LE, PredType::NATIVE_DOUBLE);
+}
+void SFile_HDF5::WriteMultiInt32Array(const string& name, const int32_t *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
+    WriteMultiNumArray<int32_t>(name, arr, ndims, dims, PredType::STD_I32LE, PredType::NATIVE_INT32);
+}
+void SFile_HDF5::WriteMultiInt64Array(const string& name, const int64_t *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
+    WriteMultiNumArray<int64_t>(name, arr, ndims, dims, PredType::STD_I64LE, PredType::NATIVE_INT64);
+}
+void SFile_HDF5::WriteMultiUInt32Array(const string& name, const uint32_t *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
+    WriteMultiNumArray<uint32_t>(name, arr, ndims, dims, PredType::STD_U32LE, PredType::NATIVE_UINT32);
+}
+void SFile_HDF5::WriteMultiUInt64Array(const string& name, const uint64_t *arr, const sfilesize_t ndims, const sfilesize_t *dims) {
+    WriteMultiNumArray<uint64_t>(name, arr, ndims, dims, PredType::STD_U64LE, PredType::NATIVE_UINT64);
 }
 
 /**

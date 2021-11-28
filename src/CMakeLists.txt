@@ -102,7 +102,7 @@ endif (PRECISION_SINGLE AND PRECISION_DOUBLE)
 
 # Enable warnings on GCC and Clang
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(softlib PRIVATE -Wall -Wextra -pedantic -Wno-misleading-indentation -Wno-ignored-qualifiers)
+    target_compile_options(softlib PRIVATE -Wall -Wextra -pedantic -Wno-ignored-qualifiers)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(softlib PRIVATE -Wall -Wextra -pedantic -Wno-misleading-indentation -Wno-ignored-qualifiers)
 else ()
