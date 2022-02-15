@@ -40,7 +40,13 @@ slibreal_t NumericDistributionFunction::Eval(
     int ir = __FindNearestR(rho);
     slibreal_t r0, r1;
 
-    if (ir <= 0) {
+    if (nr == 1) {
+        r0 = rho;
+        r1 = 0;
+
+        f0 = this->msdf[0]->Eval(p, xi);
+        f1 = 0;
+    } else if (ir <= 0) {
         r0 = 0;
         r1 = this->r[0];
         slibreal_t r2 = this->r[1], f2;
@@ -132,7 +138,7 @@ void NumericDistributionFunction::Initialize(
     if (nr > 2)
         ascnd = (r[1] >= r[0]);
 
-    for (unsigned int i = 0; i < nr; i++) {
+    for (unsigned int i = 1; i < nr; i++) {
         if ((ascnd && r[i-1] >= r[i]) || (!ascnd && r[i-1] <= r[i]))
             throw SOFTLibException("Numerical distribution function: The radial grid must be monotonically increasing or decreasing.");
 

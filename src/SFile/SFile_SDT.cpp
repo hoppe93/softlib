@@ -381,6 +381,18 @@ void SFile_SDT::WriteAttribute_string(const string& datasetname, const string& n
 void SFile_SDT::WriteMultiArray(const string& name, const double*, const sfilesize_t, const sfilesize_t*) {
 	throw SFileException("Trying to write variable '%s': The SDT format does not support higher than 2-dimensional arrays.", name.c_str());
 }
+void SFile_SDT::WriteMultiInt32Array(const string& name, const int32_t*, const sfilesize_t, const sfilesize_t*) {
+	throw SFileException("Trying to write variable '%s': The SDT format does not support higher than 2-dimensional arrays.", name.c_str());
+}
+void SFile_SDT::WriteMultiInt64Array(const string& name, const int64_t*, const sfilesize_t, const sfilesize_t*) {
+	throw SFileException("Trying to write variable '%s': The SDT format does not support higher than 2-dimensional arrays.", name.c_str());
+}
+void SFile_SDT::WriteMultiUInt32Array(const string& name, const uint32_t*, const sfilesize_t, const sfilesize_t*) {
+	throw SFileException("Trying to write variable '%s': The SDT format does not support higher than 2-dimensional arrays.", name.c_str());
+}
+void SFile_SDT::WriteMultiUInt64Array(const string& name, const uint64_t*, const sfilesize_t, const sfilesize_t*) {
+	throw SFileException("Trying to write variable '%s': The SDT format does not support higher than 2-dimensional arrays.", name.c_str());
+}
 
 void SFile_SDT::WriteImage(const string& name, const double *const* img, sfilesize_t pixels) {
     WriteArray(name, img, pixels, pixels);

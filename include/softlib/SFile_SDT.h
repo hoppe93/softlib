@@ -74,6 +74,10 @@ class SFile_SDT : public SFile {
         virtual void WriteUInt32List(const std::string&, const uint32_t*, sfilesize_t) override;
         virtual void WriteUInt64List(const std::string&, const uint64_t*, sfilesize_t) override;
 
+        virtual void WriteMultiInt32Array(const std::string&, const int32_t*, const sfilesize_t, const sfilesize_t*) override;
+        virtual void WriteMultiInt64Array(const std::string&, const int64_t*, const sfilesize_t, const sfilesize_t*) override;
+        virtual void WriteMultiUInt32Array(const std::string&, const uint32_t*, const sfilesize_t, const sfilesize_t*) override;
+        virtual void WriteMultiUInt64Array(const std::string&, const uint64_t*, const sfilesize_t, const sfilesize_t*) override;
 };
 
 #endif/*_SFILE_SDT_H*/

@@ -22,6 +22,7 @@ set(distribution
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/BesselRadialProfile.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/CODEDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/ConnorHastieDistribution.cpp"
+    "${PROJECT_SOURCE_DIR}/src/DistributionFunction/DREAMDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/ExponentialPitch.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/GOCODEDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/LinearRadialProfile.cpp"
@@ -30,6 +31,7 @@ set(distribution
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/NumericDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/NumericMomentumSpaceDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/PowerRadialProfile.cpp"
+		"${PROJECT_SOURCE_DIR}/src/DistributionFunction/GaussianRadialProfile.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/RadialDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/deprSOFTDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/SOFTDistributionFunction.cpp"
@@ -100,7 +102,7 @@ endif (PRECISION_SINGLE AND PRECISION_DOUBLE)
 
 # Enable warnings on GCC and Clang
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(softlib PRIVATE -Wall -Wextra -pedantic -Wno-misleading-indentation -Wno-ignored-qualifiers)
+    target_compile_options(softlib PRIVATE -Wall -Wextra -pedantic -Wno-ignored-qualifiers)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(softlib PRIVATE -Wall -Wextra -pedantic -Wno-misleading-indentation -Wno-ignored-qualifiers)
 else ()
@@ -170,4 +172,3 @@ else (OFFICIAL_MATLAB)
 		message(FATAL_ERROR "HDF5 support was requested, but no HDF5 library was found on this system")
 	endif (HDF5_FOUND)
 endif (OFFICIAL_MATLAB)
-

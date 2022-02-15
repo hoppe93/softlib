@@ -81,6 +81,11 @@ class SFile {
 		virtual void WriteMultiArray(const std::string&, const double*, const sfilesize_t, const sfilesize_t*) = 0;
 		virtual void WriteString(const std::string&, const std::string&) = 0;
 
+        virtual void WriteMultiInt32Array(const std::string&, const int32_t*, const sfilesize_t, const sfilesize_t*) = 0;
+        virtual void WriteMultiInt64Array(const std::string&, const int64_t*, const sfilesize_t, const sfilesize_t*) = 0;
+        virtual void WriteMultiUInt32Array(const std::string&, const uint32_t*, const sfilesize_t, const sfilesize_t*) = 0;
+        virtual void WriteMultiUInt64Array(const std::string&, const uint64_t*, const sfilesize_t, const sfilesize_t*) = 0;
+
 		virtual double **GetDoubles(const std::string&, sfilesize_t*) = 0;
         virtual int32_t **GetInt32_2D(const std::string&, sfilesize_t*) = 0;
         virtual int64_t **GetInt64_2D(const std::string&, sfilesize_t*) = 0;

@@ -7,6 +7,9 @@
 class SFile_HDF5 : public SFile {
     private:
         template<typename T>
+        void WriteMultiNumArray(const std::string&, const T*, const sfilesize_t, const sfilesize_t*, H5::PredType, H5::PredType);
+
+        template<typename T>
 		void WriteNumArray(const std::string&, const T *const*, sfilesize_t, sfilesize_t, H5::PredType, H5::PredType);
 
         template<typename T>
@@ -58,6 +61,11 @@ class SFile_HDF5 : public SFile {
         virtual void WriteInt64List(const std::string&, const int64_t*, sfilesize_t) override;
         virtual void WriteUInt32List(const std::string&, const uint32_t*, sfilesize_t) override;
         virtual void WriteUInt64List(const std::string&, const uint64_t*, sfilesize_t) override;
+
+        virtual void WriteMultiInt32Array(const std::string&, const int32_t*, const sfilesize_t, const sfilesize_t*) override;
+        virtual void WriteMultiInt64Array(const std::string&, const int64_t*, const sfilesize_t, const sfilesize_t*) override;
+        virtual void WriteMultiUInt32Array(const std::string&, const uint32_t*, const sfilesize_t, const sfilesize_t*) override;
+        virtual void WriteMultiUInt64Array(const std::string&, const uint64_t*, const sfilesize_t, const sfilesize_t*) override;
 
 		H5::Group __GetParentGroup(const std::string&, std::string&);
         H5::H5File *__GetFile() { return this->file; }
