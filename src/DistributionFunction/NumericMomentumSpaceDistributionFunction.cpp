@@ -26,7 +26,13 @@ using namespace std;
 slibreal_t NumericMomentumSpaceDistributionFunction::Eval(const slibreal_t p, const slibreal_t xi) {
     slibreal_t fval;
     if (p < this->pmin || p > this->pmax) return 0.0;
-    if (xi < this->ximin || xi > this->ximax) return 0.0;
+	if (this->flipPitchSign) {
+		if (xi < -this->ximax || xi > -this->ximin)
+			return 0.0;
+	} else {
+		if (xi < this->ximin || xi > this->ximax)
+			return 0.0;
+	}
 
     if (this->flipPitchSign)
         fval = gsl_spline2d_eval(fspline, p, -xi, pa, xia);
