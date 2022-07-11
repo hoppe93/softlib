@@ -99,6 +99,7 @@ void MagneticFieldLUKE::Load(const string& name, enum sfile_type type, const str
 	
 	this->name = sf->GetString("equil/id");
 	this->description = this->name;
+	this->cocos = 1;
 
 	double _maxis[2];
 	_maxis[0] = sf->GetScalar("equil/Rp");

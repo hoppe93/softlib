@@ -238,7 +238,7 @@ struct flux_diff *MagneticFieldAnalytical2D::EvalFluxDerivatives(
     //slibreal_t p     = 2.0*M_PI*B0;
 	slibreal_t r     = sqrt(r2);
 	slibreal_t q     = __GetSafetyFactor(r);
-	slibreal_t rdqdr = __GetrDqDr(r);
+	//slibreal_t rdqdr = __GetrDqDr(r);
 
 	// Toroidal flux
     /*flux_retval.psi     = p*Rm*(1.0 - sqrt(1.0 - r2/(Rm*Rm)));
@@ -246,8 +246,8 @@ struct flux_diff *MagneticFieldAnalytical2D::EvalFluxDerivatives(
     flux_retval.dpsi_dZ = p * z / d;*/
 
 	flux_retval.psi     = sigmaI * M_PI*B0*r2 / q;
-	flux_retval.dpsi_dR = sigmaI * M_PI*B0*(R-Rm)/q * (2.0 - rdqdr / q);
-	flux_retval.dpsi_dZ = sigmaI * M_PI*B0*Z/q      * (2.0 - rdqdr / q);
+	flux_retval.dpsi_dR = sigmaI * M_PI*B0*(R-Rm)/q * 2.0;//- rdqdr / q);
+	flux_retval.dpsi_dZ = sigmaI * M_PI*B0*Z/q      * 2.0;//- rdqdr / q);
 
     return &flux_retval;
 }
@@ -305,7 +305,7 @@ MagneticFieldNumeric2D *MagneticFieldAnalytical2D::ToNumeric2D(const unsigned in
         zwall[i] = temp[i];
 
     return new MagneticFieldNumeric2D(
-        GetName(), GetDescription(),
+        GetName(), GetDescription(), this->COCOS,
         R, Z, nr, nz, Br, Bphi, Bz, Psi,
         GetMagneticAxisR(), GetMagneticAxisZ(),
         nullptr, nullptr, 0,

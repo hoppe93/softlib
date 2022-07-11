@@ -33,6 +33,9 @@ MagneticFieldNumeric2D::MagneticFieldNumeric2D(const string& filename) : Magneti
 	InitInterpolation();
 
 	BaseInit();
+
+	// Verify that COCOS number makes sense
+	this->VerifyCocos(this->cocos);
 }
 MagneticFieldNumeric2D::MagneticFieldNumeric2D(const string& filename, enum sfile_type ftype) : MagneticField2D() {
 	Load(filename, ftype);
@@ -82,6 +85,7 @@ void MagneticFieldNumeric2D::BaseInit() {
  * Construct from data *
  * name: Name of magnetic field.
  * description: Description of magnetic field.
+ * cocos: COCOS number for magnetic field.
  * R, Z: R and Z coordinates of magnetic field components. Simple vectors.
  * Br: Radial component of magnetic field.
  * Bphi: Toroidal component of magnetic field.
@@ -90,7 +94,7 @@ void MagneticFieldNumeric2D::BaseInit() {
  * rwall, zwall: R and Z points of wall data. Can be nullptr if rsep/zsep is not.
  */
 MagneticFieldNumeric2D::MagneticFieldNumeric2D(
-	const string& name, const string& description,
+	const string& name, const string& description, const int cocos,
 	slibreal_t *R, slibreal_t *Z, unsigned int nr, unsigned int nz,
 	slibreal_t *Br, slibreal_t *Bphi, slibreal_t *Bz,
     slibreal_t *Psi, slibreal_t raxis, slibreal_t zaxis,
@@ -104,7 +108,7 @@ MagneticFieldNumeric2D::MagneticFieldNumeric2D(
 	jacobian[2] = jacobian[1] + 3;
 	jacobian[3] = jacobian[2] + 3;
 
-	Init(name, description, R, Z, nr, nz, Br, Bphi, Bz, Psi, raxis, zaxis, rsep, zsep, nsep, rwall, zwall, nwall);
+	Init(name, description, cocos, R, Z, nr, nz, Br, Bphi, Bz, Psi, raxis, zaxis, rsep, zsep, nsep, rwall, zwall, nwall);
 }
 
 /**
@@ -155,7 +159,7 @@ MagneticFieldNumeric2D *MagneticFieldNumeric2D::Clone() {
     }
 
     return new MagneticFieldNumeric2D(
-        this->name, this->description,
+        this->name, this->description, this->cocos,
         nR, nZ, this->nr, this->nz,
         nBr, nBphi, nBz, nPsi,
         this->magnetic_axis[0], this->magnetic_axis[1],
@@ -200,8 +204,9 @@ slibreal_t MagneticFieldNumeric2D::FindMinRadius() {
  * Initialize this MagneticFieldNumeric2D object,
  * setting all properties in one call.
  *
- * name: Name of magnetic field
- * description: Description of magnetic field
+ * name: Name of magnetic field.
+ * description: Description of magnetic field.
+ * cocos: COCOS number for magnetic field.
  * R, Z: R and Z coordinates of the magnetic field components. Simple vectors.
  * Br: Radial component of the magnetic field.
  * Bphi: Toroidal component of the magnetic field.
@@ -211,7 +216,7 @@ slibreal_t MagneticFieldNumeric2D::FindMinRadius() {
  * rwall, zwall: R and Z points of wall data. Can be nullptr if rsep/zsep is not.
  */
 void MagneticFieldNumeric2D::Init(
-	const string& name, const string& description,
+	const string& name, const string& description, const int cocos,
 	slibreal_t *R, slibreal_t *Z, unsigned int nr, unsigned int nz,
 	slibreal_t *Br, slibreal_t *Bphi, slibreal_t *Bz,
     slibreal_t *Psi, slibreal_t raxis, slibreal_t zaxis,
@@ -224,6 +229,7 @@ void MagneticFieldNumeric2D::Init(
 
 	this->name = name;
 	this->description = description;
+	this->cocos = cocos;
 	this->R = R;
 	this->Z = Z;
 	this->nr = nr;
@@ -524,6 +530,14 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
             _Psi = Transpose(_Psi, fs[0], fs[1]);
     } catch (SFileException& ex) {}
 
+	/* Load COCOS number */
+	try {
+		this->cocos = sf->GetInt("cocos");
+	} catch (SFileException& ex) {
+		// Assume COCOS number = 1
+		this->cocos = 1;
+	}
+
     /* Load verification vectors (if present) */
     try {
         _verBr = sf->GetList("verBr", fs);
@@ -700,6 +714,37 @@ void MagneticFieldNumeric2D::Load(const string& filename, enum sfile_type ftype)
 }
 
 /**
+ * Return the COCOS parameter \sigma_{B_p}, indicating how the
+ * poloidal flux is defined relative to the poloidal field.
+ */
+slibreal_t MagneticFieldNumeric2D::GetCocosSigmaBp() {
+	switch (this->cocos) {
+		case 1:  case 2:  case 5:  case 6:
+		case 11: case 12: case 15: case 16:
+			return 1.0;
+		
+		case 3:  case 4:  case 7:  case 8:
+		case 13: case 14: case 17: case 18:
+			return -1.0;
+
+		// Invalid COCOS number
+		default: return 1.0;
+	}
+}
+
+/**
+ * Return the COCOS parameter e_{B_p}, indicating whether
+ * the poloidal flux is normalized by 2*pi (e_{B_p}=1) or
+ * not (e_{B_p}=0).
+ */
+slibreal_t MagneticFieldNumeric2D::GetCocosEBp() {
+	if (this->cocos >= 10)
+		return 1;
+	else
+		return 0;
+}
+
+/**
  * Transpose the given matrix of size rows-by-cols.
  * The returned matrix will be of size cols-by-rows.
  *
@@ -741,6 +786,9 @@ void MagneticFieldNumeric2D::Save(const string& filename, enum sfile_type ftype)
 	sf->WriteMultiArray("Bphi", this->Bphi, 2, dims);
 	sf->WriteMultiArray("Br",   this->Br,   2, dims);
 	sf->WriteMultiArray("Bz",   this->Bz,   2, dims);
+
+	int32_t cc = this->cocos;
+	sf->WriteInt32List("cocos", &cc, 1);
 
 	sf->WriteString("desc", this->description);
 	sf->WriteString("name", this->name);

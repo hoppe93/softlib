@@ -34,6 +34,8 @@ class MagneticFieldAnalytical2D : public MagneticField2D {
 
 		slibreal_t B0, Rm, rminor, sigmaB, sigmaI, **jacobian,
             maxis_z=0;
+
+		const int COCOS=11;
 	public:
 		MagneticFieldAnalytical2D(slibreal_t, slibreal_t, slibreal_t, slibreal_t, enum MFAFieldSign, enum MFAFieldSign, enum MFASafetyFactorType, slibreal_t, slibreal_t);
 		MagneticFieldAnalytical2D(slibreal_t, slibreal_t, slibreal_t, slibreal_t, enum MFAFieldSign, enum MFAFieldSign, enum MFASafetyFactorType, slibreal_t, slibreal_t, const std::string&, const std::string&);
@@ -53,6 +55,10 @@ class MagneticFieldAnalytical2D : public MagneticField2D {
         slibreal_t GetRMajor() { return this->Rm; }
         slibreal_t GetRMinor() { return this->rminor; }
         virtual bool HasMagneticFlux() override { return true; }
+
+		// COCOS parameters
+		virtual slibreal_t GetCocosSigmaBp() override { return +1.0; }
+		virtual slibreal_t GetCocosEBp() override { return 1.0; }
 
 		slibreal_t __GetrDqDr(slibreal_t);
 		slibreal_t __GetSafetyFactor(slibreal_t);

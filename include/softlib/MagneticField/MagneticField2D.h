@@ -77,6 +77,11 @@ class MagneticField2D {
         slibreal_t *GetZSeparatrix() { return this->zseparatrix; }
         unsigned int GetNSeparatrix() { return this->nseparatrix; }
 
+		// COCOS parameters
+		virtual slibreal_t GetCocosSigmaBp() = 0;
+		virtual slibreal_t GetCocosEBp() = 0;
+		virtual void VerifyCocos(int);
+
         void GetDomainBounds(slibreal_t&, slibreal_t&, slibreal_t&, slibreal_t&);
 
 		bool CrossesDomain(slibreal_t*);

@@ -30,6 +30,8 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 		slibreal_t **__EvalJacobian(slibreal_t, slibreal_t, slibreal_t);
 
         bool hasFluxCoordinates = false;
+		// COCOS number (https://crppwww.epfl.ch/~sauter/cocos/)
+		int cocos = 1;
 
 		/* Interpolation properties */
 #	ifdef INTERP_SPLINTER
@@ -43,7 +45,7 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 		MagneticFieldNumeric2D(const std::string&);
 		MagneticFieldNumeric2D(const std::string&, enum sfile_type);
 		MagneticFieldNumeric2D(
-			const std::string& name, const std::string& description,
+			const std::string& name, const std::string& description, const int,
 			slibreal_t *R, slibreal_t *Z, unsigned int nr, unsigned int nz,
 			slibreal_t *Br, slibreal_t *Bphi, slibreal_t *Bz, slibreal_t *Psi,
             slibreal_t raxis, slibreal_t zaxis,
@@ -67,7 +69,7 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 		std::string& GetName();
         slibreal_t *GetMagneticAxis();
 		void Init(
-			const std::string& name, const std::string& description,
+			const std::string& name, const std::string& description, const int,
 			slibreal_t *R, slibreal_t *Z, unsigned int nr, unsigned int nz,
 			slibreal_t *Br, slibreal_t *Bphi, slibreal_t *Bz, slibreal_t *Psi,
             slibreal_t raxis, slibreal_t zaxis,
@@ -81,6 +83,10 @@ class MagneticFieldNumeric2D : public MagneticField2D {
 		void Save(const std::string&, enum sfile_type);
 		/* Transpose a matrix from SFile */
 		double **Transpose(double**, sfilesize_t, sfilesize_t);
+
+		// COCOS parameters
+		virtual slibreal_t GetCocosSigmaBp() override;
+		virtual slibreal_t GetCocosEBp() override;
 
         virtual bool HasMagneticFlux() override { return hasFluxCoordinates; }
 };

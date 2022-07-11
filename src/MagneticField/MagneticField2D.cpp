@@ -4,6 +4,7 @@
  */
 
 #include <cmath>
+#include <iostream>
 #include <softlib/MagneticField/MagneticField2D.h>
 #include <softlib/SOFTLibException.h>
 
@@ -471,5 +472,38 @@ void MagneticField2D::SetSeparatrix(slibreal_t *rs, slibreal_t *zs, unsigned int
 
     if (rs == nullptr || zs == nullptr)
         this->nseparatrix = 0;
+}
+
+/**
+ * Verify that the specified COCOS number is consistent with this
+ * magnetic equilibrium.
+ *
+ * cocos: Number assumed for the magnetic field.
+ */
+void MagneticField2D::VerifyCocos(int cocos) {
+	if (this->HasMagneticFlux()) {
+		slibreal_t sgnDpsiDr =
+			(this->EvalFlux(this->GetMinRadius(), 0, this->GetMagneticAxisZ()) -
+			this->EvalFlux(this->GetMaxRadius(), 0, this->GetMagneticAxisZ()))
+			> 0 ? 1 : -1;
+		
+		switch (cocos) {
+			case 1:  case 2:  case 5:  case 6:
+			case 11: case 12: case 15: case 16:
+				if (sgnDpsiDr < 0)
+					cout << "WARNING: The poloidal flux is decreasing with minor radius, opposite of what is indicated by the COCOS number." << endl;
+				break;
+			
+			case 3:  case 4:  case 7:  case 8:
+			case 13: case 14: case 17: case 18:
+				if (sgnDpsiDr > 0)
+					cout << "WARNING: The poloidal flux is increasing with minor radius, opposite of what is indicated by the COCOS number." << endl;
+				break;
+			
+			default:
+				cout << "WARNING: Invalid COCOS number specified for equilibrium." << endl;
+				break;
+		}
+	}
 }
 
