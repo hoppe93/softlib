@@ -297,7 +297,7 @@ int64_t SFile::GetInt(const string& name) {
  */
 template<typename T>
 T SFile::__GetSingle(const string& name, T** (SFile::*f)(const string&, sfilesize_t*), SFile *sf) {
-	sfilesize_t length[2];
+	sfilesize_t length[2] = {0};
 	T s;
 	T **arr = (sf->*f)(name, length);
 
