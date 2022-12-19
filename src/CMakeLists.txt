@@ -130,6 +130,7 @@ endif()
 # Find OpenMP
 find_package(OpenMP)
 if (OpenMP_CXX_FOUND)
+	target_include_directories(softlib PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")
     target_link_libraries(softlib PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
