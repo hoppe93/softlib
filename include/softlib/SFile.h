@@ -7,7 +7,12 @@
 #include <string>
 #include <vector>
 
-typedef uint64_t sfilesize_t;
+#ifdef SOFT_HDF5
+#	include <H5Cpp.h>
+	typedef hsize_t sfilesize_t;
+#else
+typedef unsigned long long int sfilesize_t;
+#endif
 
 enum sfile_mode {
 	SFILE_MODE_READ,
