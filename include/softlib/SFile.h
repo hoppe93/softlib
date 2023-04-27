@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-typedef unsigned long long int sfilesize_t;
+typedef uint64_t sfilesize_t;
 
 enum sfile_mode {
 	SFILE_MODE_READ,
