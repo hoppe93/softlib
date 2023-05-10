@@ -2,6 +2,7 @@
 #define _SOFTLIB_CONFIG_H
 
 #include <cfloat>
+#include <cstdint>
 
 #ifdef PRECISION_SINGLE
 #   warning "Compiling with single-precision floating point numbers"
