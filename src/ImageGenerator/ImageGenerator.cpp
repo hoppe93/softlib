@@ -2,6 +2,7 @@
  * Implementation of the common 'ImageGenerator' interface 'gen()'.
  */
 
+#include <softlib/config.h>
 #include <softlib/ImageGenerator/ImageGenerator.h>
 #ifdef HAS_LIBPNG
 #   include <softlib/ImageGenerator/ImageGeneratorPNG.h>

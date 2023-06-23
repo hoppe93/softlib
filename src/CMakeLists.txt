@@ -31,7 +31,7 @@ set(distribution
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/NumericDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/NumericMomentumSpaceDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/PowerRadialProfile.cpp"
-		"${PROJECT_SOURCE_DIR}/src/DistributionFunction/GaussianRadialProfile.cpp"
+    "${PROJECT_SOURCE_DIR}/src/DistributionFunction/GaussianRadialProfile.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/RadialDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/deprSOFTDistributionFunction.cpp"
     "${PROJECT_SOURCE_DIR}/src/DistributionFunction/SOFTDistributionFunction.cpp"
@@ -151,6 +151,7 @@ endif (GSL_FOUND)
 if (PNG_FOUND)
     target_include_directories(softlib PUBLIC "${PNG_INCLUDE_DIRS}")
     target_link_libraries(softlib PUBLIC "${PNG_LIBRARIES}")
+    target_compile_definitions(softlib PUBLIC HAS_LIBPNG)
 else (PNG_FOUND)
     message(INFO "No libpng was found. Configuring without PNG image support...")
 endif (PNG_FOUND)
