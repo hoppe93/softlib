@@ -15,8 +15,8 @@ void ImageGeneratorPNG::SaveImage(
     spng_bitmap_t *png = new spng_bitmap_t;
 
     png->pixels = new spng_pixel_t[nrows*ncols];
-    png->width  = ncols;
-    png->height = nrows;
+    png->width  = nrows;
+    png->height = ncols;
 
     for (long long int i = 0, index = 0; i < (long long int)ncols; i++) {
         for (long long int j = 0; j < (long long int)nrows; j++, index++) {
