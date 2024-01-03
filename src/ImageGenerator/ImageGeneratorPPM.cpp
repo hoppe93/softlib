@@ -33,10 +33,10 @@ void ImageGeneratorPPM::SaveImage(
     /***************
      * Write image *
      ***************/
-    for (unsigned int i = 0; i < nrows; i++) {
-        for (unsigned int j = 0; j < ncols; j++) {
+    for (unsigned int i = 0; i < ncols; i++) {
+        for (unsigned int j = 0; j < nrows; j++) {
             // NOTE: The image should be output in transposed form!
-            ImageColormap::scolor_t clr = cmap->Eval(img[j*nrows + i]);
+            ImageColormap::scolor_t clr = cmap->Eval(img[j*ncols + i]);
 
             file << clr.red << " " << clr.green << " " << clr.blue << " ";
         }
