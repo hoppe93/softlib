@@ -463,10 +463,6 @@ void SFile_HDF5::WriteMultiNumArray(
     const string& name, const T *arr, const sfilesize_t ndims,
     const sfilesize_t *dims, PredType op, PredType ip
 ) {
-	hsize_t *h_dims = new hsize_t[ndims];
-	for (sfilesize_t i = 0; i < ndims; i++)
-		h_dims[i] = dims[i];
-
 	DataSpace dspace(ndims, dims);
 	DataSet dset = file->createDataSet(name, op, dspace);
 	dset.write(arr, ip);
