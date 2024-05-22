@@ -223,6 +223,15 @@ slibreal_t MagneticField2D::FindMaxRadius(unsigned int n, slibreal_t *r, slibrea
 		}
 	}
 
+	// Handle last/first point
+	if ((z[n-1] >= za && z[0] <= za) ||
+		(z[n-1] <= za && z[0] >= za)) {
+		if (z[0] == z[n-1])
+			rpoints[ir++] = max(r[i], r[i+1]);
+		else
+			rpoints[ir++] = r[i] + (r[i+1]-r[i]) * (za-z[i])/(z[i+1]-z[i]);
+	}
+
 	if (ir == 0)
 		throw SOFTLibException("Unable to find maximum allowed drop radius. Magnetic axis not within domain.");
 

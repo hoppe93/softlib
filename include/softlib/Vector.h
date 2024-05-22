@@ -9,11 +9,11 @@ class Vector {
 		const unsigned int n = N;
 		T elems[N];
 	public:
-		Vector<N,T>();
-		Vector<N,T>(const T*);
-        Vector<N,T>(const Vector<N,T>&);
-        template<class S = T> Vector<N,T>(const Vector<N,S>&);
-		~Vector<N,T>();
+		Vector();
+		Vector(const T*);
+        Vector(const Vector<N,T>&);
+        template<class S = T> Vector(const Vector<N,S>&);
+		~Vector();
 
 		T& operator[](const unsigned int);
 		const T& operator[](const unsigned int) const;
