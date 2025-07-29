@@ -13,7 +13,9 @@
 #include <chrono>
 #include <cmath>
 #include <cstdio>
-#include <omp.h>
+#ifdef _OPENMP
+#	include <omp.h>
+#endif
 #include <sstream>
 #include <string>
 #include <softlib/config.h>
@@ -77,13 +79,17 @@ void ProgressTracker::PrintProgress(const long long int i) {
     const long long int index = this->nextindex;
     bool returnImmediately = false;
 
+#ifdef _OPENMP
     #pragma omp critical (ProgressTracker_Print)
     {
+#endif
         if (i < this->next)
             returnImmediately = true;
         else
             this->UpdateNext();
+#ifdef _OPENMP
     }
+#endif
 
     if (returnImmediately)
         return;
