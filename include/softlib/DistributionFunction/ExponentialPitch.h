@@ -5,13 +5,13 @@
 
 class ExponentialPitch : public MomentumSpaceDistributionFunction {
     protected:
-        slibreal_t C;
+        slibreal_t C0, C1;
     public:
         ExponentialPitch();
-        ExponentialPitch(const slibreal_t);
+        ExponentialPitch(const slibreal_t, const slibreal_t C1=0);
         using MomentumSpaceDistributionFunction::Eval;
         virtual slibreal_t Eval(const slibreal_t, const slibreal_t) override;
-        void Initialize(const slibreal_t);
+        void Initialize(const slibreal_t, const slibreal_t C1=0);
         virtual ExponentialPitch *MinClone() override;
 };
 

@@ -2,7 +2,7 @@
  * Implementation of a pitch angle distribution function that
  * takes the form
  *
- *   f(\xi) = exp(C\xi)
+ *   f(\xi) = exp[(C0+C1*p)\xi]
  */
 
 #include <cmath>
@@ -15,7 +15,9 @@
  * Constructor.
  */
 ExponentialPitch::ExponentialPitch() { }
-ExponentialPitch::ExponentialPitch(const slibreal_t C) : C(C) {}
+ExponentialPitch::ExponentialPitch(
+	const slibreal_t C0, const slibreal_t C1
+) : C0(C0), C1(C1) {}
 
 /**
  * Evaluate the distribution function the
@@ -30,8 +32,9 @@ ExponentialPitch::ExponentialPitch(const slibreal_t C) : C(C) {}
  *              drift surfaces are shifted (not used in
  *              this implementation).
  */
-slibreal_t ExponentialPitch::Eval(const slibreal_t, const slibreal_t xi) {
-    return exp(C * abs(xi));
+slibreal_t ExponentialPitch::Eval(const slibreal_t p, const slibreal_t xi) {
+	slibreal_t C = (C0+C1*p);
+    return C * exp(C * (abs(xi)-1)) / (1-exp(-2*C));
 }
 
 /**
@@ -39,14 +42,19 @@ slibreal_t ExponentialPitch::Eval(const slibreal_t, const slibreal_t xi) {
  *
  * C: Pitch angle parameter.
  */
-void ExponentialPitch::Initialize(const slibreal_t C) { this->C = C; }
+void ExponentialPitch::Initialize(
+	const slibreal_t C0, const slibreal_t C1
+) {
+	this->C0 = C0;
+	this->C1 = C1;
+}
 
 /**
  * Clone this analytic avalanche distribution function.
  */
 ExponentialPitch *ExponentialPitch::MinClone() {
     ExponentialPitch *da = new ExponentialPitch();
-    da->Initialize(this->C);
+    da->Initialize(this->C0, this->C1);
 
     return da;
 }
