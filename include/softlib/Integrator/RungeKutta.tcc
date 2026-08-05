@@ -19,11 +19,15 @@
  *    the absolute tolerance is set to the same value)
  */
 template<unsigned int N>
-RungeKutta<N>::RungeKutta(const slibreal_t tol) {
+RungeKutta<N>::RungeKutta(const slibreal_t tol, const slibreal_t step0) {
 	this->atol = tol;
 	this->rtol = tol;
 	this->errold = 1.0e-4;
-	this->optimal_step = 1.0;
+
+	if (step0 <= 0.0)
+		throw SOFTLibException("Initial Runge-Kutta step size must be positive.");
+
+	this->optimal_step = step0;
 }
 
 /**

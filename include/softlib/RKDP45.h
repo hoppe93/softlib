@@ -31,7 +31,7 @@ class RKDP45 : public RungeKutta<N> {
 			d6=-1453857185.0/822651844.0,
 			d7=69997945.0/29380423.0;
 	public:
-        RKDP45<N>(const slibreal_t tol=RK_DEFAULT_TOLERANCE) : RungeKutta<N>(tol) {}
+        RKDP45(const slibreal_t tol=RK_DEFAULT_TOLERANCE, const slibreal_t step0=1.0) : RungeKutta<N>(tol, step0) {}
 		Vector<N>& InnerStep(const slibreal_t, const slibreal_t, const Vector<N>&, const Vector<N>&);
 		void PrepareDense(const slibreal_t, const Vector<N>&, const Vector<N>&, const Vector<N>&, const Vector<N>&);
 		void OutputDense(const unsigned int, slibreal_t*, slibreal_t*);

@@ -29,7 +29,7 @@ class RungeKutta : public Integrator<N> {
 
 		slibreal_t optimal_step, atol, rtol;
 	public:
-		RungeKutta(const slibreal_t=RK_DEFAULT_TOLERANCE);
+		RungeKutta(const slibreal_t=RK_DEFAULT_TOLERANCE, const slibreal_t step0=1.0);
 
 		slibreal_t EstimateError(const Vector<N>&, const Vector<N>&);
 		void InitialValue(const Vector<N>&);
